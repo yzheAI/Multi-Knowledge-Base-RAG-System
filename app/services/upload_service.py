@@ -106,26 +106,34 @@ async def search_files(query: str, kb_name):
     return result
 
 
-async def get_all_files(kb_name):
-    docs = {}
-    store = container.vector_manager.get_store(kb_name)
+async def get_all_files(
+        db,
+        kb_name
+):
+    # 获取知识库信息
+    kb = knowledge_base.get_kb_by_name(
+        db,
+        kb_name
+    )
+    if not kb:
+        raise KnowledgeBaseEmptyError()
 
-    for item in store.data.values():
+    documents = document_crud.get_documents_by_kb(
+        db,
+        kb.id
+    )
 
-        doc_id = item["doc_id"]
-        metadata = item["metadata"]
-
-        if doc_id not in docs:
-            docs[doc_id] = {
-                "doc_id": doc_id,
-                "metadata": metadata,
-                "chunk_count": 1
-            }
-        else:
-            docs[doc_id]["chunk_count"] += 1
     return {
-        "count": len(docs),
-        "files": list(docs.values())
+        "count": len(documents),
+        "files": [
+            {
+                "doc_id": doc.id,
+                "filename": doc.filename,
+                "file_path": doc.file_path,
+                "created_at": doc.created_at,
+            }
+            for doc in documents
+        ]
     }
 
 
@@ -144,11 +152,7 @@ async def file_delete(db,
     kb_path = kdg.get_path(
         kb_name
     )
-    # 删除数据库中文档
-    document_crud.delete_document(
-        db,
-        doc_id
-    )
+
     # 删除向量
     success_flag = store.delete(
         doc_id,
@@ -159,5 +163,11 @@ async def file_delete(db,
         raise DocumentNotFound(
             message="文档不存在"
         )
+
+    # 删除数据库中文档
+    document_crud.delete_document(
+        db,
+        doc_id
+    )
 
     return success_flag

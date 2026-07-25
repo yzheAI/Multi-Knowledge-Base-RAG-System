@@ -39,8 +39,8 @@ async def read_file(
 
 
 @upload_router.get('/files_message', response_model=ResponseModel)
-async def get_files(kb_name):
-    result = await get_all_files(kb_name)
+async def get_files(kb_name, db: Session = Depends(get_db)):
+    result = await get_all_files(db, kb_name)
     return success(msg=result)
 
 
