@@ -1,5 +1,4 @@
 import os
-import uuid
 from datetime import datetime
 from app.knowledge_base.manager import KnowledgeManager
 from app.config import SEARCH_TOP_K, KNOWLEDGE_BASE_PATH
@@ -53,6 +52,14 @@ async def upload(db, file, kb_name):
         str(file_path)
     )
 
+    # 上传文档至SQL
+    doc = document_crud.create_document(
+        db=db,
+        kb_id=kb.id,
+        filename=file.filename,
+        file_path=file_path,
+    )
+
     metadata = result["metadata"]
 
     metadata.update({
@@ -60,28 +67,18 @@ async def upload(db, file, kb_name):
         "upload_time": datetime.now().isoformat()
     })
 
-    vector_doc_id = str(uuid.uuid4())
-
     store = container.vector_manager.get_store(
         kb_name
     )
     store.add(
         result["vectors"],
         result["chunks"],
-        doc_id=vector_doc_id,
+        doc_id=str(doc.id),
         metadata=metadata
     )
 
     store.save(
         kb_path
-    )
-
-    # 上传文档至SQL
-    doc = document_crud.create_document(
-        db=db,
-        kb_id=kb.id,
-        filename=file.filename,
-        file_path=file_path,
     )
 
     return {
@@ -132,11 +129,35 @@ async def get_all_files(kb_name):
     }
 
 
-async def file_delete(doc_id, kb_name):
-    kdg = KnowledgeManager(KNOWLEDGE_BASE_PATH)
-    store = container.vector_manager.get_store(kb_name)
-    kb_path = kdg.get_path(kb_name)
-    success_flag = store.delete(doc_id, kb_path)
+async def file_delete(db,
+                      doc_id: int,
+                      kb_name: str
+                      ):
+    kdg = KnowledgeManager(
+        KNOWLEDGE_BASE_PATH
+    )
+
+    store = container.vector_manager.get_store(
+        kb_name
+    )
+
+    kb_path = kdg.get_path(
+        kb_name
+    )
+    # 删除数据库中文档
+    document_crud.delete_document(
+        db,
+        doc_id
+    )
+    # 删除向量
+    success_flag = store.delete(
+        doc_id,
+        kb_path
+    )
+
     if not success_flag:
-        raise DocumentNotFound(message="文档不存在")
+        raise DocumentNotFound(
+            message="文档不存在"
+        )
+
     return success_flag

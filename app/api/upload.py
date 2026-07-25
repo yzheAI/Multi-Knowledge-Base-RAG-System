@@ -1,5 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, Query, Form, Depends
-from requests import Session
+from sqlalchemy.orm import Session
 
 from app.database.session import Base, get_db
 from app.schemas.response_schema import ResponseModel
@@ -45,6 +45,15 @@ async def get_files(kb_name):
 
 
 @upload_router.delete("/{doc_id}", response_model=ResponseModel)
-async def delete_file(doc_id: str, kb_name: str):
-    await file_delete(doc_id, kb_name)
+async def delete_file(
+        doc_id: int,
+        kb_name: str,
+        db: Session = Depends(get_db),
+):
+    await file_delete(
+        db,
+        doc_id,
+        kb_name
+    )
+
     return success(msg="删除成功")
