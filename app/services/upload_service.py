@@ -155,7 +155,7 @@ async def file_delete(db,
 
     # 删除向量
     success_flag = store.delete(
-        doc_id,
+        str(doc_id),
         kb_path
     )
 
