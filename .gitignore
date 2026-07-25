@@ -26,4 +26,4 @@ data/knowledge_bases/*/files/
 temp.py
 
 # Local models
-models/
+/models/

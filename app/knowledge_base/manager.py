@@ -20,10 +20,10 @@ class KnowledgeManager:
 
         return kb
 
-    def get_path(self, kb_id):
+    def get_path(self, kb_name):
         return os.path.join(
             self.base_path,
-            kb_id
+            kb_name
         )
 
     def list(self, db):

@@ -7,12 +7,28 @@ from app.document.pipeline import process_document
 from app.embedding.embedding import get_embedding
 from app.exceptions.exceptions import DocumentNotFound, KnowledgeBaseEmptyError
 from app.core.container import container
+from app.crud import document_crud, knowledge_base
 
 
 async def upload(db, file, kb_name):
-    # 定义路径
+    # 获取知识库
     kdg = KnowledgeManager(KNOWLEDGE_BASE_PATH)
-    kb_path = kdg.create(db, kb_name)
+
+    kb = knowledge_base.get_kb_by_name(
+        db,
+        kb_name
+    )
+
+    if not kb:
+        kb = kdg.create(
+            db,
+            kb_name
+        )
+    # 获取上传文件路径
+    kb_path = kdg.get_path(
+        kb_name
+    )
+
     upload_dir = os.path.join(
         kb_path,
         "files"
@@ -23,34 +39,54 @@ async def upload(db, file, kb_name):
         exist_ok=True
     )
 
-    # 上传文档
-    file_path = os.path.join(upload_dir, file.filename)  # 拼接路径
+    file_path = os.path.join(
+        upload_dir,
+        file.filename
+    )
+    # 上传文档至目标文件夹
     with open(file_path, "wb") as f:
-        content = await file.read()  # 异步读取用户上传的文件内容
+        content = await file.read()
         f.write(content)
 
     # 获取信息
-    result = process_document(str(file_path))
+    result = process_document(
+        str(file_path)
+    )
+
     metadata = result["metadata"]
+
     metadata.update({
         "source": file.filename,
         "upload_time": datetime.now().isoformat()
     })
 
-    doc_id = str(uuid.uuid4())
+    vector_doc_id = str(uuid.uuid4())
+
     store = container.vector_manager.get_store(
         kb_name
     )
     store.add(
         result["vectors"],
         result["chunks"],
-        doc_id=doc_id,
+        doc_id=vector_doc_id,
         metadata=metadata
     )
 
-    store.save(kb_path)
+    store.save(
+        kb_path
+    )
+
+    # 上传文档至SQL
+    doc = document_crud.create_document(
+        db=db,
+        kb_id=kb.id,
+        filename=file.filename,
+        file_path=file_path,
+    )
+
     return {
         "filename": file.filename,
+        "document_id": doc.id,
         "msg": "上传成功",
         "analysis": result
     }

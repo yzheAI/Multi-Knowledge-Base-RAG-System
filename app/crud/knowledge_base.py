@@ -33,6 +33,19 @@ def get_kb_by_id(
     return kb
 
 
+def get_kb_by_name(
+        db: Session,
+        name: str,
+):
+    kb = (
+        db.query(KnowledgeBase)
+        .filter(
+            KnowledgeBase.name == name
+        ).first()
+    )
+    return kb
+
+
 def get_all_kbs(
         db: Session,
 ):
