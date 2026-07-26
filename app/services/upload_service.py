@@ -6,7 +6,7 @@ from app.document.pipeline import process_document
 from app.embedding.embedding import get_embedding
 from app.exceptions.exceptions import DocumentNotFound, KnowledgeBaseEmptyError
 from app.core.container import container
-from app.crud import document_crud, knowledge_base
+from app.crud import document_crud, knowledge_base, chunk_crud
 
 
 async def upload(db, file, kb_name):

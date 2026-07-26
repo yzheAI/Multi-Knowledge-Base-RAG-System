@@ -35,7 +35,7 @@ async def read_file(
         query,
         kb_name
     )
-    return success(msg=result)
+    return success(data=result)
 
 
 @upload_router.get('/files_message', response_model=ResponseModel)
