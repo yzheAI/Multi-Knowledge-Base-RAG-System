@@ -67,6 +67,13 @@ async def upload(db, file, kb_name):
         "upload_time": datetime.now().isoformat()
     })
 
+    chunk_crud.create_chunks(
+        db=db,
+        document_id=doc.id,
+        chunks=result["chunks"],
+        metadata=metadata
+    )
+
     store = container.vector_manager.get_store(
         kb_name
     )

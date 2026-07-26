@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.crud.chunk_crud import create_chunk, get_chunks_by_document_id, delete_chunks_by_document_id, create_chunks
+from app.crud.chunk_crud import get_chunks_by_document_id, delete_chunks_by_document_id, create_chunks
 from app.crud.document_crud import create_document
 from app.crud.knowledge_base import create_kb
 import uuid
