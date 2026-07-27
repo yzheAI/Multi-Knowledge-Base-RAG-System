@@ -44,6 +44,9 @@ def create_chunks(
 
     db.commit()
 
+    for chunk in chunk_object:
+        db.refresh(chunk)
+
     return chunk_object
 
 

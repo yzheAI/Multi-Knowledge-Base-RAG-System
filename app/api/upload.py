@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Query, Form, Depends
 from sqlalchemy.orm import Session
 
-from app.database.session import Base, get_db
+from app.database.session import get_db
 from app.schemas.response_schema import ResponseModel
 from app.services.upload_service import upload, search_files, get_all_files, file_delete
 from utils.response import success

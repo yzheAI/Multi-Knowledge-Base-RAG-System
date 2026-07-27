@@ -20,7 +20,14 @@ class VectorStore:
         self.bm25 = BM25Store()
 
     # 添加文本与向量
-    def add(self, embeddings, texts, doc_id, metadata):
+    def add(
+            self,
+            embeddings,
+            texts,
+            chunk_ids,
+            doc_id,
+            metadata
+    ):
         embeddings = np.array(embeddings).astype("float32")  # 转成FAISS需要的格式
 
         if len(embeddings.shape) == 1:
@@ -29,11 +36,9 @@ class VectorStore:
         self.texts.extend(texts)
 
         # 索引范围
-        ids = np.arange(
-            self.next_id,
-            self.next_id + len(texts)
+        ids = np.array(
+            chunk_ids
         )
-        self.next_id += len(texts)
 
         documents = []
 

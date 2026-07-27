@@ -1,9 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
-from app.schemas.chat import ChatRequest, ChatResponse
-from app.schemas.response_schema import ResponseModel
+from app.schemas.chat import ChatRequest
 from app.services.rag_service import chat_service_stream
-from utils.response import success
 
 chat_router = APIRouter(prefix="/chat", tags=["chat"])
 
