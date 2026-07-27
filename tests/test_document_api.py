@@ -99,7 +99,7 @@ def test_delete_document_api():
             "kb_name": kb_name
         }
     )
-    print("delete:", delete_response.json())
+
     assert delete_response.status_code == 200
 
     files_response = client.get(
@@ -108,7 +108,6 @@ def test_delete_document_api():
             "kb_name": kb_name
         }
     )
-    print("files:", files_response.json())
 
     files = files_response.json()["data"]
 

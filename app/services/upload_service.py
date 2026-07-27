@@ -138,6 +138,18 @@ async def get_all_files(
                 "filename": doc.filename,
                 "file_path": doc.file_path,
                 "created_at": doc.created_at,
+                "chunks": [
+                    {
+                        "id": chunk.id,
+                        "content": chunk.content,
+                        "chunk_index": chunk.chunk_index,
+                        "metadata": chunk.metadata_info
+                    }
+                    for chunk in chunk_crud.get_chunks_by_document_id(
+                        db,
+                        doc.id
+                    )
+                ]
             }
             for doc in documents
         ]
@@ -170,6 +182,12 @@ async def file_delete(db,
         raise DocumentNotFound(
             message="文档不存在"
         )
+
+    # 删除 chunk
+    chunk_crud.delete_chunks_by_document_id(
+        db,
+        document_id=doc_id
+    )
 
     # 删除数据库中文档
     document_crud.delete_document(
