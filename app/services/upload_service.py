@@ -24,9 +24,7 @@ async def upload(db, file, kb_name):
             kb_name
         )
     # 获取上传文件路径
-    kb_path = kdg.get_path(
-        kb_name
-    )
+    kb_path = kdg.get_path(kb_name)
 
     upload_dir = os.path.join(
         kb_path,
@@ -87,12 +85,9 @@ async def upload(db, file, kb_name):
         result["chunks"],
         chunk_ids=chunk_ids,
         doc_id=str(doc.id),
-        metadata=metadata
     )
 
-    store.save(
-        kb_path
-    )
+    store.save(kb_path)
 
     return {
         "filename": file.filename,
@@ -174,9 +169,7 @@ async def file_delete(db,
         kb_name
     )
 
-    kb_path = kdg.get_path(
-        kb_name
-    )
+    kb_path = kdg.get_path(kb_name)
 
     # 删除向量
     success_flag = store.delete(

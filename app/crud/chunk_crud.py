@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.models import Document
 from app.models.chunk import Chunk
 
 
@@ -82,4 +83,17 @@ def delete_chunks_by_document_id(
     return True
 
 
+def get_all_chunks_by_kb(
+        db: Session,
+        kb_id
+):
+    chunks = (
+        db.query(Chunk)
+        .join(Document)
+        .filter(
+            Document.kb_id == kb_id
+        )
+        .all()
+    )
 
+    return chunks
