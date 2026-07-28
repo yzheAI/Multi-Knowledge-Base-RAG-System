@@ -1,10 +1,14 @@
 from datetime import datetime
 from pathlib import Path
 import json
+
+from app.database.session import SessionLocal
 from app.evaluation.evaluator import RetrieverEvaluator
 from app.config import JSON_PATH, SAVE_JSON_PATH
 from app.retriever.retriever_adapter import RetrieverAdapter
 from app.core.container import container
+
+db = SessionLocal()
 
 
 evaluator = RetrieverEvaluator(
@@ -24,14 +28,17 @@ h_b_retriever = RetrieverAdapter(
 )
 
 result_faiss = evaluator.evaluate(
+    db,
     f_retriever,
 )
 
 result_bm25 = evaluator.evaluate(
+    db,
     b_retriever,
 )
 
 result_hybrid = evaluator.evaluate(
+    db,
     h_b_retriever,
 )
 

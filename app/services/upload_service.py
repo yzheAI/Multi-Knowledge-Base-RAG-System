@@ -103,11 +103,11 @@ async def search_files(db, query: str, kb_name):
         db
     )
 
-    query_embedding = get_embedding(query)
-
-    result = store.search(
-        query_embedding,
-        top_k=SEARCH_TOP_K
+    result = container.hybrid_retriever.retrieve(
+        db,
+        query,
+        kb_name,
+        SEARCH_TOP_K
     )
     return result
 

@@ -26,6 +26,9 @@ class VectorStoreManager:
                 name=kb_name,
             )
 
+            if kb is None:
+                return None
+
             store.load(
                 f"{kb_path}/faiss.index",
                 kb_id=kb.id,

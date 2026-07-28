@@ -1,6 +1,6 @@
 {
     "model": "bge-reranker-base",
-    "time": "2026-07-22 14:26:14",
+    "time": "2026-07-28 18:13:03",
     "results": {
         "faiss": {
             "total": 13,

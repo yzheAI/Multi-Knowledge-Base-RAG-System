@@ -60,7 +60,7 @@ class BM25Retriever(BaseRetriever):
 
             if filters is not None:
                 matched = all(
-                    item["metadata"].get(k) == v
+                    chunk.metadata_info.get(k) == v
                     for k, v in filters.items()
                 )
 

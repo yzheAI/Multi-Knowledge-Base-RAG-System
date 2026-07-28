@@ -1,3 +1,4 @@
+from app.crud import chunk_crud
 from app.embedding.embedding import get_embedding
 from app.exceptions.exceptions import KnowledgeBaseEmptyError
 from app.retriever.base import BaseRetriever
@@ -30,9 +31,51 @@ class FaissRetriever(BaseRetriever):
             query
         )
 
-        result = store.search(
+        hits = store.search(
             embedding,
             top_k,
         )
 
-        return result
+        chunk_ids = [
+            h["chunk_id"]
+            for h in hits
+        ]
+
+        chunks = chunk_crud.get_chunks_by_ids(
+            db,
+            chunk_ids,
+        )
+
+        chunk_map = {
+            chunk.id: chunk
+            for chunk in chunks
+        }
+
+        results = []
+
+        for hit in hits:
+            chunk = chunk_map.get(
+                hit["chunk_id"]
+            )
+
+            if chunk is None:
+                continue
+
+            if filters is not None:
+                matched = all(
+                    chunk.metadata_info.get(k) == v
+                    for k, v in filters.items()
+                )
+
+                if not matched:
+                    continue
+
+            results.append({
+                "text": chunk.content,
+                "chunk_id": chunk.id,
+                "score": hit["score"],
+                "source": "faiss",
+                "metadata": chunk.metadata_info
+            })
+
+        return results

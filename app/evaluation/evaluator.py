@@ -6,7 +6,7 @@ class RetrieverEvaluator:
         with open(dataset_path, "r", encoding="utf-8") as f:
             self.dataset = json.load(f)
 
-    def evaluate(self, retriever):
+    def evaluate(self, db, retriever):
         recall_1 = 0
         recall_3 = 0
         recall_5 = 0
@@ -16,6 +16,7 @@ class RetrieverEvaluator:
 
         for item in self.dataset:
             results = retriever.search(
+                db,
                 item["question"],
                 kb_name=item["kb_name"],
                 top_k=5

@@ -62,7 +62,7 @@ class HybridRetriever(BaseRetriever):
             )
             if chunk:
                 doc["text"] = chunk.content
-                doc["metadata"] = chunk.metadata
+                doc["metadata"] = chunk.metadata_info
 
         results = self.reranker.rank(
             query,
