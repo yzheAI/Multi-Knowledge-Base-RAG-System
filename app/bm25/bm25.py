@@ -14,20 +14,24 @@ class BM25Store:
             self,
             documents: list[dict]
     ):
-        self.ids = [
+        new_ids = [
             doc["chunk_id"]
             for doc in documents
         ]
 
-        texts = [
+        new_texts = [
             doc["text"]
             for doc in documents
         ]
 
-        self.tokenizer = [
-            list(jieba.cut(text))
-            for text in texts
-        ]
+        self.ids.extend(new_ids)
+
+        self.tokenizer.extend(
+            [
+                list(jieba.cut(text))
+                for text in new_texts
+            ]
+        )
 
         self.bm25 = BM25Okapi(
             self.tokenizer,
@@ -101,3 +105,33 @@ class BM25Store:
                 self.ids = obj['ids']
 
         return True
+
+    def delete_documents(
+            self,
+            chunk_ids: list[int]
+    ):
+        remain = [
+            (id_, token)
+            for id_, token in zip(
+                self.ids,
+                self.tokenizer
+            )
+            if id_ not in chunk_ids
+        ]
+
+        self.ids = [
+            x[0]
+            for x in remain
+        ]
+
+        self.tokenizer = [
+            x[1]
+            for x in remain
+        ]
+
+        if self.tokenizer:
+            self.bm25 = BM25Okapi(
+                self.tokenizer,
+            )
+        else:
+            self.bm25 = None

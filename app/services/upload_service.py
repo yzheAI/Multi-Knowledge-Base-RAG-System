@@ -57,7 +57,7 @@ async def upload(db, file, kb_name):
         filename=file.filename,
         file_path=file_path,
     )
-
+    # 构建metadata，存入chunks，上传至SQL
     metadata = result["metadata"]
 
     metadata.update({
@@ -71,7 +71,7 @@ async def upload(db, file, kb_name):
         chunks=result["chunks"],
         metadata=metadata
     )
-
+    # 获取chunk.id，使用faiss存向量
     chunk_ids = [
         chunk.id
         for chunk in chunks
@@ -84,7 +84,6 @@ async def upload(db, file, kb_name):
         result["vectors"],
         result["chunks"],
         chunk_ids=chunk_ids,
-        doc_id=str(doc.id),
     )
 
     store.save(kb_path)
@@ -101,9 +100,6 @@ async def search_files(query: str, kb_name):
     store = container.vector_manager.get_store(
         kb_name
     )
-
-    if not store.data:
-        raise KnowledgeBaseEmptyError()
 
     query_embedding = get_embedding(query)
 
@@ -157,10 +153,11 @@ async def get_all_files(
     }
 
 
-async def file_delete(db,
-                      doc_id: int,
-                      kb_name: str
-                      ):
+async def file_delete(
+        db,
+        doc_id: int,
+        kb_name: str
+):
     kdg = KnowledgeManager(
         KNOWLEDGE_BASE_PATH
     )
@@ -173,8 +170,9 @@ async def file_delete(db,
 
     # 删除向量
     success_flag = store.delete(
-        str(doc_id),
-        kb_path
+        doc_id,
+        kb_path,
+        db
     )
 
     if not success_flag:
@@ -191,7 +189,7 @@ async def file_delete(db,
     # 删除数据库中文档
     document_crud.delete_document(
         db,
-        doc_id
+        doc_id,
     )
 
     return success_flag

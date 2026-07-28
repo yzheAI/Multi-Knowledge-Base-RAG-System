@@ -9,11 +9,9 @@ from app.crud import chunk_crud
 class VectorStore:
 
     def __init__(self, dim: int):
-        # IDMap 包装
+        # IDMap 包装，只管理 index 和 bm25
         base_index = faiss.IndexFlatIP(dim)
         self.index = faiss.IndexIDMap(base_index)
-
-        self.next_id = 0  # 全局唯一ID分配器的状态变量,生成起点
 
         self.bm25 = BM25Store()
 
@@ -23,7 +21,6 @@ class VectorStore:
             embeddings,
             texts,
             chunk_ids,
-            doc_id,
     ):
         embeddings = np.array(
             embeddings
@@ -33,7 +30,7 @@ class VectorStore:
             embeddings = embeddings.reshape(1, -1)
 
         # 索引范围
-        ids = np.arange(
+        ids = np.array(
             chunk_ids
         ).astype("int64")
 
@@ -43,6 +40,7 @@ class VectorStore:
             ids
         )  # 存入 list[list[float]] 和 list[int]，每个向量对应一个序号
 
+        # 存入documents，方便传入bm25
         documents = [
             {
                 "chunk_id": int(i),
@@ -50,14 +48,13 @@ class VectorStore:
             }
             for i, text in zip(ids, texts)
         ]
-
+        # 存入bm25
         self.bm25.add_documents(documents)
 
     def search(
             self,
             query_embedding,
             top_k,
-            filters: dict | None = None
     ):
         query_embedding = np.array(
             [query_embedding]
@@ -99,11 +96,10 @@ class VectorStore:
     def load(
             self,
             index_path,
-            kb_path,
             kb_id,
             db
     ):
-
+        self.bm25 = BM25Store()
         if os.path.exists(index_path):
 
             self.index = faiss.read_index(
@@ -127,14 +123,32 @@ class VectorStore:
 
     def delete(
             self,
-            chunk_id,
-            kb_path
+            doc_id,
+            kb_path,
+            db
     ):
+        chunks = chunk_crud.get_chunks_by_document_id(
+            db,
+            doc_id
+        )
+
+        chunk_ids = [
+            chunk.id
+            for chunk in chunks
+        ]
+
+        if not chunk_ids:
+            return False
+
         ids_array = np.array(
-            chunk_id
+            chunk_ids
         ).astype("int64")
 
         self.index.remove_ids(ids_array)
+
+        self.bm25.delete_documents(
+            chunk_ids
+        )
         # 保存索引
         self.save(kb_path)
         return True
