@@ -8,7 +8,7 @@ from app.core.container import container
 memory = ConversationMemory()
 
 
-async def chat_service_stream(query: str, kb_name, filters=None):
+async def chat_service_stream(db, query: str, kb_name, filters=None):
 
     history = build_history(memory)
 
@@ -18,6 +18,7 @@ async def chat_service_stream(query: str, kb_name, filters=None):
         )
 
     contexts = container.hybrid_retriever.retrieve(
+        db,
         query,
         kb_name,
         top_k=SEARCH_TOP_K,

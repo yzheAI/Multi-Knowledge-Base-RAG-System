@@ -1,3 +1,4 @@
+from app.crud import chunk_crud
 from app.exceptions.exceptions import KnowledgeBaseEmptyError
 from app.retriever.base import BaseRetriever
 
@@ -11,20 +12,22 @@ class BM25Retriever(BaseRetriever):
 
     def retrieve(
             self,
+            db,
             query: str,
             kb_name: str,
             top_k=5,
             filters=None
     ):
         store = self.vector_manager.get_store(
-            kb_name
+            kb_name,
+            db
         )
 
         if store is None:
             raise KnowledgeBaseEmptyError(
                 "知识库不存在"
             )
-
+        # 查找到最符合的chunks信息
         hits = store.bm25.search(
             query,
             top_k
@@ -32,12 +35,27 @@ class BM25Retriever(BaseRetriever):
 
         results = []
 
+        chunk_ids = [
+            hit["chunk_id"]
+            for hit in hits
+        ]
+
+        chunks = chunk_crud.get_chunks_by_ids(
+            db,
+            chunk_ids
+        )
+
+        chunk_map = {
+            chunk.id: chunk
+            for chunk in chunks
+        }
+
         for hit in hits:
-            idx = hit["chunk_id"]
+            chunk = chunk_map.get(
+                hit["chunk_id"]
+            )
 
-            item = store.data.get(idx)
-
-            if item is None:
+            if chunk is None:
                 continue
 
             if filters is not None:
@@ -50,11 +68,10 @@ class BM25Retriever(BaseRetriever):
                     continue
 
             results.append({
-                "text": item["text"],
-                "doc_id": item["doc_id"],
-                "distance": hit["score"],
-                "chunk_id": hit["chunk_id"],
-                "metadata": item["metadata"]
+                "text": chunk.content,
+                "chunk_id": chunk.id,
+                "score": hit["score"],
+                "source": "bm25",
+                "metadata": chunk.metadata_info
             })
-
         return results

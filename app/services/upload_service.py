@@ -78,7 +78,8 @@ async def upload(db, file, kb_name):
     ]
 
     store = container.vector_manager.get_store(
-        kb_name
+        kb_name,
+        db
     )
     store.add(
         result["vectors"],
@@ -96,9 +97,10 @@ async def upload(db, file, kb_name):
     }
 
 
-async def search_files(query: str, kb_name):
+async def search_files(db, query: str, kb_name):
     store = container.vector_manager.get_store(
-        kb_name
+        kb_name,
+        db
     )
 
     query_embedding = get_embedding(query)
@@ -163,7 +165,8 @@ async def file_delete(
     )
 
     store = container.vector_manager.get_store(
-        kb_name
+        kb_name,
+        db
     )
 
     kb_path = kdg.get_path(kb_name)

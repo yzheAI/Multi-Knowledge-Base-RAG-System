@@ -97,3 +97,16 @@ def get_all_chunks_by_kb(
     )
 
     return chunks
+
+
+def get_chunks_by_ids(
+        db: Session,
+        chunk_ids: list[int]
+):
+    return (
+        db.query(Chunk)
+        .filter(
+            Chunk.id.in_(chunk_ids)
+        )
+        .all()
+    )

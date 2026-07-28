@@ -28,10 +28,12 @@ async def upload_file(
 
 @upload_router.post('/search', response_model=ResponseModel)
 async def read_file(
+        db: Session = Depends(get_db),
         query: str = Query(...),
         kb_name: str = Query()
 ):
     result = await search_files(
+        db,
         query,
         kb_name
     )

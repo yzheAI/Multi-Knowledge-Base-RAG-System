@@ -12,13 +12,15 @@ class FaissRetriever(BaseRetriever):
 
     def retrieve(
             self,
+            db,
             query,
             kb_name,
             top_k=5,
             filters=None
     ):
         store = self.vector_manager.get_store(
-            kb_name
+            kb_name,
+            db
         )
 
         if store is None:
@@ -31,7 +33,6 @@ class FaissRetriever(BaseRetriever):
         result = store.search(
             embedding,
             top_k,
-            filters
         )
 
         return result

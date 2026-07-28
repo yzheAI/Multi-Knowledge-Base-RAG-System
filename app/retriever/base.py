@@ -9,6 +9,7 @@ class BaseRetriever(ABC):
     @abstractmethod
     def retrieve(
             self,
+            db,
             query: str,
             kb_name: str,
             top_k: int = 5,

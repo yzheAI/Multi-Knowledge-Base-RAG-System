@@ -119,7 +119,8 @@ class VectorStore:
                 "text": chunk.content
             })
 
-        self.bm25.add_documents(documents)
+        if documents:
+            self.bm25.add_documents(documents)
 
     def delete(
             self,

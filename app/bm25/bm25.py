@@ -14,6 +14,12 @@ class BM25Store:
             self,
             documents: list[dict]
     ):
+        if not documents:
+            self.bm25 = None
+            self.ids = []
+            self.tokenizer = []
+            return
+
         new_ids = [
             doc["chunk_id"]
             for doc in documents
