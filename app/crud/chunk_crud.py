@@ -106,7 +106,7 @@ def get_chunks_by_ids(
     return (
         db.query(Chunk)
         .filter(
-            Chunk.id.in_(chunk_ids)  # .in_(xxx) 表示字段值存在于给定列表
+            Chunk.id.in_(chunk_ids)  # 批量查询指定chunk_id的数据
         )
         .all()
     )

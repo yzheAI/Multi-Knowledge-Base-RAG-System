@@ -1,19 +1,24 @@
 # AI知识库助手（Multi-Knowledge Base RAG System）
 
 ## 1. 项目简介
-基于 FastAPI 的多知识库系统RAG（Retrieval Augmented Generation）问答系统，实现文档上传、PDF/TXT解析、chunk切分的数据处理流程。
-并通过 SentenceTransformer 生成向量表示，使用 FAISS 构建向量索引，
-系统支持多个独立知识库管理，每个知识库拥有独立的数据目录、FAISS向量索引以及BM25关键词索引，实现知识库之间的数据隔离。
-在检索阶段，系统通过 SentenceTransformer 生成归一化 embedding，
-使用 FAISS IndexFlatIP 实现基于 cosine similarity 的语义检索，
-同时结合 BM25 关键词检索进行 Hybrid Retrieval，
+基于 FastAPI 的多知识库系统RAG（Retrieval Augmented Generation）问答系统，
+实现文档上传、PDF/TXT解析、chunk切分、向量化、检索增强生成的完整流程。
+系统通过 SentenceTransformer 生成向量表示，
+使用 FAISS 构建向量索引，同时结合 BM25 关键词检索进行 Hybrid Retrieval，
 并使用 CrossEncoder 对候选结果进行重排序，提高检索准确性。
-并结合大语言模型（Qwen）生成最终回答，实现“检索增强生成”的完整闭环。
+
+系统支持多个独立知识库管理，每个知识库拥有独立的数据目录和检索索引，
+同时使用 MySQL管理 知识库、文档、chunk等数据，
+实现知识库之间的数据隔离以及检索索引与业务数据的分离。
+
+在生成阶段，系统结合大语言模型（Qwen），
+根据检索结果构建上下文并生成最终回答，实现“检索增强生成”的完整闭环。
 
 
 ## 2. 系统架构
 系统采用模块化 RAG（Retrieval Augmented Generation）架构，
-整体由文档处理层、知识库管理层、检索层和生成层组成。
+整体由文档处理层、数据存储层、检索层和生成层组成。
+
 ```text
                          User
                           |
@@ -25,35 +30,39 @@
               |                       |
       PDF/TXT Parsing                |
               |
-      Sentence Chunk Split
+      Chunk Split
               |
       Embedding Generation
               |
               |
-       Knowledge Base Layer
+       Database Layer
               |
-       VectorStoreManager
-              |
-    +---------+---------+
-    |                   |
- Knowledge Base A   Knowledge Base B
-    |                   |
- FAISS + BM25      FAISS + BM25
-    |
-    |
- Hybrid Retrieval
-    |
- Metadata Filter
-    |
- Deduplication
-    |
- CrossEncoder Rerank
-    |
- Context Construction
-    |
- Qwen LLM
-    |
- Answer + Source Tracking
+     +--------+--------+
+     |                 |
+Knowledge Base A   Knowledge Base B
+     |                 |
+ MySQL Metadata   MySQL Metadata
+     |
+ VectorStoreManager
+     |
+ +---+----------------+
+ |                    |
+FAISS Index        BM25 Index
+ |
+ |
+Hybrid Retrieval
+ |
+Metadata Filter
+ |
+Deduplication
+ |
+CrossEncoder Rerank
+ |
+Context Construction
+ |
+Qwen LLM
+ |
+Answer + Source Tracking
 ```
 ## 3. 核心功能
 
@@ -77,6 +86,13 @@
 - 每个知识库独立维护 BM25 Index
 - VectorStoreManager 管理不同知识库实例
 - 知识库数据持久化加载
+- 数据库之间数据隔离
+
+### 数据管理
+- MySQL存储知识库信息
+- MySQL存储文档信息
+- MySQL存储chunk文本和metadata
+- FAISS/BM25作为检索索引
 
 ### LLM问答
 - 基于检索内容的 LLM 问答（Qwen）
@@ -92,6 +108,9 @@
 - MRR (Mean Reciprocal Rank)
 - pytest 测试
 - 数据持久化
+- 模块化FastAPI项目结构
+- Docker容器化部署
+- 环境变量管理
 
 ## 4. 技术栈
 - FastAPI
@@ -100,12 +119,14 @@
 - SentenceTransformers（文本向量化）
 - FAISS（向量检索） 
 - OpenAI Compatible API（Qwen）
-- Pickle（本地持久化）
+- Pickle（BM25持久化）
 - rank-bm25
 - Retriever Evaluation 测试体系
 - Pydantic
 - BGE CrossEncoder Reranker
 - Recall@K
+- SQLAlchemy
+- MySQL
 
 
 ## 5. 项目结构
@@ -114,19 +135,25 @@
 
 app/
 ├── api/                 # API接口层
-├── services/            # 业务逻辑
+├── bm25/                # BM25Store关键词检索
+├── core/                # 检索服务依赖容器
+├── crud/                # 数据访问层
+├── database/            # 数据库连接
 ├── document/            # 文档解析与Pipeline
 ├── embedding/           # Embedding模块
+├── evaluation/          # 检索评估
+├── exceptions/          # 全局异常处理
+├── knowledge_base/      # 知识库管理
+├── llm/                 # Qwen调用
+├── memory/              # 多轮会话记忆
+├── models/              # 数据模型层
+├── prompts/             # Prompt构建
 ├── retriever/           # FAISS、BM25、Rerank、Retriever
+├── schemas/             # Pydantic模型
+├── services/            # 业务逻辑
 ├── vector_store/        # 向量存储与管理
 │   ├── faiss_store.py
 │   └── store_manager.py
-├── knowledge_base/      # 知识库管理
-├── evaluation/          # 检索评估
-├── schemas/             # Pydantic模型
-├── exceptions/          # 全局异常处理
-├── llm/                 # Qwen调用
-├── prompts/             # Prompt构建
 └── config.py            # 项目配置
 ```
 
@@ -141,14 +168,12 @@ app/
 
 - FAISS索引
 - BM25索引
-- 文档数据
-- metadata
+- MySQL中的业务数据隔离
 
 避免不同知识库之间的数据污染。
 
 VectorStoreManager 通过 kb_name 管理不同 VectorStore 实例，
-每个实例内部维护对应知识库自己的 FAISS Index、
-BM25 Index 和 Metadata 数据。
+每个实例内部维护对应知识库自己的 FAISS Index 和 BM25 Index。
 
 
 ### 6.2 Hybrid Retrieval
@@ -161,6 +186,10 @@ BM25 Index 和 Metadata 数据。
 
 Embedding生成
 
++
+
+关键词分词
+
 ↓
 
 FAISS语义检索
@@ -168,6 +197,14 @@ FAISS语义检索
 +
 
 BM25关键词检索
+
+↓
+
+返回chunk_id
+
+↓
+
+MySQL查询Chunk文本和Metadata
 
 ↓
 
@@ -201,6 +238,48 @@ BM25	     0.615	       1.0	      1.0	   0.808
 Hybrid	     0.769  	   1.0	      1.0	   0.885
 
 
+
+### 6.4 数据存储设计
+系统采用：MySQL + FAISS + BM25
+
+混合存储架构。
+
+MySQL负责：
+- Knowledge Base信息
+- Document信息
+- Chunk文本
+- Metadata
+
+FAISS负责：
+- Embedding向量索引
+
+BM25负责：
+- 关键词检索索引
+
+#### 数据流：
+Document
+
+↓
+
+Chunk
+
+↓
+
+MySQL保存文本和Metadata以及chunk_id
+
+↓
+
+生成embedding
+
+↓
+
+FAISS保存(vector, chunk_id)
+
+↓
+
+BM25保存(keyword index, chunk_id)
+
+
 ## 7. Architecture Evolution
 ### V1 Basic RAG
 
@@ -216,9 +295,15 @@ Hybrid	     0.769  	   1.0	      1.0	   0.885
 
 升级:
 - 多知识库隔离
+- MySQL数据持久化
 - FAISS + BM25 Hybrid Retrieval
 - CrossEncoder Rerank
 - Retriever Evaluation
+- Docker部署
+- pytest测试
+- 数据库chunk_id作为索引唯一标识
+- Retriever抽象接口设计
+- FAISS/BM25统一结果结构
 
 
 
@@ -229,14 +314,19 @@ data/
     ├── copper_based/
     │   ├── files/
     │   ├── faiss.index
-    │   ├── texts.pkl
     │   └── bm25.pkl
+    │   
     │
     └── medical/
         ├── files/
         ├── faiss.index
-        ├── texts.pkl
         └── bm25.pkl
+
+MySQL：
+    Knowledge_base
+    document
+    chunk
+        
 ```
 
 ## 9. 启动方式
@@ -252,9 +342,9 @@ uvicorn main:app --reload
 - [x] Retriever Recall Evaluation
 - [x] 多知识库管理
 - [x] 对话历史（Conversation Memory）
-- [ ] Docker 部署
+- [x] Docker 部署
 - [ ] Redis缓存与任务队列
-- [ ] MySQL元数据管理
+- [x] MySQL数据持久化
 - [ ] Hybrid Score Fusion
 - [ ] Elasticsearch 检索
 - [ ] Milvus / Chroma 向量数据库
