@@ -41,28 +41,6 @@ class HybridRetriever(BaseRetriever):
             faiss_docs,
             bm25_docs
         )
-        # 根据chunk_id补充文本
-        chunk_ids = [
-            doc["chunk_id"]
-            for doc in docs
-        ]
-
-        chunks = chunk_crud.get_chunks_by_ids(
-            db,
-            chunk_ids,
-        )
-
-        chunk_map = {
-            chunk.id: chunk
-            for chunk in chunks
-        }
-        for doc in docs:
-            chunk = chunk_map.get(
-                doc["chunk_id"],
-            )
-            if chunk:
-                doc["text"] = chunk.content
-                doc["metadata"] = chunk.metadata_info
 
         results = self.reranker.rank(
             query,

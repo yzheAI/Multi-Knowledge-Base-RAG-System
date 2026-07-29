@@ -1,8 +1,6 @@
 from sqlalchemy.orm import Session
-from app.crud import document_crud
 from app.core.container import container
-from app.embedding.embedding import get_embedding
-from app.crud import knowledge_base, chunk_crud
+from app.crud import knowledge_base
 import uuid
 
 

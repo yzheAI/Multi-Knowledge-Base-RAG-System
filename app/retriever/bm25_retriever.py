@@ -1,6 +1,6 @@
-from app.crud import chunk_crud
 from app.exceptions.exceptions import KnowledgeBaseEmptyError
 from app.retriever.base import BaseRetriever
+from app.retriever.utils import build_retriever_results
 
 
 class BM25Retriever(BaseRetriever):
@@ -33,45 +33,11 @@ class BM25Retriever(BaseRetriever):
             top_k
         )
 
-        results = []
-
-        chunk_ids = [
-            hit["chunk_id"]
-            for hit in hits
-        ]
-
-        chunks = chunk_crud.get_chunks_by_ids(
+        results = build_retriever_results(
             db,
-            chunk_ids
+            hits,
+            "bm25",
+            filters
         )
 
-        chunk_map = {
-            chunk.id: chunk
-            for chunk in chunks
-        }
-
-        for hit in hits:
-            chunk = chunk_map.get(
-                hit["chunk_id"]
-            )
-
-            if chunk is None:
-                continue
-
-            if filters is not None:
-                matched = all(
-                    chunk.metadata_info.get(k) == v
-                    for k, v in filters.items()
-                )
-
-                if not matched:
-                    continue
-
-            results.append({
-                "text": chunk.content,
-                "chunk_id": chunk.id,
-                "score": hit["score"],
-                "source": "bm25",
-                "metadata": chunk.metadata_info
-            })
         return results

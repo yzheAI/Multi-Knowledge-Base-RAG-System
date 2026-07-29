@@ -1,7 +1,7 @@
-from app.crud import chunk_crud
 from app.embedding.embedding import get_embedding
 from app.exceptions.exceptions import KnowledgeBaseEmptyError
 from app.retriever.base import BaseRetriever
+from app.retriever.utils import build_retriever_results
 
 
 class FaissRetriever(BaseRetriever):
@@ -19,11 +19,11 @@ class FaissRetriever(BaseRetriever):
             top_k=5,
             filters=None
     ):
+        # 通过向量库查找到最相近的向量内容：hits
         store = self.vector_manager.get_store(
             kb_name,
             db
         )
-
         if store is None:
             raise KnowledgeBaseEmptyError("知识库不存在")
 
@@ -36,46 +36,11 @@ class FaissRetriever(BaseRetriever):
             top_k,
         )
 
-        chunk_ids = [
-            h["chunk_id"]
-            for h in hits
-        ]
-
-        chunks = chunk_crud.get_chunks_by_ids(
+        results = build_retriever_results(
             db,
-            chunk_ids,
+            hits,
+            "faiss",
+            filters
         )
-
-        chunk_map = {
-            chunk.id: chunk
-            for chunk in chunks
-        }
-
-        results = []
-
-        for hit in hits:
-            chunk = chunk_map.get(
-                hit["chunk_id"]
-            )
-
-            if chunk is None:
-                continue
-
-            if filters is not None:
-                matched = all(
-                    chunk.metadata_info.get(k) == v
-                    for k, v in filters.items()
-                )
-
-                if not matched:
-                    continue
-
-            results.append({
-                "text": chunk.content,
-                "chunk_id": chunk.id,
-                "score": hit["score"],
-                "source": "faiss",
-                "metadata": chunk.metadata_info
-            })
 
         return results

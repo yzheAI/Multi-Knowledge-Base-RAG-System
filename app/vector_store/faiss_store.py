@@ -48,7 +48,7 @@ class VectorStore:
             }
             for i, text in zip(ids, texts)
         ]
-        # 存入bm25
+
         self.bm25.add_documents(documents)
 
     def search(
@@ -99,7 +99,7 @@ class VectorStore:
             kb_id,
             db
     ):
-        self.bm25 = BM25Store()
+        self.bm25 = BM25Store()  # 初始化bm25，防止多次load
         if os.path.exists(index_path):
 
             self.index = faiss.read_index(
@@ -128,6 +128,7 @@ class VectorStore:
             kb_path,
             db
     ):
+        # 取出要删除的chunks，得到ids进行向量删除
         chunks = chunk_crud.get_chunks_by_document_id(
             db,
             doc_id

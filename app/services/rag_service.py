@@ -3,7 +3,6 @@ from app.llm.qwen import chat_with_qwen_stream
 from app.memory.conversation_memory import ConversationMemory
 from app.prompts.history_builder import build_history
 from app.prompts.rag_prompt import build_prompt
-from app.schemas.chat import SourceResponse
 from app.core.container import container
 memory = ConversationMemory()
 

@@ -3,7 +3,6 @@ from datetime import datetime
 from app.knowledge_base.manager import KnowledgeManager
 from app.config import SEARCH_TOP_K, KNOWLEDGE_BASE_PATH
 from app.document.pipeline import process_document
-from app.embedding.embedding import get_embedding
 from app.exceptions.exceptions import DocumentNotFound, KnowledgeBaseEmptyError
 from app.core.container import container
 from app.crud import document_crud, knowledge_base, chunk_crud
@@ -23,7 +22,7 @@ async def upload(db, file, kb_name):
             db,
             kb_name
         )
-    # 获取上传文件路径
+    # 保存文件到知识库目录
     kb_path = kdg.get_path(kb_name)
 
     upload_dir = os.path.join(
@@ -40,17 +39,17 @@ async def upload(db, file, kb_name):
         upload_dir,
         file.filename
     )
-    # 上传文档至目标文件夹
+
     with open(file_path, "wb") as f:
         content = await file.read()
         f.write(content)
 
-    # 获取信息
+    # 获取信息(chunks,vector,metadata)
     result = process_document(
         str(file_path)
     )
 
-    # 上传文档至SQL
+    # 上传文档信息至SQL
     doc = document_crud.create_document(
         db=db,
         kb_id=kb.id,
@@ -71,7 +70,7 @@ async def upload(db, file, kb_name):
         chunks=result["chunks"],
         metadata=metadata
     )
-    # 获取chunk.id，使用faiss存向量
+    # 使用数据库生成的chunk_id建立向量索引
     chunk_ids = [
         chunk.id
         for chunk in chunks
@@ -98,10 +97,6 @@ async def upload(db, file, kb_name):
 
 
 async def search_files(db, query: str, kb_name):
-    store = container.vector_manager.get_store(
-        kb_name,
-        db
-    )
 
     result = container.hybrid_retriever.retrieve(
         db,
