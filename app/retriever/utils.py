@@ -56,4 +56,4 @@ def build_retriever_results(
             "metadata": chunk.metadata_info
         })
 
-        return results
+    return results

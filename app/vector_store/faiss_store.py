@@ -124,23 +124,9 @@ class VectorStore:
 
     def delete(
             self,
-            doc_id,
+            chunk_ids,
             kb_path,
-            db
     ):
-        # 取出要删除的chunks，得到ids进行向量删除
-        chunks = chunk_crud.get_chunks_by_document_id(
-            db,
-            doc_id
-        )
-
-        chunk_ids = [
-            chunk.id
-            for chunk in chunks
-        ]
-
-        if not chunk_ids:
-            return False
 
         ids_array = np.array(
             chunk_ids

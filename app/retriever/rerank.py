@@ -12,7 +12,7 @@ def get_rerank_model():
     global rerank_model, tokenizer
 
     if rerank_model is None:
-        # tokenizer：转换为模型可理解的数字
+
         tokenizer = AutoTokenizer.from_pretrained(
             RERANK_MODEL_PATH,
             use_fast=False

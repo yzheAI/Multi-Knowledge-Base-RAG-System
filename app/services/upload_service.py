@@ -166,11 +166,24 @@ async def file_delete(
 
     kb_path = kdg.get_path(kb_name)
 
+    # 取出要删除的chunks，得到ids进行向量删除
+    chunks = chunk_crud.get_chunks_by_document_id(
+        db,
+        doc_id
+    )
+
+    chunk_ids = [
+        chunk.id
+        for chunk in chunks
+    ]
+
+    if not chunk_ids:
+        return False
+
     # 删除向量
     success_flag = store.delete(
-        doc_id,
+        chunk_ids,
         kb_path,
-        db
     )
 
     if not success_flag:

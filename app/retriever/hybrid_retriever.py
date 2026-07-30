@@ -54,9 +54,9 @@ class HybridRetriever(BaseRetriever):
         seen = set()
         docs = faiss_docs + bm25_docs
         for doc in docs:
-            doc_text = doc["chunk_id"]
-            if doc_text not in seen:
-                seen.add(doc_text)
+            doc_chunk_id = doc["chunk_id"]
+            if doc_chunk_id not in seen:
+                seen.add(doc_chunk_id)
                 result.append(doc)
 
         return result

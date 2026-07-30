@@ -15,8 +15,7 @@ async def upload_file(
         db: Session = Depends(get_db),
         file: UploadFile = File(...),
         kb_name: str = Form(...)
-):  # 表示文件上传类型，参数必须传
-    # 上传文档
+):
     result = await upload(
         db,
         file,
