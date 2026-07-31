@@ -27,3 +27,4 @@ temp.py
 
 # Local models
 /models/
+app/evaluation/results/retrieval_result.json
