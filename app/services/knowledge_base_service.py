@@ -86,10 +86,10 @@ async def delete_kb_service(db, kb_name):
         for doc in docs
     ]
 
-    for doc in doc_ids:
+    for doc_id in doc_ids:
         await file_delete(
             db,
-            doc.id,
+            doc_id,
             kb.name
         )
 
