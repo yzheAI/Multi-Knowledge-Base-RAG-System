@@ -29,7 +29,8 @@ async def chat_service_stream(db, query: str, kb_name, filters=None):
         {
             "chunk_id": ctx["chunk_id"],
             "source": ctx["metadata"].get("source"),
-            "score": ctx["score"]
+            "score": ctx["score"],
+            "content": ctx["text"]
         }
         for ctx in contexts
     ]
