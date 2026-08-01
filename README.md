@@ -1,5 +1,45 @@
 # AI知识库助手（Multi-Knowledge Base RAG System）
 
+项目截图
+
+1. 系统主页
+![img.png](docs/images/01-home.png)
+2. RAG问答与来源追踪
+用户输入问题后，系统经过：
+Query
+→ Embedding
+→ Hybrid Retrieval
+→ Rerank
+→ LLM Generation
+最终返回回答，同时展示原始文件来源
+![img_2.png](docs/images/02-rag-chat.png)
+3. 多知识库管理
+输入不同的kb_name，
+可展示出不同的文件列表
+同时在问答阶段只从该kb里检索
+![img_3.png](docs/images/03-multi-kb-medical.png)
+4. 文档上传
+用户上传文件后，文件被传入指定知识库，
+将文档doc以及切分出的chunks存入MySQL，
+根据数据库为chunks自动生成的Chunk_id，
+将chunk_ids和texts传入faiss，
+进行faiss、bm25存储
+![img_4.png](docs/images/04-upload-before.png)
+![img_5.png](docs/images/05-uploaded.png)
+
+
+## Highlights
+
+- 完整RAG Pipeline
+- Hybrid Retrieval(FAISS + BM25)
+- CrossEncoder Rerank 提升检索准确率
+- 多知识库隔离架构
+- MySQL + Vector Index混合存储
+- Retriever Evaluation体系
+- SSE流式生成
+- Vue3 Web Interface
+
+
 ## 1. 项目简介
 基于 FastAPI 的多知识库系统RAG（Retrieval Augmented Generation）问答系统，
 实现文档上传、PDF/TXT解析、chunk切分、向量化、检索增强生成的完整流程。
@@ -109,7 +149,7 @@ Answer + Source Tracking
 - pytest 测试
 - 数据持久化
 - 模块化FastAPI项目结构
-- Docker容器化部署
+- Docker容器化运行支持
 - 环境变量管理
 
 ## 4. 技术栈
@@ -174,7 +214,8 @@ app/
 
 VectorStoreManager 通过 kb_name 管理不同 VectorStore 实例，
 每个实例内部维护对应知识库自己的 FAISS Index 和 BM25 Index。
-
+FAISS 使用 IndexIDMap 显式绑定数据库 chunk_id，
+避免向量索引编号与业务数据编号不一致。
 
 ### 6.2 Hybrid Retrieval
 
@@ -307,6 +348,15 @@ BM25保存(keyword index, chunk_id)
 - FAISS/BM25统一结果结构
 
 
+### V3 Engineering Interface
+
+新增:
+- Vue3 前端交互界面
+- 文件管理
+- SSE流式回答
+- Source Tracking 可视化
+- 用户交互反馈
+
 
 ## 8. 数据存储结构
 ```text
@@ -325,18 +375,49 @@ data/
 
 MySQL：
     Knowledge_base
-    document
-    chunk
+      |
+      |
+   Document
+      |
+      |
+    Chunk
         
+        
+Vector Storage:
+
+FAISS
+(chunk_id -> embedding)
+
+
+BM25
+(chunk_id -> text)
+
 ```
 
 ## 9. 启动方式
 
-```bash
-uvicorn main:app --reload
+### 后端
 
+```bash
+pip install -r requirements.txt
+
+uvicorn main:app --reload
 ```
 
+### 前端
+
+```bash
+npm install
+
+npm run dev
+```
+
+### Docker
+```bash
+
+docker-compose up
+
+```
 
 ## 10. 后续计划
 
@@ -349,4 +430,34 @@ uvicorn main:app --reload
 - [ ] Hybrid Score Fusion
 - [ ] Elasticsearch 检索
 - [ ] Milvus / Chroma 向量数据库
-- [ ] 前端页面
+- [x] 前端页面
+
+
+## API Examples
+
+### Upload Document
+```http
+POST /files/
+```
+
+Content-Type: multipart/form-data
+
+Parameters:
+file: 研究背景.txt
+kb_name: copper
+
+### Chat
+```markdown
+```http
+POST /chat/chat/stream
+```
+Request:
+
+{
+ "query":"铜基复合材料的特点?",
+ "kb_name":"copper_based"
+}
+
+Response:
+
+Server-Sent Events
