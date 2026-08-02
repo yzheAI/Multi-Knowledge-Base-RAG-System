@@ -164,13 +164,14 @@ knowledgeBase
 在实现知识库删除功能时，发现直接删除 KnowledgeBase 会触发 MySQL 外键约束异常，
 
 KnowledgeBase 和 Document 存在一对多的关系，即：
- KnowledgeBase
-    |
-    |
- Document 
-    |
-    |
-  Chunk
+
+    KnowledgeBase
+        |
+        |
+    Document 
+        |
+        |
+      Chunk
 
 当 KnowledgeBase 下仍然存在 Document 记录时，MySQL不允许删除父表数据。
 
@@ -213,5 +214,139 @@ if not chunk_ids:
 当多个存储层需要进行协同操作时，需要考虑数据一致性问题，
 因此在进行删除操作时，应当按照依赖关系来执行，防止出现脏数据。
 
+
+### VectorStore缓存导致索引数据不一致问题
+在实现多知识库检索功能时，发现知识库更新或删除后，检索结果有时仍然包含旧数据。
+经过排查发现，在删除操作后，FAISS和BM25索引已经更新或删除，问题并非来自FAISS和BM25本身，
+而是由于引入了VectorStoreManager缓存后，内存中的VectorStore对象状态
+与磁盘索引文件不一致导致，也就是在删除知识库之后，没有对缓存进行处理。
+
+
+      Memory Cache
+
+    VectorStoreManager
+            |
+            |
+        VectorStore
+            |
+            |
+        FAISS Index
+        BM25 Store
+
+#### 原因分析
+为了避免每次查询都重新加载FAISS索引和BM25数据，以及更方便的进行多知识库管理，
+系统使用了 VectorStoreManager 对 VectorStore 对象进行缓存。
+
+首次访问知识库：
+
+
+    get_store(kb_name)
+        
+            ↓
+
+     创建 VectorStore
+
+            ↓
+
+          load()
+
+            ↓
+
+      读取 faiss_index
+
+            ↓
+
+        加载BM25数据
+
+            ↓
+
+         保存到缓存
+后续查询复用缓存：
+
+    cache["knowledge_base"]
+    
+            |
+            |
+        VectorStore
+    
+            |
+            |
+        FAISS Index
+        BM25 Store
+
+执行知识库删除之后，原流程只修改数据库和磁盘文件，缓存仍然存在。
+
+
+    Memory Cache
+    VectorStore
+
+        |
+        |
+
+     FAISS旧索引
+     BM25旧数据
+已删除知识库对应的旧 VectorStore 对象仍然可以被访问，内存索引与磁盘索引不一致
+
+#### 解决方案
+采用 Cache Invalidation（缓存失效）机制。
+在进行kb_delete之后，主动清理对应知识库缓存。
+增加功能：
+```python
+def remove_store(
+        self,
+        kb_name
+):
+    self.stores.pop(
+        kb_name,
+        None
+    )
+```
+
+知识库删除时，由于删除过程需要依赖VectorStore 中的 FAISS/BM25 状态，因此不能提前删除缓存。
+由于删除 Document 时需要依赖 KnowledgeBase 下的文档关系，因此数据库中的 KnowledgeBase 记录需要在相关资源清理完成后删除。
+因此最终删除流程为：
+
+
+    删除Document
+
+        ↓
+
+     删除Chunk
+
+        ↓
+
+    更新/删除FAISS索引
+    更新/删除BM25索引
+
+        ↓
+
+    删除本地索引文件
+
+        ↓
+
+    清理VectorStore缓存
+
+        ↓
+
+    删除KnowledgeBase记录
+
+
+#### 工程收益
+通过使用缓存失效机制：
+- 保证内存缓存与磁盘索引数据一致
+- 避免知识库删除后仍然存在旧检索缓存结果
+- 支持知识库动态更新
+
+#### 设计总结
+RAG系统不仅含有数据库、磁盘存储层，在一定条件下还存在缓存存储层。
+MySQL: Document + Chunk
+File System: FAISS Index + BM25 Index
+Memory: VectorStore Cache
+当多个存储层同时维护同一业务数据时，需要考虑数据一致性问题。
+因此，对于涉及索引变化的操作，需要进行：
+- 新增文档
+- 删除文档
+- 删除知识库
+- 更新索引
 
 ## 10. 后续优化

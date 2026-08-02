@@ -88,6 +88,8 @@ async def upload(db, file, kb_name):
 
     store.save(kb_path)
 
+    container.vector_manager.remove_store(kb_name)
+
     return {
         "filename": file.filename,
         "document_id": doc.id,
@@ -159,6 +161,17 @@ async def file_delete(
         KNOWLEDGE_BASE_PATH
     )
 
+    document = document_crud.get_document_by_id(
+        db,
+        doc_id
+    )
+
+    if not document:
+        raise DocumentNotFound(
+            message="文档不存在"
+        )
+    file_path = document.file_path
+
     store = container.vector_manager.get_store(
         kb_name,
         db
@@ -178,6 +191,10 @@ async def file_delete(
     ]
 
     if not chunk_ids:
+
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
         document_crud.delete_document(
             db,
             doc_id
@@ -201,6 +218,10 @@ async def file_delete(
         db,
         document_id=doc_id
     )
+
+    # 删除物理文件
+    if os.path.exists(file_path):
+        os.remove(file_path)
 
     # 删除数据库中文档
     document_crud.delete_document(

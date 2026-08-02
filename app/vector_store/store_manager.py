@@ -38,3 +38,7 @@ class VectorStoreManager:
             self.stores[kb_name] = store
 
         return self.stores[kb_name]
+
+    def remove_store(self, kb_name):
+        if kb_name in self.stores:
+            del self.stores[kb_name]

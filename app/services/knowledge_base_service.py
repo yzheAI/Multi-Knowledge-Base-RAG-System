@@ -4,8 +4,9 @@ from app.exceptions.exceptions import KnowledgeBaseEmptyError
 from app.knowledge_base.manager import KnowledgeManager
 from app.crud.document_crud import get_documents_by_kb
 import os
-
+from app.core.container import container
 from app.services.upload_service import file_delete
+import shutil
 
 
 async def create(db, kb_name):
@@ -94,5 +95,20 @@ async def delete_kb_service(db, kb_name):
         )
 
     delete_kb(db, kb.id)
+
+    kdg = KnowledgeManager(
+        KNOWLEDGE_BASE_PATH
+    )
+
+    kb_path = kdg.get_path(kb_name)
+
+    if os.path.exists(kb_path):
+        shutil.rmtree(kb_path)
+
+    # 删除缓存
+    container.vector_manager.remove_store(
+        kb.name
+    )
+
     return True
 
