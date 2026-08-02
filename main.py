@@ -9,23 +9,23 @@ from app.exceptions.handlers import register_exception_handlers
 app = FastAPI(title="AI知识库助手")
 
 # CORS配置
-# app.add_middleware(
-#     CORSMiddleware,
-#
-#     # 允许访问后端的前端地址
-#     allow_origins=[
-#         "http://localhost:5173",
-#     ],
-#
-#     # 允许前端携带 Cookie、Token、身份凭证 发起请求
-#     allow_credentials=True,
-#     allow_methods=[
-#         "*"
-#     ],
-#     allow_headers=[
-#         "*"
-#     ],
-# )
+app.add_middleware(
+    CORSMiddleware,
+
+    # 允许访问后端的前端地址
+    allow_origins=[
+        "http://localhost:5173",
+    ],
+
+    # 允许前端携带 Cookie、Token、身份凭证 发起请求
+    allow_credentials=True,
+    allow_methods=[
+        "*"
+    ],
+    allow_headers=[
+        "*"
+    ],
+)
 
 register_exception_handlers(app)
 app.include_router(upload_router)

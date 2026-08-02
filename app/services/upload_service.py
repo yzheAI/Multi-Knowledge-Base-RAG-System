@@ -178,7 +178,12 @@ async def file_delete(
     ]
 
     if not chunk_ids:
-        return False
+        document_crud.delete_document(
+            db,
+            doc_id
+        )
+
+        return True
 
     # 删除向量
     success_flag = store.delete(

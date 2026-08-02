@@ -160,4 +160,58 @@ knowledgeBase
 
 ## 9. 遇到的问题和解决方案
 
+### 知识库删除时外键约束异常
+在实现知识库删除功能时，发现直接删除 KnowledgeBase 会触发 MySQL 外键约束异常，
+
+KnowledgeBase 和 Document 存在一对多的关系，即：
+ KnowledgeBase
+    |
+    |
+ Document 
+    |
+    |
+  Chunk
+
+当 KnowledgeBase 下仍然存在 Document 记录时，MySQL不允许删除父表数据。
+
+#### 原因分析
+在删除流程中，部分Document可能不存在对应的Chunk，
+原逻辑：
+```
+if not chunk_ids:
+    return False
+```
+当文档不存在Chunk时，删除流程直接提前终止，导致Document删除流程被跳过，
+Document没有成功删除，KnowledgeBase 删除时触发外键约束异常
+
+#### 解决方案
+```
+if not chunk_ids:
+
+    document_crud.delete_document(
+        db,
+        doc_id
+    )
+
+    return True
+```
+保证在无Chunk的情况下依然可以成功删除Document
+
+#### 工程收益
+通过改正该数据库外键问题，确保了 Document 与 KnowledgeBase外键关系正确维护，
+删除流程可以支持空 Chunk 文档，提升知识库管理功能的稳定性。
+
+#### 设计总结
+知识库删除涉及到了多组数据的删除，而非简单的数据库delete操作，
+其中涉及了：
+- MySQL业务数据
+- Chunk数据
+- Document存储
+- FAISS向量索引
+- BM25关键词索引
+
+当多个存储层需要进行协同操作时，需要考虑数据一致性问题，
+因此在进行删除操作时，应当按照依赖关系来执行，防止出现脏数据。
+
+
 ## 10. 后续优化
