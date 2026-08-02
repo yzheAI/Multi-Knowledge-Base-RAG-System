@@ -69,6 +69,10 @@ chunk_id + text
 
 BM25 Keyword Index
 
+↓
+
+VectorStoreManager Cache
+
 ## 设计核心
 使用chunk_id作为检索索引唯一标识
 先将chunks存入MySQL，自动生成chunk_id，
@@ -82,7 +86,7 @@ BM25 Keyword Index
 3. 文档解析、chunk拆分、embedding生成
 4. 创建doc和chunks，存入MySQL，并获取chunk_ids
 5. 将chunk_ids和chunks提供给faiss，进行向量、索引存储
-
+6. 清理VectorStore Cache，下次访问知识库时重新加载索引。
 
 
 
@@ -100,6 +104,7 @@ BM25 Keyword Index
 - MySQL中的document/chunk数据
 - FAISS中的向量索引
 - BM25中的关键词索引
+- Cache缓存内容
 
 
 ## 流程

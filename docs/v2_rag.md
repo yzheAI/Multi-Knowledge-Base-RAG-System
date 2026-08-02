@@ -16,8 +16,11 @@ V2版本在基础 RAG 系统基础上进行了工程化升级，
 - Retriever Evaluation
 - Docker Container Deployment
 - Retriever Interface Abstraction
+- VectorStore Cache Management
+- Index and Metadata Consistency Management
 
-整体实现从简单向量检索升级为完整 RAG Pipeline。
+整体实现从简单向量检索系统升级为具备数据持久化、
+多知识库隔离、索引管理以及缓存一致性的工程化 RAG Pipeline。
 
 ## 2. Overall Architecture
 ```mermaid
@@ -83,6 +86,7 @@ Q --> Q2[Document]
 
 Q --> Q3[Chunk Text + Metadata]
 
+Q --> Q4[Chunk ID Mapping]
 
 J1 --> R[Chunk ID Mapping]
 
@@ -91,3 +95,36 @@ J2 --> R
 R --> Q3
 ```
 
+### Database Layer
+系统同时维护三类数据：
+
+MySQL:
+
+- Knowledge Base
+- Document
+- Chunk
+
+
+### Index Layer
+
+File System:
+
+- FAISS Index
+- BM25 Index
+
+
+### Cache Layer
+
+Memory:
+
+- VectorStore Instance
+
+
+三层数据通过 chunk_id 进行关联。
+
+其中：
+
+MySQL保存业务数据，
+FAISS保存向量索引，
+BM25保存关键词索引，
+VectorStoreManager负责缓存索引对象。

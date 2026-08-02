@@ -28,7 +28,7 @@ Query
 ![img_5.png](docs/images/05-uploaded.png)
 
 
-## Highlights
+## 项目亮点
 
 - 完整RAG Pipeline
 - Hybrid Retrieval(FAISS + BM25)
@@ -38,6 +38,7 @@ Query
 - Retriever Evaluation体系
 - SSE流式生成
 - Vue3 Web Interface
+- Multi-layer Resource Lifecycle Management
 
 
 ## 1. 项目简介
@@ -322,6 +323,52 @@ FAISS保存(vector, chunk_id)
 BM25保存(keyword index, chunk_id)
 
 
+### 6.5 Resource Lifecycle Management
+由于RAG系统同时包含数据库、文件系统以及内存缓存，
+因此系统需要保证不同存储层之间的数据一致性。
+本系统包含了三类存储：
+
+               RAG Resource
+
+      +-------------+-------------+
+      |             |             |
+
+    MySQL       File System    Memory Cache
+
+MySQL负责业务数据：
+- KnowledgeBase
+- Document
+- Chunk
+
+File System负责；
+- 上传文件
+- FAISS Index
+- BM25 Index
+
+Memory Cache负责：
+- VectorStore实例缓存
+
+#### 缓存失效机制
+为了避免每次查询重新加载索引，
+系统通过 VectorStoreManager 缓存不同知识库对应的 VectorStore。
+
+当知识库数据发生变化：
+- 上传文件
+- 删除文档
+- 删除知识库
+
+系统会主动清理对应的缓存。
+
+
+通过资源生命周期管理，避免出现：
+
+- 数据库已删除但文件残留
+- 索引已更新但缓存仍保存旧状态
+- 不同知识库之间资源污染
+
+提高系统稳定性和可维护性。
+
+
 ## 7. Architecture Evolution
 ### V1 Basic RAG
 
@@ -447,7 +494,7 @@ file: 研究背景.txt
 kb_name: copper
 
 ### Chat
-```markdown
+
 ```http
 POST /chat/chat/stream
 ```

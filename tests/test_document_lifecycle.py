@@ -1,28 +1,9 @@
 from fastapi.testclient import TestClient
 from main import app
 import uuid
-
+import os
 
 client = TestClient(app)
-
-
-def test_get_files_api():
-
-    kb_name = f"api_test_{uuid.uuid4().hex}"
-
-    response = client.get(
-        "/files/files_message",
-        params={
-            "kb_name": "copper_based"
-        }
-    )
-    assert response.status_code == 200
-
-    result = response.json()
-
-    assert result["code"] == 200
-    assert "count" in result["data"]
-    assert "files" in result["data"]
 
 
 def test_upload_and_get_files_api():
@@ -49,50 +30,32 @@ def test_upload_and_get_files_api():
 
     assert upload_response.status_code == 200
 
+    upload_data = upload_response.json()
+
+    doc_id = upload_data["data"]["document_id"]
+
     response = client.get(
         "/files/files_message",
         params={
             "kb_name": kb_name
         },
     )
+    assert response.status_code == 200
 
     result = response.json()
 
     assert result["data"]["count"] == 1
 
-    assert (
-        result["data"]["files"][0]["filename"]
-        ==
-        "api_text.txt"
-    )
+    document = result["data"]["files"][0]
 
+    assert document["filename"] == "api_text.txt"
 
-def test_delete_document_api():
+    # 文件存在
+    file_path = document["file_path"]
 
-    kb_name = f"api_test_{uuid.uuid4().hex}"
+    assert os.path.exists(file_path)
 
-    file = {
-        "file": (
-            "delete_test.txt",
-            "铜基复合材料是一种复合材料，具有良好的导电性能和机械性能，可以应用于工业制造领域。",
-            "text/plain"
-        )
-    }
-
-    data = {
-        "kb_name": kb_name
-    }
-
-    upload_response = client.post(
-        "/files/",
-        files=file,
-        data=data
-    )
-
-    result = upload_response.json()
-
-    doc_id = result["data"]["document_id"]
-
+    # 删除文档
     delete_response = client.delete(
         f"/files/{doc_id}",
         params={
@@ -113,5 +76,7 @@ def test_delete_document_api():
 
     assert files["count"] == 0
 
+    # 文件被删除
+    assert not os.path.exists(file_path)
 
 
