@@ -1,5 +1,8 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from datetime import datetime
+
+from sqlalchemy.orm import relationship
+
 from app.database.session import Base
 
 
@@ -17,11 +20,22 @@ class KnowledgeBase(Base):
         nullable=False
     )
 
+    owner_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
     description = Column(Text)
 
     created_at = Column(
         DateTime,
         default=datetime.utcnow
+    )
+
+    owner = relationship(
+        "User",
+        back_populates="knowledge_bases"
     )
 
 
