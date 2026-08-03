@@ -349,4 +349,114 @@ Memory: VectorStore Cache
 - 删除知识库
 - 更新索引
 
+
+### 模型生命周期管理与推理性能优化
+
+在RAG系统中，Embedding模型和CrossEncoder Reranker模型属于核心推理组件，
+在此期间需要占用大量的显存，时间开销大。
+#### 1. Lazy Loading 与 Thread-safe Initialization
+
+##### 原因分析
+在初始实现中；
+
+Embedding模型：
+```
+model = SentenceTransformer(
+    EMBEDDING_MODEL
+)
+```
+在程序启动或模块首次导入时加载模型。
+
+CrossEncoder模型：
+```
+model = AutoModelForSequenceClassification.from_pretrained(...)
+```
+初始实现中，在Reranker模块初始化阶段加载。
+
+这种方式在实现上比较简单，但是却存在着以下问题：
+- 服务启动时间过长
+- 即使没有请求也会占用内存/GPU资源
+- 多线程时可能会出现重复初始化等异常
+
+##### 解决方案
+
+为了优化模型生命周期管理，系统采用：
+- Lazy Loading
+- Thread-safe Initialization
+
+系统改为仅首次使用时加载模型，
+降低资源占用、提升服务启动速度。
+
+      请求
+ 
+       ↓
+
+    调用Embedding/Reranker
+
+       ↓
+
+    检查模型实例
+
+       ↓
+
+     加载模型
+
+       ↓
+
+    缓存模型对象
+
+核心逻辑：
+```
+if model is None:
+
+    with lock:
+
+        if model is None:
+
+            model = load_model()
+```
+
+通过双重检查锁，保证：
+- 模型只加载一次
+- 并发请求不会重复初始化
+
+#### 2. CrossEncoder Batch Inference优化
+
+初始Rerank流程：
+
+    Query + Document1
+            ↓
+           推理
+
+    Query + Document2
+            ↓
+           推理
+每个query-document二元组单独进行模型推理
+
+优化后：
+
+    [
+    (Query, Document1),
+    (Query, Document2),
+    (Query, Document3)
+    ]
+    
+              ↓
+    
+    Batch Tokenization
+    
+              ↓
+    
+    Batch Inference
+通过批量推理减少模型调用次数，提高Reranker排序效率。
+
+#### 工程收益
+通过模型生命周期优化：
+- 降低服务启动时间
+- 减少无效模型加载
+- 提高并发环境稳定性
+
+使RAG系统具备更接近生产环境的模型管理能力
+
+
 ## 10. 后续优化

@@ -39,6 +39,8 @@ Query
 - SSE流式生成
 - Vue3 Web Interface
 - Multi-layer Resource Lifecycle Management
+- Model Lifecycle Management for Embedding and Reranker
+- Batch Inference Optimization for CrossEncoder
 
 
 ## 1. 项目简介

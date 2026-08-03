@@ -1,10 +1,13 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from app.config import RERANK_MODEL_PATH, DEVICE
+import threading
 
 # 全局变量，懒加载
 rerank_model = None
 tokenizer = None
+
+rerank_lock = threading.Lock()
 
 
 def get_rerank_model():
@@ -13,18 +16,22 @@ def get_rerank_model():
 
     if rerank_model is None:
 
-        tokenizer = AutoTokenizer.from_pretrained(
-            RERANK_MODEL_PATH,
-            use_fast=False
-        )
+        with rerank_lock:
 
-        rerank_model = AutoModelForSequenceClassification.from_pretrained(
-            RERANK_MODEL_PATH
-        )
+            if rerank_model is None:
 
-        rerank_model.to(DEVICE)
-        # 只预测不训练
-        rerank_model.eval()
+                tokenizer = AutoTokenizer.from_pretrained(
+                    RERANK_MODEL_PATH,
+                    use_fast=False
+                )
+
+                rerank_model = AutoModelForSequenceClassification.from_pretrained(
+                    RERANK_MODEL_PATH
+                )
+
+                rerank_model.to(DEVICE)
+                # 只预测不训练
+                rerank_model.eval()
 
     return tokenizer, rerank_model
 
@@ -37,34 +44,33 @@ def rerank(query, docs, top_k=5):
         (query, doc["text"])
         for doc in docs
     ]
+    # 批量编码所有文本对
+    inputs = tokenizer(
+        pairs,
+        padding=True,
+        truncation=True,
+        return_tensors="pt"
+    )
+    # 张量迁移到指定设备
+    inputs = {
+        k: v.to(DEVICE)
+        for k, v in inputs.items()
+    }
 
-    scores = []
     # 禁止梯度计算
     with torch.no_grad():
 
-        for q, text in pairs:
+        # 模型预测
+        outputs = model(**inputs)
+        # 模型输出取 score
+        scores = outputs.logits.squeeze(-1)
 
-            inputs = tokenizer(
-                q,
-                text,
-                padding=True,
-                truncation=True,
-                return_tensors="pt"
-            )
-            # 放到设备
-            inputs = {
-                k: v.to(DEVICE)
-                for k, v in inputs.items()
-            }
-            # 模型预测
-            outputs = model(**inputs)
-            # 模型输出取 score
-            score = outputs.logits[0].item()
-
-            scores.append(score)
     # 保存分数
-    for i, score in enumerate(scores):
-        docs[i]["rerank_score"] = float(score)
+    for doc, score in zip(
+            docs,
+            scores
+    ):
+        doc["rerank_score"] = float(score)
 
     docs = sorted(
         docs,
