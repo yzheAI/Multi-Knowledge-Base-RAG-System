@@ -1,7 +1,8 @@
 from fastapi import Request
 from starlette.responses import JSONResponse
 from app.exceptions.exceptions import (DocumentNotFound, UnsupportedDocumentType, DocumentEmptyError, LLMTimeoutError,
-                                       LLMServiceError, KnowledgeBaseEmptyError)
+                                       LLMServiceError, KnowledgeBaseEmptyError, UserConflictError, UserNotFoundError,
+                                       PasswordError, TokenInvalidError)
 
 
 def register_exception_handlers(app):
@@ -66,6 +67,36 @@ def register_exception_handlers(app):
             }
         )
 
+    @app.exception_handler(UserConflictError)
+    async def user_conflict_handler(request: Request, exc: UserConflictError):
+        return JSONResponse(
+            status_code=409,
+            content={
+                "code": 409,
+                "message": exc.message
+            }
+        )
+
+    @app.exception_handler(UserNotFoundError)
+    async def user_not_found_handler(request: Request, exc: UserNotFoundError):
+        return JSONResponse(
+            status_code=401,
+            content={
+                "code": 401,
+                "message": exc.message
+            }
+        )
+
+    @app.exception_handler(PasswordError)
+    async def password_handler(request: Request, exc: PasswordError):
+        return JSONResponse(
+            status_code=401,
+            content={
+                "code": 401,
+                "message": exc.message
+            }
+        )
+
     @app.exception_handler(Exception)
     async def exception_handler(request: Request, exc: Exception):
         return JSONResponse(
@@ -73,6 +104,16 @@ def register_exception_handlers(app):
             content={
                 "code": 500,
                 "message": "Internal Server Error"
+            }
+        )
+
+    @app.exception_handler(TokenInvalidError)
+    async def token_invalid_handler(request: Request, exc: TokenInvalidError):
+        return JSONResponse(
+            status_code=401,
+            content={
+                "code": 401,
+                "message": exc.message
             }
         )
 

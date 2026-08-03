@@ -27,3 +27,22 @@ class KnowledgeBaseEmptyError(Exception):
     def __init__(self, message="知识库为空，请先上传文档"):
         self.message = message
 
+
+class UserConflictError(Exception):
+    def __init__(self, message="用户名已存在"):
+        self.message = message
+
+
+class PasswordError(Exception):
+    def __init__(self, message="用户名或密码错误"):
+        self.message = message
+
+
+class UserNotFoundError(Exception):
+    def __init__(self, message="用户名不存在"):
+        self.message = message
+
+
+class TokenInvalidError(Exception):
+    def __init__(self, message="Token无效"):
+        self.message = message
