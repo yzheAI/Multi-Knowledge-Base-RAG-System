@@ -20,7 +20,7 @@ data/knowledge_bases/*/texts.pkl
 data/knowledge_bases/*/bm25.pkl
 
 # User uploaded files
-data/knowledge_bases/*/files/
+data/knowledge_bases/
 
 # Temporary files
 temp.py
