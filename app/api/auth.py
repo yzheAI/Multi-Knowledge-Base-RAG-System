@@ -8,22 +8,20 @@ from app.services.auth_service import create_user_service, login_user_service
 user_router = APIRouter(prefix='/auth', tags=['认证'])
 
 
-@user_router.post('/create')
+@user_router.post('/register')
 async def create_user(request: UserCreate, db: Session = Depends(get_db)):
-    username = create_user_service(
+    user = await create_user_service(
         db=db,
         username=request.username,
         password=request.password
     )
 
-    return {
-        "username": username
-    }
+    return user
 
 
 @user_router.post('/login')
 async def login(request: UserLogin, db: Session = Depends(get_db)):
-    result = login_user_service(
+    result = await login_user_service(
         db=db,
         username=request.username,
         password=request.password

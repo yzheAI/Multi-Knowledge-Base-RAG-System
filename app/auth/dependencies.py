@@ -4,12 +4,12 @@ from sqlalchemy.orm import Session
 from app.auth.jwt import decode_token
 from app.database.session import get_db
 from app.models.user import User
-from app.exceptions.exceptions import TokenInvalidError, UserNotFoundError
-
+from app.exceptions.exceptions import TokenInvalidError, InvalidCredentialsError
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/auth/login",
 )
+
 
 def get_current_user(
         token: str = Depends(oauth2_scheme),
@@ -22,6 +22,9 @@ def get_current_user(
             "user_id"
         )
 
+        if not user_id:
+            raise TokenInvalidError()
+
     except Exception:
         raise TokenInvalidError()
 
@@ -33,7 +36,7 @@ def get_current_user(
     )
 
     if not user:
-        raise UserNotFoundError()
+        raise InvalidCredentialsError()
 
     return user
 

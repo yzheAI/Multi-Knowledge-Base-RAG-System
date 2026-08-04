@@ -8,7 +8,40 @@ import os
 client = TestClient(app)
 
 
+def get_auth_headers():
+    username = f"test_{uuid.uuid4().hex}"
+    password = "123456"
+
+    register = client.post(
+        "/auth/register",
+        json={
+            "username": username,
+            "password": password,
+        }
+    )
+
+    assert register.status_code == 200
+
+    login = client.post(
+        "/auth/login",
+        json={
+            "username": username,
+            "password": password,
+        }
+    )
+
+    assert login.status_code == 200
+
+    token = login.json()["access_token"]
+
+    return {
+        "Authorization": f"Bearer {token}",
+    }, login.json()["user_id"]
+
+
 def test_knowledge_base_lifecycle():
+
+    headers, user_id = get_auth_headers()
 
     kb_name = f"test_kb_{uuid.uuid4().hex}"
 
@@ -16,6 +49,7 @@ def test_knowledge_base_lifecycle():
         # 创建知识库
         create_response = client.post(
             "/knowledge_bases",
+            headers=headers,
             json={
                 "name": kb_name,
                 "description": "Test Knowledge Base",
@@ -27,7 +61,6 @@ def test_knowledge_base_lifecycle():
         create_data = create_response.json()
 
         assert create_data["data"]["name"] == kb_name
-
 
         file = {
             "file": (
@@ -44,7 +77,8 @@ def test_knowledge_base_lifecycle():
         upload_response = client.post(
             "/files",
             files=file,
-            data=data
+            data=data,
+            headers=headers
         )
 
         assert upload_response.status_code == 200
@@ -54,6 +88,7 @@ def test_knowledge_base_lifecycle():
             params={
                 "kb_name": kb_name
             },
+            headers=headers
         )
 
         result = response.json()
@@ -73,10 +108,14 @@ def test_knowledge_base_lifecycle():
 
         assert os.path.exists(file_path)
 
+        # 删除后缓存清理
+        assert kb_name not in container.vector_manager.stores
+
         # 获取知识库信息
 
         get_response = client.get(
-            f"/knowledge_bases/{kb_name}"
+            f"/knowledge_bases/{kb_name}",
+            headers=headers
         )
 
         assert get_response.status_code == 200
@@ -87,7 +126,10 @@ def test_knowledge_base_lifecycle():
 
         # 获取所有知识库
 
-        get_all_response = client.get("/knowledge_bases/all")
+        get_all_response = client.get(
+            "/knowledge_bases/all",
+            headers=headers
+        )
 
         assert get_all_response.status_code == 200
 
@@ -103,7 +145,8 @@ def test_knowledge_base_lifecycle():
         # 删除知识库
 
         delete_response = client.delete(
-            f"/knowledge_bases/{kb_name}"
+            f"/knowledge_bases/{kb_name}",
+            headers=headers
         )
 
         assert delete_response.status_code == 200
@@ -115,7 +158,8 @@ def test_knowledge_base_lifecycle():
         assert not os.path.exists(file_path)
 
         verify_response = client.get(
-            f"/knowledge_bases/{kb_name}"
+            f"/knowledge_bases/{kb_name}",
+            headers=headers
         )
 
         assert verify_response.status_code == 404
@@ -124,7 +168,7 @@ def test_knowledge_base_lifecycle():
             KNOWLEDGE_BASE_PATH
         )
 
-        kb_path = kdg.get_path(kb_name)
+        kb_path = kdg.get_path(kb_name, user_id)
 
         assert not os.path.exists(kb_path)
 
@@ -132,7 +176,8 @@ def test_knowledge_base_lifecycle():
         # 确保清理
         try:
             client.delete(
-                f"/knowledge_bases/{kb_name}"
+                f"/knowledge_bases/{kb_name}",
+                headers=headers
             )
         except Exception:
             pass

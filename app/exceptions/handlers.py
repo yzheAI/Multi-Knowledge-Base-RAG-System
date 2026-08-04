@@ -2,7 +2,7 @@ from fastapi import Request
 from starlette.responses import JSONResponse
 from app.exceptions.exceptions import (DocumentNotFound, UnsupportedDocumentType, DocumentEmptyError, LLMTimeoutError,
                                        LLMServiceError, KnowledgeBaseEmptyError, UserConflictError, UserNotFoundError,
-                                       PasswordError, TokenInvalidError)
+                                       PasswordError, TokenInvalidError, InvalidCredentialsError)
 
 
 def register_exception_handlers(app):
@@ -96,6 +96,25 @@ def register_exception_handlers(app):
                 "message": exc.message
             }
         )
+    @app.exception_handler(TokenInvalidError)
+    async def token_invalid_handler(request: Request, exc: TokenInvalidError):
+        return JSONResponse(
+            status_code=401,
+            content={
+                "code": 401,
+                "message": exc.message
+            }
+        )
+
+    @app.exception_handler(InvalidCredentialsError)
+    async def invalid_credentials_handler(request: Request, exc: InvalidCredentialsError):
+        return JSONResponse(
+            status_code=401,
+            content={
+                "code": 401,
+                "message": exc.message
+            }
+        )
 
     @app.exception_handler(Exception)
     async def exception_handler(request: Request, exc: Exception):
@@ -104,16 +123,6 @@ def register_exception_handlers(app):
             content={
                 "code": 500,
                 "message": "Internal Server Error"
-            }
-        )
-
-    @app.exception_handler(TokenInvalidError)
-    async def token_invalid_handler(request: Request, exc: TokenInvalidError):
-        return JSONResponse(
-            status_code=401,
-            content={
-                "code": 401,
-                "message": exc.message
             }
         )
 

@@ -1,7 +1,7 @@
 from app.crud.user_crud import get_user_by_username, create_user
 from app.auth.password import hash_password, verify_password
 from app.auth.jwt import create_access_token
-from app.exceptions.exceptions import UserConflictError, UserNotFoundError
+from app.exceptions.exceptions import UserConflictError, UserNotFoundError, InvalidCredentialsError
 
 
 async def create_user_service(db, username, password):
@@ -17,7 +17,10 @@ async def create_user_service(db, username, password):
         hashed_password
     )
 
-    return user.username
+    return {
+        "id": user.id,
+        "username": user.username
+    }
 
 
 async def login_user_service(db, username, password):
@@ -25,8 +28,11 @@ async def login_user_service(db, username, password):
     if not user:
         raise UserNotFoundError()
 
-    if not verify_password(password, user.hashed_password):
-        raise UserNotFoundError()
+    if not verify_password(
+            password,
+            user.password_hash
+    ):
+        raise InvalidCredentialsError()
 
     token = create_access_token(
         {
@@ -36,5 +42,6 @@ async def login_user_service(db, username, password):
 
     return {
         "access_token": token,
+        "user_id": user.id,
         "token_type": "bearer",
     }

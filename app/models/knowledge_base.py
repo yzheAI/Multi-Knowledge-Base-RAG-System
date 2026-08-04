@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, UniqueConstraint
 from datetime import datetime
 
 from sqlalchemy.orm import relationship
@@ -9,6 +9,14 @@ from app.database.session import Base
 class KnowledgeBase(Base):
     __tablename__ = "knowledge_base"
 
+    __table_args__ = (
+        UniqueConstraint(
+            'owner_id',
+            'name',
+            name='uq_owner_kb_name'
+        ),
+    )
+
     id = Column(
         Integer,
         primary_key=True
@@ -16,7 +24,6 @@ class KnowledgeBase(Base):
 
     name = Column(
         String(255),
-        unique=True,
         nullable=False
     )
 
@@ -38,6 +45,4 @@ class KnowledgeBase(Base):
         back_populates="knowledge_bases"
     )
 
-
-knowledge_base = KnowledgeBase()
 

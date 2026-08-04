@@ -8,22 +8,20 @@ from app.core.container import container
 from app.crud import document_crud, knowledge_base, chunk_crud
 
 
-async def upload(db, file, kb_name):
+async def upload(db, file, kb_name, owner_id):
     # 获取知识库
     kdg = KnowledgeManager(KNOWLEDGE_BASE_PATH)
 
     kb = knowledge_base.get_kb_by_name(
         db,
-        kb_name
+        kb_name,
+        owner_id
     )
 
     if not kb:
-        kb = kdg.create(
-            db,
-            kb_name
-        )
+        raise KnowledgeBaseEmptyError()
     # 保存文件到知识库目录
-    kb_path = kdg.get_path(kb_name)
+    kb_path = kdg.get_path(kb_name, owner_id)
 
     upload_dir = os.path.join(
         kb_path,
@@ -78,7 +76,8 @@ async def upload(db, file, kb_name):
 
     store = container.vector_manager.get_store(
         kb_name,
-        db
+        db,
+        owner_id
     )
     store.add(
         result["vectors"],
@@ -98,12 +97,13 @@ async def upload(db, file, kb_name):
     }
 
 
-async def search_files(db, query: str, kb_name):
+async def search_files(db, query: str, kb_name, owner_id):
 
     result = container.hybrid_retriever.retrieve(
         db,
         query,
         kb_name,
+        owner_id,
         SEARCH_TOP_K
     )
     return result
@@ -111,12 +111,14 @@ async def search_files(db, query: str, kb_name):
 
 async def get_all_files(
         db,
-        kb_name
+        kb_name,
+        owner_id
 ):
     # 获取知识库信息
     kb = knowledge_base.get_kb_by_name(
         db,
-        kb_name
+        kb_name,
+        owner_id
     )
     if not kb:
         raise KnowledgeBaseEmptyError()
@@ -155,7 +157,8 @@ async def get_all_files(
 async def file_delete(
         db,
         doc_id: int,
-        kb_name: str
+        kb_name: str,
+        owner_id: int
 ):
     kdg = KnowledgeManager(
         KNOWLEDGE_BASE_PATH
@@ -163,7 +166,8 @@ async def file_delete(
 
     document = document_crud.get_document_by_id(
         db,
-        doc_id
+        doc_id,
+        owner_id
     )
 
     if not document:
@@ -174,10 +178,11 @@ async def file_delete(
 
     store = container.vector_manager.get_store(
         kb_name,
-        db
+        db,
+        owner_id
     )
 
-    kb_path = kdg.get_path(kb_name)
+    kb_path = kdg.get_path(kb_name, owner_id)
 
     # 取出要删除的chunks，得到ids进行向量删除
     chunks = chunk_crud.get_chunks_by_document_id(
@@ -197,7 +202,8 @@ async def file_delete(
 
         document_crud.delete_document(
             db,
-            doc_id
+            doc_id,
+            owner_id
         )
 
         return True
@@ -227,6 +233,7 @@ async def file_delete(
     document_crud.delete_document(
         db,
         doc_id,
+        owner_id
     )
 
     return success_flag

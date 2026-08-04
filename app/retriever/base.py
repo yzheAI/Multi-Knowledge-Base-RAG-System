@@ -12,6 +12,7 @@ class BaseRetriever(ABC):
             db,
             query: str,
             kb_name: str,
+            owner_id: int,
             top_k: int = 5,
             filters: dict | None = None
     ) -> list[dict]:

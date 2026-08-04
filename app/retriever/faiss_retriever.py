@@ -16,13 +16,15 @@ class FaissRetriever(BaseRetriever):
             db,
             query,
             kb_name,
+            owner_id,
             top_k=5,
             filters=None
     ):
         # 通过向量库查找到最相近的向量内容：hits
         store = self.vector_manager.get_store(
             kb_name,
-            db
+            db,
+            owner_id
         )
         if store is None:
             raise KnowledgeBaseEmptyError("知识库不存在")

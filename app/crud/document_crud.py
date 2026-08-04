@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.models import KnowledgeBase
 from app.models.document import Document
 
 
@@ -25,10 +26,12 @@ def create_document(
 def delete_document(
         db: Session,
         document_id: int,
+        owner_id
 ):
     document = get_document_by_id(
         db,
-        document_id
+        document_id,
+        owner_id=owner_id
     )
     if not document:
         return False
@@ -41,12 +44,17 @@ def delete_document(
 def get_document_by_id(
         db: Session,
         document_id: int,
+        owner_id: int
 ):
-        doc = db.query(
-            Document
-        ).filter(
-            Document.id == document_id
-        ).first()
+        doc = (
+            db.query(Document)
+            .join(KnowledgeBase)
+            .filter(
+                Document.id == document_id,
+                KnowledgeBase.owner_id == owner_id
+            )
+            .first()
+        )
 
         return doc
 

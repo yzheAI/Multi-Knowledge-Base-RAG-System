@@ -15,12 +15,14 @@ class BM25Retriever(BaseRetriever):
             db,
             query: str,
             kb_name: str,
+            owner_id: int,
             top_k=5,
             filters=None
     ):
         store = self.vector_manager.get_store(
             kb_name,
-            db
+            db,
+            owner_id
         )
 
         if store is None:

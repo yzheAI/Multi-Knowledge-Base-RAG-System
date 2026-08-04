@@ -1,6 +1,8 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.auth import user_router
 from app.api.knowledge_base import kb_router
 from app.api.chat import chat_router
 from app.api.upload import upload_router as upload_router
@@ -28,6 +30,7 @@ app.add_middleware(
 )
 
 register_exception_handlers(app)
+app.include_router(user_router)
 app.include_router(upload_router)
 app.include_router(chat_router)
 app.include_router(kb_router)

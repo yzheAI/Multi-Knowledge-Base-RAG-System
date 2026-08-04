@@ -46,3 +46,8 @@ class UserNotFoundError(Exception):
 class TokenInvalidError(Exception):
     def __init__(self, message="Token无效"):
         self.message = message
+
+
+class InvalidCredentialsError(Exception):
+    def __init__(self, message="密码错误"):
+        self.message = message

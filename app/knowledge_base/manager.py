@@ -10,21 +10,27 @@ class KnowledgeManager:
             self,
             db,
             name,
+            owner_id,
             description=None,
     ):
         kb = knowledge_base.create_kb(
             db,
             name,
+            owner_id,
             description,
         )
 
         return kb
 
-    def get_path(self, kb_name):
+    def get_path(self, kb_name, owner_id):
         return os.path.join(
             self.base_path,
+            str(owner_id),
             kb_name
         )
 
-    def list(self, db):
-        return knowledge_base.get_all_kbs(db)
+    def list(self, db, owner_id):
+        return knowledge_base.get_all_kbs(
+            db,
+            owner_id
+        )

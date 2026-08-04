@@ -18,6 +18,7 @@ class HybridRetriever(BaseRetriever):
             db,
             query,
             kb_name,
+            owner_id,
             top_k=5,
             filters=None
     ):

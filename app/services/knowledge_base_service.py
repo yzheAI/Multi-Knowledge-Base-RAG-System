@@ -9,9 +9,13 @@ from app.services.upload_service import file_delete
 import shutil
 
 
-async def create(db, kb_name):
+async def create(db, kb_name, owner_id):
 
-    kb = get_kb_by_name(db, kb_name)
+    kb = get_kb_by_name(
+        db,
+        kb_name,
+        owner_id
+    )
     if kb:
         return {
             "id": kb.id,
@@ -21,9 +25,13 @@ async def create(db, kb_name):
 
     kdg = KnowledgeManager(KNOWLEDGE_BASE_PATH)
 
-    kb = kdg.create(db, kb_name)
+    kb = kdg.create(
+        db,
+        kb_name,
+        owner_id
+    )
 
-    kb_path = kdg.get_path(kb_name)
+    kb_path = kdg.get_path(kb_name, owner_id)
 
     upload_dir = os.path.join(
         kb_path,
@@ -37,16 +45,18 @@ async def create(db, kb_name):
     return {
         "id": kb.id,
         "name": kb.name,
+        "owner_id": owner_id,
         "created_at": kb.created_at,
     }
 
 
-async def get_all_kb_service(db):
-    kbs = get_all_kbs(db)
+async def get_all_kb_service(db, owner_id):
+    kbs = get_all_kbs(db, owner_id)
     result = [
         {
             "id": kb.id,
             "name": kb.name,
+            "owner_id": kb.owner_id,
             "created_at": kb.created_at,
         }
         for kb in kbs
@@ -54,8 +64,8 @@ async def get_all_kb_service(db):
     return result
 
 
-async def get_kb_service(db, kb_name):
-    kb = get_kb_by_name(db, kb_name)
+async def get_kb_service(db, kb_name, owner_id):
+    kb = get_kb_by_name(db, kb_name, owner_id)
     if not kb:
         raise KnowledgeBaseEmptyError("无该知识库")
 
@@ -64,6 +74,7 @@ async def get_kb_service(db, kb_name):
     return {
         "kb_id": kb.id,
         "kb_name": kb.name,
+        "owner_id": kb.owner_id,
         "created_at": kb.created_at,
         "documents": [
             {
@@ -76,8 +87,8 @@ async def get_kb_service(db, kb_name):
     }
 
 
-async def delete_kb_service(db, kb_name):
-    kb = get_kb_by_name(db, kb_name)
+async def delete_kb_service(db, kb_name, owner_id):
+    kb = get_kb_by_name(db, kb_name, owner_id)
     if not kb:
         raise KnowledgeBaseEmptyError("知识库为空")
     docs = get_documents_by_kb(db, kb.id)
@@ -91,7 +102,8 @@ async def delete_kb_service(db, kb_name):
         await file_delete(
             db,
             doc_id,
-            kb.name
+            kb.name,
+            owner_id
         )
 
     delete_kb(db, kb.id)
@@ -100,7 +112,7 @@ async def delete_kb_service(db, kb_name):
         KNOWLEDGE_BASE_PATH
     )
 
-    kb_path = kdg.get_path(kb_name)
+    kb_path = kdg.get_path(kb_name, owner_id)
 
     if os.path.exists(kb_path):
         shutil.rmtree(kb_path)
@@ -111,4 +123,3 @@ async def delete_kb_service(db, kb_name):
     )
 
     return True
-
