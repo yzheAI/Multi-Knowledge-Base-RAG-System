@@ -51,3 +51,8 @@ class TokenInvalidError(Exception):
 class InvalidCredentialsError(Exception):
     def __init__(self, message="密码错误"):
         self.message = message
+
+
+class ConversationNotFound(Exception):
+    def __init__(self, message="对话不存在"):
+        self.message = message

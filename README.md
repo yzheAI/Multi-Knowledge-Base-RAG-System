@@ -83,8 +83,8 @@ Query
         KnowledgeBase              Retrieval
               |                       |
       Document Pipeline          Hybrid Retriever
-              |                       
-      PDF/TXT Parsing                
+              |                       |
+      PDF/TXT Parsing              LLM 生成
               |
       Chunk Split
               |
@@ -141,8 +141,8 @@ Answer + Source Tracking
 - 每个知识库独立维护 FAISS Index
 - 每个知识库独立维护 BM25 Index
 - VectorStoreManager 管理不同知识库实例
-- 知识库数据持久化加载
-- 数据库之间数据隔离
+- 知识库索引持久化与启动恢复
+- 知识库之间数据隔离
 
 ### 数据管理
 - MySQL存储知识库信息
@@ -229,7 +229,7 @@ app/
 
 避免不同知识库之间的数据污染。
 
-VectorStoreManager 通过 kb_name 管理不同 VectorStore 实例，
+VectorStoreManager 通过 kb_name和owner_id 管理不同 VectorStore 实例，
 每个实例内部维护对应知识库自己的 FAISS Index 和 BM25 Index。
 FAISS 使用 IndexIDMap 显式绑定数据库 chunk_id，
 避免向量索引编号与业务数据编号不一致。
@@ -251,7 +251,7 @@ FAISS 使用 IndexIDMap 显式绑定数据库 chunk_id，
     携带Token访问API
      
      
-    系统所有知识库操作均绑定当前用户：
+系统所有知识库操作均绑定当前用户：
      
       User
        |
@@ -582,14 +582,16 @@ docker-compose up
 - [x] 多知识库管理
 - [x] 用户级Conversation Memory隔离
 - [x] Docker 部署
+- [x] MySQL数据持久化
+- [x] 前端页面
 - [x] JWT Authentication
 - [x] Knowledge Base Permission Control
 - [ ] Redis缓存与任务队列
-- [x] MySQL数据持久化
 - [ ] Hybrid Score Fusion
 - [ ] Elasticsearch 检索
 - [ ] Milvus / Chroma 向量数据库
-- [x] 前端页面
+- [ ] 工业场景数据处理
+- [ ] Linux部署
 
 
 ## API Examples
