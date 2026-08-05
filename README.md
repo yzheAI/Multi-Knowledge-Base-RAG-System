@@ -34,6 +34,9 @@ Query
 - Hybrid Retrieval(FAISS + BM25)
 - CrossEncoder Rerank 提升检索准确率
 - 多知识库隔离架构
+- JWT用户认证与权限控制
+- 多用户知识库隔离
+- 用户及Conversation Memory隔离
 - MySQL + Vector Index混合存储
 - Retriever Evaluation体系
 - SSE流式生成
@@ -51,7 +54,11 @@ Query
 并使用 CrossEncoder 对候选结果进行重排序，提高检索准确性。
 
 系统支持多个独立知识库管理，每个知识库拥有独立的数据目录和检索索引，
-同时使用 MySQL管理 知识库、文档、chunk等数据，
+同时系统支持多用户场景，通过JWT实现用户身份认证，
+并通过用户权限控制实现知识库访问隔离。
+不同用户之间知识库数据以及上下文相互隔离，避免数据泄露和上下文污染。
+
+使用 MySQL管理 知识库、文档、chunk等数据，
 实现知识库之间的数据隔离以及检索索引与业务数据的分离。
 
 在生成阶段，系统结合大语言模型（Qwen），
@@ -65,13 +72,19 @@ Query
 ```text
                          User
                           |
+                  JWT Authentication
+                          |
+                   FastAPI Backend
+                          |
               +-----------+-----------+
               |                       |
-            Upload                 Query
+         Upload API                Chat API
               |                       |
-      Document Pipeline          Chat Pipeline
+        KnowledgeBase              Retrieval
               |                       |
-      PDF/TXT Parsing                |
+      Document Pipeline          Hybrid Retriever
+              |                       
+      PDF/TXT Parsing                
               |
       Chunk Split
               |
@@ -142,7 +155,8 @@ Answer + Source Tracking
 - Qwen API 调用
 - Context 构建
 - 检索结果与原文映射（source tracking）
-- 基于内存的多轮对话上下文管理
+- 基于MemoryManager的多轮对话上下文管理
+- 支持用户级以及知识库级Conversation Memory隔离
 
 ### 工程能力
 - 删除文档
@@ -220,7 +234,46 @@ VectorStoreManager 通过 kb_name 管理不同 VectorStore 实例，
 FAISS 使用 IndexIDMap 显式绑定数据库 chunk_id，
 避免向量索引编号与业务数据编号不一致。
 
-### 6.2 Hybrid Retrieval
+### 6.2 用户认证与权限隔离
+
+系统采用JWT实现用户身份认证。
+ 
+用户登录流程：
+ 
+      User
+       |
+    输入账号密码
+       |
+     密码校验
+       |
+    生成JWT Token
+       |
+    携带Token访问API
+     
+     
+    系统所有知识库操作均绑定当前用户：
+     
+      User
+       |
+      1:N
+       |
+    KnowledgeBase
+       |
+      1:N
+       |
+    Document
+       |
+      1:N
+       |
+     Chunk
+ 
+ 
+KnowledgeBase通过owner_id关联用户。
+ 
+不同用户只能访问自己的知识库，
+避免知识库数据泄露。
+
+### 6.3 Hybrid Retrieval
 
 查询过程：
 
@@ -263,7 +316,7 @@ CrossEncoder重排序
 LLM生成回答
 
 
-### 6.3 Retriever Evaluation
+### 6.4 Retriever Evaluation
 
 系统提供检索效果评估：
 
@@ -284,7 +337,7 @@ LLM生成回答
 
 
 
-### 6.4 数据存储设计
+### 6.5 数据存储设计
 系统采用：MySQL + FAISS + BM25
 
 混合存储架构。
@@ -325,7 +378,7 @@ FAISS保存(vector, chunk_id)
 BM25保存(keyword index, chunk_id)
 
 
-### 6.5 Resource Lifecycle Management
+### 6.6 Resource Lifecycle Management
 由于RAG系统同时包含数据库、文件系统以及内存缓存，
 因此系统需要保证不同存储层之间的数据一致性。
 本系统包含了三类存储：
@@ -371,6 +424,51 @@ Memory Cache负责：
 提高系统稳定性和可维护性。
 
 
+### 6.7 Multi User Architecture
+
+系统通过 JWT + owner_id 实现用户级权限隔离。
+
+数据关系：
+
+      User
+       |
+      1:N
+       |
+    KnowledgeBase
+       |
+      1:N
+       |
+    Document
+       |
+      1:N
+       |
+     Chunk
+
+KnowledgeBase通过owner_id 绑定用户
+Document和Chunk属于对应的知识库
+
+查询知识库时，以user_id + kb_name为索引进行确定知识库，
+如果用户没有对应知识库，则拒绝访问。
+
+#### Conversation Memory Isolation
+
+为了避免不同用户之间共享聊天记录，出现数据污染，
+系统设计MemoryManager管理Conversation Memory。
+
+Memory Key：(user_id, kb_name)
+
+不同用户(user_id)以及不同知识库(kb_name)之间的聊天上下文完全隔离
+
+系统通过Container统一管理核心服务组件：
+- VectorStoreManager
+- Retriever
+- Reranker
+- MemoryManager
+
+Container在应用启动时初始化一次，
+业务模块通过Container获取已有实例
+避免重复创建并统一管理组件生命周期，提高资源利用率。
+
 ## 7. Architecture Evolution
 ### V1 Basic RAG
 
@@ -405,6 +503,16 @@ Memory Cache负责：
 - SSE流式回答
 - Source Tracking 可视化
 - 用户交互反馈
+
+### V4 Multi User Enterprise RAG
+
+新增:
+- JWT用户认证
+- 用户权限管理
+- KnowledgeBase owner隔离
+- 多用户Conversation Memory隔离
+- Container统一依赖管理
+- pytest测试数据库隔离
 
 
 ## 8. 数据存储结构
@@ -472,8 +580,10 @@ docker-compose up
 
 - [x] Retriever Recall Evaluation
 - [x] 多知识库管理
-- [x] 对话历史（Conversation Memory）
+- [x] 用户级Conversation Memory隔离
 - [x] Docker 部署
+- [x] JWT Authentication
+- [x] Knowledge Base Permission Control
 - [ ] Redis缓存与任务队列
 - [x] MySQL数据持久化
 - [ ] Hybrid Score Fusion

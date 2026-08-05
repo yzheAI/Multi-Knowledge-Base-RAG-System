@@ -1,11 +1,9 @@
 from app.config import SEARCH_TOP_K
 from app.llm.qwen import chat_with_qwen_stream
-from app.memory.conversation_memory import ConversationMemory
 from app.prompts.history_builder import build_history
 from app.prompts.rag_prompt import build_prompt
 from app.core.container import container
 import json
-memory = ConversationMemory()
 
 
 async def chat_service_stream(
@@ -15,6 +13,10 @@ async def chat_service_stream(
         owner_id: int,
         filters=None
 ):
+    memory = container.memory_manager.get_memory(
+        owner_id,
+        kb_name
+    )
 
     history = build_history(memory)
 

@@ -3,6 +3,7 @@ from app.retriever.faiss_retriever import FaissRetriever
 from app.retriever.bm25_retriever import BM25Retriever
 from app.retriever.hybrid_retriever import HybridRetriever
 from app.retriever.reranker import CrossEncoderReranker
+from app.memory.memory_manager import MemoryManager
 
 
 class Container:
@@ -24,6 +25,8 @@ class Container:
             self.bm25_retriever,
             self.reranker
         )
+
+        self.memory_manager = MemoryManager()
 
 
 container = Container()
