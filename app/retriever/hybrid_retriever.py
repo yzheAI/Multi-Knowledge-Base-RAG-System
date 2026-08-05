@@ -26,6 +26,7 @@ class HybridRetriever(BaseRetriever):
             db,
             query,
             kb_name,
+            owner_id,
             top_k,
             filters
         )
@@ -34,6 +35,7 @@ class HybridRetriever(BaseRetriever):
             db,
             query,
             kb_name,
+            owner_id,
             top_k,
             filters
         )

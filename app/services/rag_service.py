@@ -8,7 +8,13 @@ import json
 memory = ConversationMemory()
 
 
-async def chat_service_stream(db, query: str, kb_name, filters=None):
+async def chat_service_stream(
+        db,
+        query: str,
+        kb_name: str,
+        owner_id: int,
+        filters=None
+):
 
     history = build_history(memory)
 
@@ -21,6 +27,7 @@ async def chat_service_stream(db, query: str, kb_name, filters=None):
         db,
         query,
         kb_name,
+        owner_id=owner_id,
         top_k=SEARCH_TOP_K,
         filters=filters,
     )
