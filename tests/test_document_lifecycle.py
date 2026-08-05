@@ -1,14 +1,11 @@
-from fastapi.testclient import TestClient
-from main import app
-import uuid
 import os
 
-client = TestClient(app)
 
+def test_upload_and_get_files_api(client, auth_user, create_kb):
 
-def test_upload_and_get_files_api():
+    kb_name = create_kb()
 
-    kb_name = f"api_test_{uuid.uuid4().hex}"
+    headers = auth_user["headers"]
 
     file = {
         "file": (
@@ -25,7 +22,8 @@ def test_upload_and_get_files_api():
     upload_response = client.post(
         "/files",
         files=file,
-        data=data
+        data=data,
+        headers=headers
     )
 
     assert upload_response.status_code == 200
@@ -39,6 +37,7 @@ def test_upload_and_get_files_api():
         params={
             "kb_name": kb_name
         },
+        headers=headers
     )
     assert response.status_code == 200
 
@@ -59,8 +58,9 @@ def test_upload_and_get_files_api():
     delete_response = client.delete(
         f"/files/{doc_id}",
         params={
-            "kb_name": kb_name
-        }
+            "kb_name": kb_name,
+        },
+        headers=headers
     )
 
     assert delete_response.status_code == 200
@@ -69,7 +69,8 @@ def test_upload_and_get_files_api():
         "/files/files_message",
         params={
             "kb_name": kb_name
-        }
+        },
+        headers=headers
     )
 
     files = files_response.json()["data"]

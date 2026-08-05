@@ -1,13 +1,19 @@
-from sqlalchemy.orm import Session
-
 from app.core.container import container
 
 
-def test_faiss_retriever(db: Session):
+def test_faiss_retriever(
+        db,
+        auth_user,
+        retrieval_kb
+):
+
+    user_id = auth_user["user_id"]
+
     results = container.faiss_retriever.retrieve(
         db=db,
         query="铜基复合材料是什么？",
-        kb_name="copper_based",
+        owner_id=user_id,
+        kb_name=retrieval_kb,
         top_k=5
     )
 
@@ -18,11 +24,16 @@ def test_faiss_retriever(db: Session):
     assert "score" in item
 
 
-def test_bm25_retriever(db: Session):
+def test_bm25_retriever(
+        db,
+        auth_user,
+        retrieval_kb
+):
     results = container.bm25_retriever.retrieve(
         db=db,
         query="铜基复合材料是什么？",
-        kb_name="copper_based",
+        owner_id=auth_user["user_id"],
+        kb_name=retrieval_kb,
         top_k=5
     )
 
@@ -33,11 +44,12 @@ def test_bm25_retriever(db: Session):
     assert "score" in item
 
 
-def test_hybrid_retriever(db: Session):
+def test_hybrid_retriever(db, auth_user, retrieval_kb):
     results = container.hybrid_retriever.retrieve(
         db=db,
         query="铜基复合材料是什么？",
-        kb_name="copper_based",
+        owner_id=auth_user["user_id"],
+        kb_name=retrieval_kb,
         top_k=5
     )
 

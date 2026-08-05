@@ -1,67 +1,22 @@
-from fastapi.testclient import TestClient
 from app.core.container import container
 from app.config import KNOWLEDGE_BASE_PATH
 from app.knowledge_base.manager import KnowledgeManager
-from main import app
 import uuid
 import os
-client = TestClient(app)
 
 
-def get_auth_headers():
-    username = f"test_{uuid.uuid4().hex}"
-    password = "123456"
+def test_knowledge_base_lifecycle(
+        client,
+        auth_user,
+        create_kb
+):
 
-    register = client.post(
-        "/auth/register",
-        json={
-            "username": username,
-            "password": password,
-        }
-    )
+    headers = auth_user["headers"]
+    user_id = auth_user["user_id"]
 
-    assert register.status_code == 200
-
-    login = client.post(
-        "/auth/login",
-        json={
-            "username": username,
-            "password": password,
-        }
-    )
-
-    assert login.status_code == 200
-
-    token = login.json()["access_token"]
-
-    return {
-        "Authorization": f"Bearer {token}",
-    }, login.json()["user_id"]
-
-
-def test_knowledge_base_lifecycle():
-
-    headers, user_id = get_auth_headers()
-
-    kb_name = f"test_kb_{uuid.uuid4().hex}"
+    kb_name = create_kb()
 
     try:
-        # 创建知识库
-        create_response = client.post(
-            "/knowledge_bases",
-            headers=headers,
-            json={
-                "name": kb_name,
-                "description": "Test Knowledge Base",
-            }
-        )
-
-        assert create_response.status_code == 200
-
-        create_data = create_response.json()
-
-        assert create_data["data"]["name"] == kb_name
-
         file = {
             "file": (
                 "api_text.txt",
