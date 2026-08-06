@@ -69,6 +69,7 @@ def delete_conversation(
 
     db.delete(conversation)
     db.commit()
+    return True
 
 
 def get_user_conversations(

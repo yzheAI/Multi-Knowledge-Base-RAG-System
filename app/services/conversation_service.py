@@ -1,4 +1,4 @@
-from app.crud.conversation_crud import get_user_conversations, create_conversation
+from app.crud.conversation_crud import get_user_conversations, create_conversation, delete_conversation
 from app.crud.knowledge_base import get_kb_by_name
 from app.crud.message_crud import get_messages_by_conversation_id
 
@@ -67,3 +67,15 @@ def get_messages_service(
         }
         for message in messages
     ]
+
+
+def delete_conversation_service(
+        db,
+        conversation_id,
+        user_id
+):
+    return delete_conversation(
+        db,
+        conversation_id,
+        user_id
+    )

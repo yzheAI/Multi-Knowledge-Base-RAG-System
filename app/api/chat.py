@@ -6,7 +6,7 @@ from app.database.session import get_db
 from app.schemas.chat import ChatRequest
 from app.services.chat_service_stream import chat_service_stream
 from app.services.conversation_service import get_conversations_by_kb_service, \
-    create_conversation_service, get_messages_service
+    create_conversation_service, get_messages_service, delete_conversation_service
 
 chat_router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -73,3 +73,21 @@ async def get_messages(
     )
 
     return messages
+
+
+@chat_router.delete("/conversation/{conversation_id}")
+async def delete_conversation(
+        conversation_id: str,
+        db: Session = Depends(get_db),
+        current_user=Depends(get_current_user)
+):
+    flag = delete_conversation_service(
+        db,
+        conversation_id,
+        current_user.id
+    )
+    if flag:
+        return {
+            "message": "Conversation deleted"
+        }
+
