@@ -41,7 +41,7 @@ async def chat_service_stream(
 
         yield (
             "event: conversation\n"
-            f"data: {conversation_id}\n\n"
+            f"data: {json.dumps({'conversation_id':conversation_id})}\n\n"
         )
 
         messages = []
