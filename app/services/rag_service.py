@@ -1,25 +1,15 @@
 from app.config import SEARCH_TOP_K
-from app.llm.qwen import chat_with_qwen_stream
-from app.prompts.history_builder import build_history
 from app.prompts.rag_prompt import build_prompt
 from app.core.container import container
-import json
 
 
-async def chat_service_stream(
+def retrieve_context(
         db,
         query: str,
         kb_name: str,
         owner_id: int,
         filters=None
 ):
-    memory = container.memory_manager.get_memory(
-        owner_id,
-        kb_name
-    )
-
-    history = build_history(memory)
-
     if filters:
         filters = filters.model_dump(
             exclude_none=True
@@ -33,7 +23,10 @@ async def chat_service_stream(
         top_k=SEARCH_TOP_K,
         filters=filters,
     )
+    return contexts
 
+
+def build_sources(contexts):
     sources = [
         {
             "chunk_id": ctx["chunk_id"],
@@ -43,12 +36,14 @@ async def chat_service_stream(
         }
         for ctx in contexts
     ]
+    return sources
 
-    yield (
-        "event: source\n"
-        f"data: {json.dumps(sources, ensure_ascii=False)}\n\n"
-    )
 
+def build_rag_prompt(
+        query,
+        contexts,
+        history=None,
+):
     content_text = "\n".join(
         [ctx["text"] for ctx in contexts]
     )
@@ -59,14 +54,4 @@ async def chat_service_stream(
         history
     )
 
-    answer = ""
-
-    for chunk in chat_with_qwen_stream(prompt):
-        answer += chunk
-        yield (
-            "event: message\n"
-            f"data: {chunk}\n\n"
-        )
-
-    memory.add_user_message(query)
-    memory.add_assistant_message(answer)
+    return prompt

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_user
 from app.database.session import get_db
 from app.schemas.chat import ChatRequest
-from app.services.rag_service import chat_service_stream
+from app.services.chat_service_stream import chat_service_stream
 
 chat_router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -20,6 +20,7 @@ async def chat(
             db=db,
             query=request.query,
             kb_name=request.kb_name,
+            conversation_id=request.conversation_id,
             filters=request.filters,
             owner_id=current_user.id,
         ),

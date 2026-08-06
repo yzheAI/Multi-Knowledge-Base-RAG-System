@@ -1,17 +1,19 @@
 from app.memory.conversation_memory import ConversationMemory
 
 
-def build_history(memory: ConversationMemory):
-    history = memory.get_history()
-    if not history:
+def build_history(messages):
+
+    if not messages:
         return ""
+
     line = []
-    for item in history:
-        if item["role"] == "user":
+
+    for message in messages:
+        if message.role == "user":
             role = "User"
         else:
             role = "Assistant"
         line.append(
-            f"{role}: {item['content']}"
+            f"{role}: {message.content}"
         )
     return "\n".join(line)

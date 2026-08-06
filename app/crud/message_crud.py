@@ -1,3 +1,4 @@
+from app.exceptions.exceptions import ConversationNotFound
 from app.models.conversation import Conversation
 from app.models.message import Message
 from sqlalchemy.orm import Session
@@ -27,6 +28,18 @@ def get_messages_by_conversation_id(
         conversation_id: str,
         user_id: int,
 ):
+    conversation = (
+        db.query(Conversation)
+        .filter(
+            Conversation.conversation_id==conversation_id,
+            Conversation.user_id==user_id,
+        )
+        .first()
+    )
+
+    if not conversation:
+        raise ConversationNotFound()
+
     messages = (
         db.query(Message)
         .join(Conversation)

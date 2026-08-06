@@ -21,4 +21,5 @@ class MetadataFilter(BaseModel):
 class ChatRequest(BaseModel):
     query: str
     kb_name: str
+    conversation_id: str | None = None
     filters: MetadataFilter | None = None

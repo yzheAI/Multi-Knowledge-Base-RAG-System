@@ -21,14 +21,14 @@ class Conversation(Base):
     user_id = Column(
         Integer,
         ForeignKey(
-            'user.id'
+            'users.id'
         ),
     )
 
     kb_id = Column(
         Integer,
         ForeignKey(
-            'knowledgebase.id'
+            'knowledge_base.id'
         )
     )
 

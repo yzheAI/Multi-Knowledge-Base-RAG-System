@@ -12,7 +12,7 @@ class Message(Base):
     )
 
     conversation_id = Column(
-        String(36),
+        String(128),
         ForeignKey(
             'conversation.conversation_id'
         ),
