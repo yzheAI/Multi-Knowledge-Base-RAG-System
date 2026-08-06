@@ -90,3 +90,22 @@ def get_user_conversations(
     return conversations.order_by(
         Conversation.created_at.desc()
     ).all()
+
+
+def update_conversation_title(
+        db,
+        conversation_id,
+        title
+):
+    conversation = (
+        db.query(Conversation)
+        .filter(
+            Conversation.conversation_id == conversation_id,
+        )
+        .first()
+    )
+
+    conversation.title = title
+
+    db.commit()
+    db.refresh(conversation)

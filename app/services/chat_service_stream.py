@@ -1,4 +1,4 @@
-from app.crud.conversation_crud import create_conversation
+from app.crud.conversation_crud import create_conversation, get_conversation, update_conversation_title
 from app.crud.knowledge_base import get_kb_by_name
 from app.llm.qwen import chat_with_qwen_stream
 from app.prompts.history_builder import build_history
@@ -83,6 +83,19 @@ async def chat_service_stream(
         yield (
             "event: message\n"
             f"data: {chunk}\n\n"
+        )
+
+    conversation = get_conversation(
+        db,
+        conversation_id,
+        owner_id
+    )
+
+    if not conversation.title:
+        update_conversation_title(
+            db,
+            conversation_id,
+            query[:20]
         )
 
     create_message(

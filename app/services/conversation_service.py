@@ -1,5 +1,6 @@
 from app.crud.conversation_crud import get_user_conversations, create_conversation
 from app.crud.knowledge_base import get_kb_by_name
+from app.crud.message_crud import get_messages_by_conversation_id
 
 
 def get_conversations_by_kb_service(db, user_id, kb_name):
@@ -44,3 +45,25 @@ def create_conversation_service(db, kb_name, user_id):
     return {
         "conversation_id": conversation.conversation_id,
     }
+
+
+def get_messages_service(
+        db,
+        conversation_id,
+        user_id
+):
+
+    messages = get_messages_by_conversation_id(
+        db,
+        conversation_id,
+        user_id
+    )
+
+    return [
+        {
+            "role": message.role,
+            "content": message.content,
+            "created_at": message.created_at,
+        }
+        for message in messages
+    ]

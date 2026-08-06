@@ -6,7 +6,7 @@ from app.database.session import get_db
 from app.schemas.chat import ChatRequest
 from app.services.chat_service_stream import chat_service_stream
 from app.services.conversation_service import get_conversations_by_kb_service, \
-    create_conversation_service
+    create_conversation_service, get_messages_service
 
 chat_router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -59,3 +59,17 @@ async def get_conversations(
     return conversations
 
 
+@chat_router.get("/messages/{conversation_id}")
+async def get_messages(
+        conversation_id: str,
+        db: Session = Depends(get_db),
+        current_user=Depends(get_current_user)
+):
+
+    messages = get_messages_service(
+        db,
+        conversation_id,
+        current_user.id
+    )
+
+    return messages

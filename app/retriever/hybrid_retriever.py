@@ -1,4 +1,3 @@
-from app.crud import chunk_crud
 from app.retriever.base import BaseRetriever
 
 

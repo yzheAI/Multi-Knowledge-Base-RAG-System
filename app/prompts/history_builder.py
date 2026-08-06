@@ -1,6 +1,3 @@
-from app.memory.conversation_memory import ConversationMemory
-
-
 def build_history(messages):
 
     if not messages:
