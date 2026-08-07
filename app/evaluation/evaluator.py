@@ -19,6 +19,7 @@ class RetrieverEvaluator:
                 db,
                 item["question"],
                 kb_name=item["kb_name"],
+                owner_id=17,
                 top_k=5
             )
 

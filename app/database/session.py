@@ -5,7 +5,7 @@ from app.config import settings
 
 engine = create_engine(
     settings.PATH,
-    echo=True,
+    echo=False,
     pool_pre_ping=True,
 )
 
