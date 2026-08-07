@@ -17,7 +17,7 @@ class FaissRetriever(BaseRetriever):
             query,
             kb_name,
             owner_id,
-            top_k=5,
+            top_k=10,
             filters=None
     ):
         # 通过向量库查找到最相近的向量内容：hits

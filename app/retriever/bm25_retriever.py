@@ -16,7 +16,7 @@ class BM25Retriever(BaseRetriever):
             query: str,
             kb_name: str,
             owner_id: int,
-            top_k=5,
+            top_k=10,
             filters=None
     ):
         store = self.vector_manager.get_store(

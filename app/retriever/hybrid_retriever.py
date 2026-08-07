@@ -21,12 +21,15 @@ class HybridRetriever(BaseRetriever):
             top_k=5,
             filters=None
     ):
+
+        candidate_k = 20
+
         faiss_docs = self.faiss_retriever.retrieve(
             db,
             query,
             kb_name,
             owner_id,
-            top_k,
+            candidate_k,
             filters
         )
 
@@ -35,21 +38,25 @@ class HybridRetriever(BaseRetriever):
             query,
             kb_name,
             owner_id,
-            top_k,
+            candidate_k,
             filters
         )
 
-        docs = self.merge(
+        # docs = self.merge(
+        #     faiss_docs,
+        #     bm25_docs
+        # )
+        docs = self.rrf_fusion(
             faiss_docs,
             bm25_docs
         )
 
         results = self.reranker.rank(
             query,
-            docs
+            docs[:candidate_k]
         )
 
-        return results
+        return results[:top_k]
 
     def merge(self, faiss_docs, bm25_docs):
         result = []
@@ -62,3 +69,54 @@ class HybridRetriever(BaseRetriever):
                 result.append(doc)
 
         return result
+
+    def rrf_fusion(
+            self,
+            faiss_docs,
+            bm25_docs,
+            k=40
+    ):
+        scores = {}
+
+        docs_map = {}
+
+        for rank, doc in enumerate(
+                faiss_docs,
+                start=1
+        ):
+
+            chunk_id = doc["chunk_id"]
+
+            scores[chunk_id] = (
+                scores.get(chunk_id, 0)
+                +
+                1 / (k + rank)
+            )
+
+            docs_map[chunk_id] = doc
+
+        for rank, doc in enumerate(
+                bm25_docs,
+                start=1
+        ):
+
+            chunk_id = doc["chunk_id"]
+
+            scores[chunk_id] = (
+                scores.get(chunk_id, 0)
+                +
+                1/(k + rank)
+            )
+
+            docs_map[chunk_id] = doc
+
+        ranked = sorted(
+            scores.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+
+        return [
+            docs_map[chunk_id]
+            for chunk_id, scores in ranked
+        ]

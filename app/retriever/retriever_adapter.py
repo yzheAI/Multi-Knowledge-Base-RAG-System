@@ -7,6 +7,7 @@ class RetrieverAdapter:
             db,
             query,
             kb_name,
+            owner_id,
             top_k=5,
             filters=None
     ):
@@ -15,6 +16,7 @@ class RetrieverAdapter:
             db=db,
             query=query,
             kb_name=kb_name,
+            owner_id=owner_id,
             top_k=top_k,
             filters=filters
         )
