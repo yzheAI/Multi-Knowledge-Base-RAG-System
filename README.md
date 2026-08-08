@@ -32,11 +32,13 @@ Query
 
 - 完整RAG Pipeline
 - Hybrid Retrieval(FAISS + BM25)
+- Reciprocal Rank Fusion (RRF) 多路检索融合
 - CrossEncoder Rerank 提升检索准确率
 - 多知识库隔离架构
 - JWT用户认证与权限控制
 - 多用户知识库隔离
-- 用户及Conversation Memory隔离
+- Conversation History Persistent Storage
+- MySQL持久化聊天记录管理
 - MySQL + Vector Index混合存储
 - Retriever Evaluation体系
 - SSE流式生成
@@ -148,6 +150,7 @@ Answer + Source Tracking
 - MySQL存储知识库信息
 - MySQL存储文档信息
 - MySQL存储chunk文本和metadata
+- MySQL存储Conversation与Message信息
 - FAISS/BM25作为检索索引
 
 ### LLM问答
@@ -155,7 +158,8 @@ Answer + Source Tracking
 - Qwen API 调用
 - Context 构建
 - 检索结果与原文映射（source tracking）
-- 基于MemoryManager的多轮对话上下文管理
+- 多轮Conversation管理
+- Conversation历史记录MySQL持久化
 - 支持用户级以及知识库级Conversation Memory隔离
 
 ### 工程能力
@@ -277,44 +281,27 @@ KnowledgeBase通过owner_id关联用户。
 
 查询过程：
 
-用户问题
+              用户问题
+                 |
+         +-------+-------+ 
+         |               |
+    Embedding生成     关键词分词
+         |               |
+    FAISS语义检索     BM25关键词检索
+         |               |
+    FAISS Top20      BM25 Top20
+         +-------+-------+
+                 |
+              RRF Fusion
+                 |
+            Candidate Set
+                 |
+          bge-reranker-base
+                 |
+              Final Top5
 
-↓
-
-Embedding生成
-
-+
-
-关键词分词
-
-↓
-
-FAISS语义检索
-
-+
-
-BM25关键词检索
-
-↓
-
-返回chunk_id
-
-↓
-
-MySQL查询Chunk文本和Metadata
-
-↓
-
-结果合并去重
-
-↓
-
-CrossEncoder重排序
-
-↓
-
-LLM生成回答
-
+RRF仅用于融合两个retriever的rank信息，
+不直接参与最终排序，最终排序由CrossEncoder完成。
 
 ### 6.4 Retriever Evaluation
 
@@ -329,11 +316,11 @@ LLM生成回答
 
 实验结果：
 
-| Retriever | Recall@1 | Recall@3 | Recall@5 | MRR  |
-|-----------|----------|----------|----------|------|
-| FAISS     | 0.61     | 0.92     | 1.0      | 0.77 |
-| BM25      | 0.61     | 1.0      | 1.0      | 0.80 |
-| Hybrid    | 0.76     | 1.0      | 1.0      | 0.88 |
+| Retriever | Recall@1 | Recall@3 | Recall@5 | MRR    |
+|-----------|----------|----------|----------|--------|
+| FAISS     | 28.86%   | 43.10%   | 50。00%   | 35.26% |
+| BM25      | 50.00%   | 77.59%   | 87.93%   | 64.22% |
+| Hybrid    | 62.07%   | 89.66%   | 98.28%   | 75.46% |
 
 
 
@@ -452,22 +439,31 @@ Document和Chunk属于对应的知识库
 
 #### Conversation Memory Isolation
 
-为了避免不同用户之间共享聊天记录，出现数据污染，
-系统设计MemoryManager管理Conversation Memory。
+为了支持多用户多知识库场景下的连续对话，
+系统设计Conversation管理机制。
+
+数据关系：
+```
+User
+ |
+1:N
+ |
+Conversation
+ |
+1:N
+ |
+Message
+```
 
 Memory Key：(user_id, kb_name)
 
-不同用户(user_id)以及不同知识库(kb_name)之间的聊天上下文完全隔离
+每一次用户请求产生的：
+- user message
+- assistant response
+均保存至MySQL。
 
-系统通过Container统一管理核心服务组件：
-- VectorStoreManager
-- Retriever
-- Reranker
-- MemoryManager
-
-Container在应用启动时初始化一次，
-业务模块通过Container获取已有实例
-避免重复创建并统一管理组件生命周期，提高资源利用率。
+查询历史对话时，根据conversation_id加载对应消息，
+避免不同用户以及不同知识库之间出现上下文污染。
 
 ## 7. Architecture Evolution
 ### V1 Basic RAG
@@ -510,7 +506,9 @@ Container在应用启动时初始化一次，
 - JWT用户认证
 - 用户权限管理
 - KnowledgeBase owner隔离
-- 多用户Conversation Memory隔离
+- Conversation持久化存储
+- Message历史记录管理
+- 用户级Conversation Memory隔离
 - Container统一依赖管理
 - pytest测试数据库隔离
 
@@ -531,6 +529,8 @@ data/
         └── bm25.pkl
 
 MySQL：
+     User
+      |
     Knowledge_base
       |
       |
@@ -538,6 +538,12 @@ MySQL：
       |
       |
     Chunk
+    
+       User
+        |
+    Conversation
+        |
+      Message
         
         
 Vector Storage:
@@ -587,7 +593,7 @@ docker-compose up
 - [x] JWT Authentication
 - [x] Knowledge Base Permission Control
 - [ ] Redis缓存与任务队列
-- [ ] Hybrid Score Fusion
+- [x] Hybrid Score Fusion
 - [ ] Elasticsearch 检索
 - [ ] Milvus / Chroma 向量数据库
 - [ ] 工业场景数据处理
