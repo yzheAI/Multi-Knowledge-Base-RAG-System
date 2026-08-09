@@ -33,3 +33,24 @@ def chat_with_qwen_stream(prompt: str):
         raise LLMServiceError()
     except Exception:
         raise LLMServiceError("LLM未知错误")
+
+
+def chat_with_qwen(prompt: str):
+    try:
+        response = client.chat.completions.create(
+            model="qwen-plus",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ]
+        )
+        return response.choices[0].message.content
+
+    except APITimeoutError:
+        raise LLMTimeoutError()
+    except APIError:
+        raise LLMServiceError()
+    except Exception:
+        raise LLMServiceError("LLM未知错误")

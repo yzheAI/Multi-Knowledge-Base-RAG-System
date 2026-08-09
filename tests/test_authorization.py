@@ -1,7 +1,10 @@
 import uuid
 
 
-def create_knowledge_base(client, headers):
+def create_knowledge_base(
+        client,
+        headers
+):
     kb_name = f"test_{uuid.uuid4().hex}"
 
     response = client.post(
@@ -18,7 +21,11 @@ def create_knowledge_base(client, headers):
     return kb_name
 
 
-def test_user_cannot_access_other_users_knowledge_base(client, auth_user, auth_user_2):
+def test_user_cannot_access_other_users_knowledge_base(
+        client,
+        auth_user,
+        auth_user_2
+):
     # 用户A
     user_a_headers = auth_user["headers"]
     # 用户B
@@ -34,7 +41,11 @@ def test_user_cannot_access_other_users_knowledge_base(client, auth_user, auth_u
     assert response.status_code == 404
 
 
-def test_user_cannot_delete_other_users_knowledge_base(client, auth_user, auth_user_2):
+def test_user_cannot_delete_other_users_knowledge_base(
+        client,
+        auth_user,
+        auth_user_2
+):
     # 用户A
     user_a_headers = auth_user["headers"]
     # 用户B
@@ -50,7 +61,11 @@ def test_user_cannot_delete_other_users_knowledge_base(client, auth_user, auth_u
     assert response.status_code == 404
 
 
-def test_user_cannot_upload_to_other_users_knowledge_base(client, auth_user, auth_user_2):
+def test_user_cannot_upload_to_other_users_knowledge_base(
+        client,
+        auth_user,
+        auth_user_2
+):
     # 用户A
     user_a_headers = auth_user["headers"]
     # 用户B

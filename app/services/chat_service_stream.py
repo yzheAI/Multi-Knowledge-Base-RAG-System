@@ -1,10 +1,12 @@
 from app.crud.conversation_crud import create_conversation, get_conversation, update_conversation_title
 from app.crud.knowledge_base import get_kb_by_name
+from app.exceptions.exceptions import KnowledgeBaseEmptyError
 from app.llm.qwen import chat_with_qwen_stream
 from app.prompts.history_builder import build_history
 from app.services.rag_service import retrieve_context, build_sources, build_rag_prompt
 import json
 from app.crud.message_crud import get_messages_by_conversation_id, create_message
+from app.query.rewrite import rewrite_query, need_rewrite
 
 
 async def chat_service_stream(
@@ -24,11 +26,16 @@ async def chat_service_stream(
         )
 
     else:
-        kb_id = get_kb_by_name(
+        kb = get_kb_by_name(
             db,
             kb_name,
             owner_id
-        ).id
+        )
+
+        if kb is None:
+            raise KnowledgeBaseEmptyError()
+
+        kb_id = kb.id
 
         conversation = create_conversation(
             db,
@@ -48,6 +55,16 @@ async def chat_service_stream(
 
     history = build_history(messages)
 
+    original_query = query
+
+    if need_rewrite(query):
+        new_query = rewrite_query(
+            original_query,
+            history
+        )
+    else:
+        new_query = original_query
+
     create_message(
         db,
         conversation_id,
@@ -57,7 +74,7 @@ async def chat_service_stream(
 
     contexts = retrieve_context(
         db,
-        query,
+        new_query,
         kb_name,
         owner_id,
         filters
@@ -71,7 +88,7 @@ async def chat_service_stream(
     )
 
     prompt = build_rag_prompt(
-        query,
+        original_query,
         contexts,
         history
     )
