@@ -2,9 +2,16 @@ import json
 
 
 class RetrieverEvaluator:
-    def __init__(self, dataset_path):
+    def __init__(
+            self,
+            dataset_path,
+            query_func=None
+    ):
+
         with open(dataset_path, "r", encoding="utf-8") as f:
             self.dataset = json.load(f)
+
+        self.query_func = query_func
 
     def evaluate(self, db, retriever):
         recall_1 = 0
@@ -15,9 +22,18 @@ class RetrieverEvaluator:
         total = len(self.dataset)
 
         for item in self.dataset:
+
+            query = item["question"]
+
+            # Query Rewrite
+            if self.query_func:
+                query = self.query_func(
+                    item
+                )
+
             results = retriever.search(
                 db,
-                item["question"],
+                query,
                 kb_name=item["kb_name"],
                 owner_id=17,
                 top_k=5

@@ -1,9 +1,6 @@
 __pycache__/
 *.pyc
 
-# json
-app/data/dataset.json
-
 # Environment
 .env
 
@@ -27,4 +24,3 @@ temp.py
 
 # Local models
 /models/
-app/evaluation/results/retrieval_result.json
