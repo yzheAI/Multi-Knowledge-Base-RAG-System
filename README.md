@@ -34,6 +34,8 @@ Query
 - Hybrid Retrieval(FAISS + BM25)
 - Reciprocal Rank Fusion (RRF) 多路检索融合
 - CrossEncoder Rerank 提升检索准确率
+- Query Rewrite 基于历史上下文优化用户查询
+- Retriever Evaluation体系（Recall@K / MRR）
 - 多知识库隔离架构
 - JWT用户认证与权限控制
 - 多用户知识库隔离
@@ -157,6 +159,10 @@ Answer + Source Tracking
 - 基于检索内容的 LLM 问答（Qwen）
 - Qwen API 调用
 - Context 构建
+- Query Rewrite：
+  - 根据历史Conversation补全用户省略信息
+  - 将指代问题转换为适合检索的完整Query
+  - 提升多轮对话场景下的检索准确率
 - 检索结果与原文映射（source tracking）
 - 多轮Conversation管理
 - Conversation历史记录MySQL持久化
@@ -209,6 +215,7 @@ app/
 ├── memory/              # 多轮会话记忆
 ├── models/              # 数据模型层
 ├── prompts/             # Prompt构建
+├── query/               # query rewrite
 ├── retriever/           # FAISS、BM25、Rerank、Retriever
 ├── schemas/             # Pydantic模型
 ├── services/            # 业务逻辑
@@ -318,11 +325,34 @@ RRF仅用于融合两个retriever的rank信息，
 
 | Retriever | Recall@1 | Recall@3 | Recall@5 | MRR    |
 |-----------|----------|----------|----------|--------|
-| FAISS     | 28.86%   | 43.10%   | 50。00%   | 35.26% |
+| FAISS     | 25.86%   | 43.10%   | 50.00%   | 35.26% |
 | BM25      | 50.00%   | 77.59%   | 87.93%   | 64.22% |
 | Hybrid    | 62.07%   | 89.66%   | 98.28%   | 75.46% |
 
 
+### Query Rewrite Evaluation
+
+为了验证 Query Rewrite 对多轮对话检索效果的影响，
+构造含有历史对话的数据集，
+分别测试：
+- 原始Query
+- Query Rewrite后的Query
+
+样例：
+原始问题：它为什么适合用于电子散热器？
+Rewrite：铜基复合材料为什么适合用于电子散热器？
+
+实验结果：
+
+| Method        | Recall@1 | Recall@3 | Recall@5 | MRR    |
+|---------------|----------|----------|----------|--------|
+| Base Query    | 44.83%   | 63.79%   | 74.14%   | 55.57% |
+| Query Rewrite | 56.90%   | 82.76%   | 96.55%   | 71.47% |
+
+结果表明：
+在包含上下文省略和指代的问题场景下，
+Query Rewrite能够有效补充缺失信息，
+提高Retriever召回能力。
 
 ### 6.5 数据存储设计
 系统采用：MySQL + FAISS + BM25
@@ -513,6 +543,15 @@ Memory Key：(user_id, kb_name)
 - pytest测试数据库隔离
 
 
+### V5 Contextual Retrieval Enhancement
+
+新增:
+- Query Rewrite模块
+- 基于Conversation History的问题重写
+- 指代消解
+- Query Rewrite Evaluation Benchmark
+
+
 ## 8. 数据存储结构
 ```text
 data/
@@ -592,8 +631,9 @@ docker-compose up
 - [x] 前端页面
 - [x] JWT Authentication
 - [x] Knowledge Base Permission Control
-- [ ] Redis缓存与任务队列
+- [x] Query Rewrite
 - [x] Hybrid Score Fusion
+- [ ] Redis缓存与任务队列
 - [ ] Elasticsearch 检索
 - [ ] Milvus / Chroma 向量数据库
 - [ ] 工业场景数据处理

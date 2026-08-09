@@ -257,15 +257,123 @@ knowledgeBase
 且组件实例在当前服务进程生命周期内保持，业务模块通过Container获取已有组件。
 
 
-## 7. 检索系统设计
+## 7. Query Rewrite 与检索系统设计
+### 7.1 Query Rewrite
+
+在多轮对话场景中，用户后续问题通常会依赖前文的上下文，
+例如：
+
+```text
+User：铜基复合材料是什么？
+
+Assistant：......
+
+User：它为什么适合用于电子散热器？
+```
+在后续的问题中，可能会将主语用其他代词代指，
+然而在retrieval的时候，“它”缺少明确的代指对象。
+如果直接将原始Query送入Retrieval，会导致检索结果受到影响。
+因此在进行RAG检索流程之前，系统增加Query Rewrite模块，
+利用Conversation History将原始问题根据上下文历史改写为完整的检索Query
+例如：
+```text
+原始Query：
+它为什么适合用于电子散热器？
+
+Rewrite Query：
+铜基复合材料为什么适合用于电子散热器？
+```
+但是系统并不是对所有Query进行Rewrite，
+而是通过适当的规则判断当前Query是否可能存在上下文依赖。
+```python
+def need_rewrite(query):
+    keywords = [
+        "它",
+        "这个",
+        "那个",
+        "上述",
+        "前面",
+        "该"
+    ]
+
+    return any(
+        keyword in query
+        for keyword in keywords
+    )
+```
+如果Query不含有以上代指词，则直接进行Retriever，
+避免进行不必要的LLM调用，降低系统延迟和调用成本。
+
+如果需要对Query进行Rewrite，则结合Conversation History调用LLM：
+```text
+Conversation History
+        +
+    Base Query
+        ↓
+    Qwen Rewrite
+        ↓
+   Rewrite Query
+        ↓
+ Hybrid Retrieval
+```
+Rewrite阶段只负责补全Query语义，不直接回答用户问题。
+
+
+### 7.2 Hybrid Retrieval
+系统采用 FAISS + BM25 双路召回方式。
+
+FAISS负责语义相关性检索，
+BM25负责关键词匹配，
+通过RRF融合两个Retriever的排序结果，
+随后交给CrossEncoder进行精排。
+
+### 7.3 CrossEncoder Rerank
+
 
 ## 8. LLM问答流程
 
 ## 9. 系统评估
 
+### 9.1 Retriever Evaluation
+
+实验结果：
+
+| Retriever | Recall@1 | Recall@3 | Recall@5 | MRR    |
+|-----------|----------|----------|----------|--------|
+| FAISS     | 25.86%   | 43.10%   | 50。00%   | 35.26% |
+| BM25      | 50.00%   | 77.59%   | 87.93%   | 64.22% |
+| Hybrid    | 62.07%   | 89.66%   | 98.28%   | 75.46% |
+
+### 9.2 Query Rewrite Evaluation
+
+为了验证Query Rewrite是否能够改善多轮对话场景下的检索效果，
+构建包含上下文依赖问题的JSON数据集。
+
+实验采用相同的Hybrid Retriever,
+仅改变输入Retriever的Query，从而比较Retriever前后的检索效果。
+
+实验结果：
+
+| Method        | Recall@1 | Recall@3 | Recall@5 | MRR    |
+|---------------|----------|----------|----------|--------|
+| Base Query    | 44.83%   | 63.79%   | 74.14%   | 55.57% |
+| Query Rewrite | 56.90%   | 82.76%   | 96.55%   | 71.47% |
+
+```markdown
+从实验结果来看，Query Rewrite能够明显提升上下文依赖Query的检索效果。
+
+Recall@1从44.83%提升至56.90%，
+Recall@3从63.79%提升至82.76%，
+Recall@5从74.14%提升至96.55%，
+MRR从55.57%提升至71.47%。
+
+其中Recall@5提升超过22个百分点，
+说明Query Rewrite能够有效降低省略主语、指代等上下文依赖问题
+对Retriever召回能力造成的影响。
+```
 ## 10. 遇到的问题和解决方案
 
-### 知识库删除时外键约束异常
+### 10.1 知识库删除时外键约束异常
 在实现知识库删除功能时，发现直接删除 KnowledgeBase 会触发 MySQL 外键约束异常，
 
 KnowledgeBase 和 Document 存在一对多的关系，即：
@@ -320,7 +428,7 @@ if not chunk_ids:
 因此在进行删除操作时，应当按照依赖关系来执行，防止出现脏数据。
 
 
-### VectorStore缓存导致索引数据不一致问题
+### 10.2 VectorStore缓存导致索引数据不一致问题
 在实现多知识库检索功能时，发现知识库更新或删除后，检索结果有时仍然包含旧数据。
 经过排查发现，在删除操作后，FAISS和BM25索引已经更新或删除，问题并非来自FAISS和BM25本身，
 而是由于引入了VectorStoreManager缓存后，内存中的VectorStore对象状态
@@ -455,7 +563,7 @@ Memory: VectorStore Cache
 - 更新索引
 
 
-### 模型生命周期管理与推理性能优化
+### 10.3 模型生命周期管理与推理性能优化
 
 在RAG系统中，Embedding模型和CrossEncoder Reranker模型属于核心推理组件，
 在此期间需要占用大量的显存，时间开销大。
@@ -564,4 +672,4 @@ if model is None:
 使RAG系统具备更接近生产环境的模型管理能力
 
 
-## 10. 后续优化
+## 11. 后续优化
