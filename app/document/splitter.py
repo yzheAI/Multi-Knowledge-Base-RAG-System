@@ -1,6 +1,69 @@
 import re
 
 
+def split_paragraph(text: str):
+    paragraphs = re.split(
+        r"\n\s*\n",
+        text
+    )
+    return [
+        p.strip()
+        for p in paragraphs
+        if p.strip()
+    ]
+
+
+def split_sentence(paragraph: str):
+    sentences = re.split(
+        r"(?<=[。！；？. ?])",
+        paragraph
+    )
+    return [
+        s.strip()
+        for s in sentences
+        if s.strip()
+    ]
+
+
+def sentences_merge(
+        sentences: list[str],
+        chunk_size: int = 200,
+        overlap_sentence=1
+):
+    chunks = []
+
+    current = []
+
+    current_len = 0
+
+    for sentence in sentences:
+
+        if len(current) + len(sentence) <= chunk_size:
+            current.append(sentence)
+            current_len += len(sentence)
+
+        else:
+            if current:
+                chunks.append(
+                    "".join(current)
+                )
+            overlap = current[-overlap_sentence:]
+
+            current = overlap + [sentence]
+
+            current_len = sum(
+                len(x)
+                for x in current
+            )
+
+    if current:
+        chunks.append(
+            "".join(current)
+        )
+
+    return chunks
+
+
 def clean_chunks(chunks: list[str]):
     cleaned = []
     for c in chunks:
@@ -19,73 +82,6 @@ def clean_chunks(chunks: list[str]):
     return cleaned
 
 
-def split_paragraph(text: str):
-    paragraphs = re.split(
-        r"\n\s*\n",
-        text
-    )
-    return [
-        p.strip()
-        for p in paragraphs
-        if p.strip()
-    ]
-
-
-def split_sentence(paragraph: str):
-    sentences = re.split(
-        r"(?<=[。！；？])",
-        paragraph
-    )
-    return [
-        s.strip()
-        for s in sentences
-        if s.strip()
-    ]
-
-
-def sentences_merge(sentences: list[str], chunk_size: int = 200):
-    chunks = []
-
-    current = ""
-
-    for sentence in sentences:
-
-        if len(current) + len(sentence) <= chunk_size:
-            current += sentence
-
-        else:
-            if current:
-                chunks.append(current)
-
-            current = sentence
-
-    if current:
-        chunks.append(current)
-
-    return chunks
-
-
-def add_overlap(chunks):
-    result = []
-    for i, chunk in enumerate(chunks):
-
-        if i == 0:
-            result.append(chunk)
-            continue
-
-        previous_sentences = split_sentence(
-            chunks[i - 1]
-        )
-
-        if previous_sentences:
-            overlap = previous_sentences[-1]
-
-            chunk = overlap + chunk
-
-        result.append(chunk)
-    return result
-
-
 def split_text(text: str, chunk_size: int = 200):
     paragraphs = split_paragraph(text)
     all_sentences = []
@@ -98,8 +94,4 @@ def split_text(text: str, chunk_size: int = 200):
         chunk_size
     )
 
-    chunks = add_overlap(
-        chunks,
-    )
-
-    return chunks
+    return clean_chunks(chunks)
