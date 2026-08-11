@@ -328,13 +328,206 @@ BM25负责关键词匹配，
 随后交给CrossEncoder进行精排。
 
 ### 7.3 CrossEncoder Rerank
+FAISS和BM25完成召回之后，会产生大量的Chunk，
+然而：
+- FAISS只考虑向量相似度
+- BM25只考虑关键词匹配
+二者无法单独准确衡量Query与Chunk之间的语义相关性，
+因此系统引入CrossEncoder作为下阶段的排序器。
 
 
-## 8. LLM问答流程
+### 7.4 Redis Cache Optimization
+在RAG系统中，Embedding计算和Retriever检索过程属于高频调用模块，
+但是对于重复问题，如果每次都重复计算Embedding然后执行Retriever，
+会大大增加系统的响应时间和模型推理开销。
+因此系统引入Redis作为缓存层，以此减少重复计算，提高系统性能。
 
-## 9. 系统评估
+#### 1. Embedding Cache
+Embedding生成过程设计SentenceTransformer模型推理，
+对于相同的Query，Embedding结果保持一致，因此采用：
+```python
+def demo(kb_name, query)
+    cache_key = f"embedding:{query}"
+```
+首先查询Redis：
+```text
+Redis
+├── Hit
+│      ↓
+│   返回Embedding
+│
+└── Miss
+       ↓
+   模型推理
+       ↓
+   写入Redis
+```
 
-### 9.1 Retriever Evaluation
+#### 2. Retrieval Cache
+Embedding完成后，Hybrid Retrieval仍然需要大量计算：
+```text
+FAISS Search
+      +
+BM25 Search
+      +
+RRF Fusion
+      +
+Rerank
+```
+由于召回过程计算成本大，因此系统进一步缓存Retriever结果，
+```python
+def demo(kb_name, query):
+    cache_key = f"retrieval:{kb_name}:{query}"
+```
+缓存内容：
+- chunk_id
+- score
+- metadata
+
+查询流程：
+```text
+User Query
+      |
+  Redis Check
+      |
+ +----+----+
+ |         |
+Hit      Miss
+ |         |
+返回结果   Retriever
+              |
+          Cache Result
+```
+对于高频问题，
+可以直接返回检索结果，
+避免重复执行FAISS、BM25以及Rerank流程。
+
+#### 工程收益
+Redis缓存机制带来了：
+- 降低Embedding模型调用次数
+- 减少FAISS与BM25重复检索
+- 降低CrossEncoder推理开销
+- 提高系统响应速度
+
+最终效果：
+```text
+User Query
+      |
+ Query Rewrite
+      |
+ Redis Cache
+      |
+ +----+----+
+ |         |
+Hit      Miss
+ |         |
+直接返回  Hybrid Retrieval
+              |
+         CrossEncoder
+              |
+           Cache
+              |
+         Return Answer
+```
+
+## 8. 异步文档处理架构
+
+### 8.1 问题分析
+在RAG系统中，文档上传不仅仅是保存文件，还需要执行以下复杂操作：
+```text
+PDF/TXT解析
+      ↓
+Chunk切分
+      ↓
+Embedding生成
+      ↓
+FAISS构建
+      ↓
+BM25构建
+```
+其中Embedding生成涉及了深度学习模型推理，对于大型文档耗时较多。
+如果直接在HTTP请求中执行，会导致以下问题：
+- 请求超时
+- 用户等待时间长
+- API线程长时间阻塞
+
+### 8.2 Celery + Redis方案
+基于以上问题，系统采用：
+```text
+ FastAPI
+    |
+Redis Broker
+    |
+Celery Worker
+```
+上传流程：
+```text
+User Upload
+      |
+ FastAPI API
+      |
+ 创建Task记录
+      |
+ 发送Celery任务
+      |
+ 立即返回task_id
+      |
+ ----------------
+      |
+ Celery Worker
+      |
+ Document Pipeline
+      |
+ 更新任务状态
+```
+FastAPI仅负责接受请求，耗时任务由Worker后台执行，避免阻塞API服务。
+
+### 8.3 任务状态管理
+系统设计Task数据表
+```text
+Task
+
+id
+user_id
+filename
+status
+error_message
+created_at
+```
+用户可通过：Get/tasks/{task_id} 查询处理状态
+
+### 工程收益
+引入异步任务架构后：
+- 上传接口迅速返回
+- 避免长时间HTTP阻塞
+- 提高系统并发能力
+- 支持大规模文档处理
+- 提高用户体验
+
+整体架构：
+```text
+User
+ |
+Upload
+ |
+FastAPI
+ |
+Redis Broker
+ |
+Celery Worker
+ |
+Document Pipeline
+ |
+FAISS/BM25
+ |
+MySQL
+```
+
+## 9. LLM问答流程
+
+## 10. 系统评估
+
+### 10.1 Retriever Evaluation
 
 实验结果：
 
@@ -344,7 +537,7 @@ BM25负责关键词匹配，
 | BM25      | 50.00%   | 77.59%   | 87.93%   | 64.22% |
 | Hybrid    | 62.07%   | 89.66%   | 98.28%   | 75.46% |
 
-### 9.2 Query Rewrite Evaluation
+### 10.2 Query Rewrite Evaluation
 
 为了验证Query Rewrite是否能够改善多轮对话场景下的检索效果，
 构建包含上下文依赖问题的JSON数据集。
@@ -371,9 +564,9 @@ MRR从55.57%提升至71.47%。
 说明Query Rewrite能够有效降低省略主语、指代等上下文依赖问题
 对Retriever召回能力造成的影响。
 ```
-## 10. 遇到的问题和解决方案
+## 11. 遇到的问题和解决方案
 
-### 10.1 知识库删除时外键约束异常
+### 11.1 知识库删除时外键约束异常
 在实现知识库删除功能时，发现直接删除 KnowledgeBase 会触发 MySQL 外键约束异常，
 
 KnowledgeBase 和 Document 存在一对多的关系，即：
@@ -428,7 +621,7 @@ if not chunk_ids:
 因此在进行删除操作时，应当按照依赖关系来执行，防止出现脏数据。
 
 
-### 10.2 VectorStore缓存导致索引数据不一致问题
+### 11.2 VectorStore缓存导致索引数据不一致问题
 在实现多知识库检索功能时，发现知识库更新或删除后，检索结果有时仍然包含旧数据。
 经过排查发现，在删除操作后，FAISS和BM25索引已经更新或删除，问题并非来自FAISS和BM25本身，
 而是由于引入了VectorStoreManager缓存后，内存中的VectorStore对象状态
@@ -563,7 +756,7 @@ Memory: VectorStore Cache
 - 更新索引
 
 
-### 10.3 模型生命周期管理与推理性能优化
+### 11.3 模型生命周期管理与推理性能优化
 
 在RAG系统中，Embedding模型和CrossEncoder Reranker模型属于核心推理组件，
 在此期间需要占用大量的显存，时间开销大。
@@ -672,4 +865,4 @@ if model is None:
 使RAG系统具备更接近生产环境的模型管理能力
 
 
-## 11. 后续优化
+## 12. 后续优化

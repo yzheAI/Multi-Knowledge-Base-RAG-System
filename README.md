@@ -43,11 +43,12 @@ Query
 - MySQL持久化聊天记录管理
 - MySQL + Vector Index混合存储
 - Retriever Evaluation体系
-- SSE流式生成
-- Vue3 Web Interface
 - Multi-layer Resource Lifecycle Management
 - Model Lifecycle Management for Embedding and Reranker
 - Batch Inference Optimization for CrossEncoder
+- Celery + Redis异步文档处理
+- SSE流式生成
+- Vue3 Web Interface
 
 
 ## 1. 项目简介
@@ -84,45 +85,60 @@ Query
               |                       |
          Upload API                Chat API
               |                       |
-        KnowledgeBase              Retrieval
+        Create Task              Query Rewrite
               |                       |
-      Document Pipeline          Hybrid Retriever
+              |                   Redis Cache
               |                       |
-      PDF/TXT Parsing              LLM 生成
-              |
-      Chunk Split
-              |
-      Embedding Generation
-              |
-              |
-       Database Layer
-              |
-     +--------+--------+
-     |                 |
-Knowledge Base A   Knowledge Base B
-     |                 |
- MySQL Metadata   MySQL Metadata
-     |
- VectorStoreManager
-     |
- +---+----------------+
- |                    |
-FAISS Index        BM25 Index
- |
- |
-Hybrid Retrieval
- |
-Metadata Filter
- |
-Deduplication
- |
-CrossEncoder Rerank
- |
-Context Construction
- |
-Qwen LLM
- |
-Answer + Source Tracking
+              |                Hybrid Retrieval
+              |                       |
+              |                   CrossEncoder   
+              |                       |
+              |                    Qwen LLM
+              |                       |
+              |                 Source Tracking
+              |                       |
+              +-----------+-----------+
+                          |
+                    MySQL Database
+                          |
+       +------------------+------------------+
+       |                  |                  |
+  KnowledgeBase      Conversation          Task
+       |
+       |
+       |
+       +------------------+
+                          |
+                   VectorStoreManager
+                          |
+               +----------+----------+
+               |                     |
+           FAISS Index           BM25 Index
+           
+    --------------------------------------------------
+    
+                   Async Processing
+                   
+                       Upload
+                          |
+                     Redis Broker
+                          |
+                     Celery Worker
+                          |
+                   Document Pipeline
+                          |
+                    PDF/TXT Parsing
+                          |
+                     Chunk Split
+                          |
+                  Embedding Generation
+                          |
+                     update Index
+                          |
+                     FAISS + BM25
+                          |
+                  Update Task Status
+            
 ```
 ## 3. 核心功能
 
@@ -168,6 +184,16 @@ Answer + Source Tracking
 - Conversation历史记录MySQL持久化
 - 支持用户级以及知识库级Conversation Memory隔离
 
+### 异步文档处理
+系统通过Celery + Redis 实现异步文档处理。
+主要流程：
+1. 用户上传文档
+2. 系统生成唯一task_id
+3. 保存任务状态到MySQL
+4. 提交Celery异步任务
+5. Worker后台执行文档处理Pipeline
+6. 更新任务状态
+
 ### 工程能力
 - 删除文档
 - 全局异常处理
@@ -178,13 +204,16 @@ Answer + Source Tracking
 - 模块化FastAPI项目结构
 - Docker容器化运行支持
 - 环境变量管理
+- Redis缓存优化
+- Celery异步任务队列
 
 ## 4. 技术栈
 - FastAPI
 - PyPDF2
 - Python
 - SentenceTransformers（文本向量化）
-- FAISS（向量检索） 
+- FAISS（向量检索）
+- jieba
 - OpenAI Compatible API（Qwen）
 - Pickle（BM25持久化）
 - rank-bm25
@@ -193,7 +222,11 @@ Answer + Source Tracking
 - BGE CrossEncoder Reranker
 - Recall@K
 - SQLAlchemy
+- pytest
 - MySQL
+- JWT
+- Redis
+- Celery
 
 
 ## 5. 项目结构
@@ -202,9 +235,12 @@ Answer + Source Tracking
 
 app/
 ├── api/                 # API接口层
+├── auth/                # 鉴权系统
 ├── bm25/                # BM25Store关键词检索
+├── cache/               # Redis缓存
 ├── core/                # 检索服务依赖容器
 ├── crud/                # 数据访问层
+├── data/                # evaluate测试集
 ├── database/            # 数据库连接
 ├── document/            # 文档解析与Pipeline
 ├── embedding/           # Embedding模块
@@ -219,6 +255,7 @@ app/
 ├── retriever/           # FAISS、BM25、Rerank、Retriever
 ├── schemas/             # Pydantic模型
 ├── services/            # 业务逻辑
+├── tasks/               # 异步任务
 ├── vector_store/        # 向量存储与管理
 │   ├── faiss_store.py
 │   └── store_manager.py
@@ -419,6 +456,8 @@ File System负责；
 
 Memory Cache负责：
 - VectorStore实例缓存
+- Embedding Cache
+- Retrieval Cache
 
 #### 缓存失效机制
 为了避免每次查询重新加载索引，
@@ -440,8 +479,29 @@ Memory Cache负责：
 
 提高系统稳定性和可维护性。
 
+### 6.7 Redis Cache Architecture
+```text
+        User Query
+            |
+       Query Rewrite
+            |
+        Cache Check
+     +------|------+
+     |             |
+   Hit Cache   Miss Cache
+     |             |
+ Return Result  Retrieval
+                   |
+               Cache Result
+                   |
+               Return Answer
+```
+系统使用Redis作为缓存层
+缓存内容：
+- Embedding Cache
+- Retrieval Cache
 
-### 6.7 Multi User Architecture
+### 6.8 Multi User Architecture
 
 系统通过 JWT + owner_id 实现用户级权限隔离。
 
@@ -494,6 +554,32 @@ Memory Key：(user_id, kb_name)
 
 查询历史对话时，根据conversation_id加载对应消息，
 避免不同用户以及不同知识库之间出现上下文污染。
+
+### Async Document Processing Architecture
+为了避免大文件处理阻塞API服务，
+系统引入任务队列架构。
+
+组件：
+
+      FastAPI
+         |
+    Redis Broker
+         |
+    Celery Worker
+         |
+    Document Pipeline
+
+Redis负责：
+- Celery消息队列
+- 异步任务调度
+
+Celery Worker负责执行：
+- 文档解析
+- Chunk 切分
+- Embedding计算
+
+任务状态通过MySQL持久化，同时任务与用户进行绑定，
+保证多用户场景下只能查询自己的任务状态。
 
 ## 7. Architecture Evolution
 ### V1 Basic RAG
@@ -551,6 +637,15 @@ Memory Key：(user_id, kb_name)
 - 指代消解
 - Query Rewrite Evaluation Benchmark
 
+
+### V6 Production Optimization
+
+新增:
+- Redis Embedding Cache
+- Redis Retrieval Cache
+- Celery Async Pipeline
+- Task Queue Management
+- User-level Task Isolation
 
 ## 8. 数据存储结构
 ```text
@@ -621,6 +716,16 @@ docker-compose up
 
 ```
 
+### Redis
+```bash
+docker start redis
+```
+
+### Celery Worker
+```bash
+celery -A app.tasks.celery_app.celery_app worker -l info
+```
+
 ## 10. 后续计划
 
 - [x] Retriever Recall Evaluation
@@ -633,7 +738,7 @@ docker-compose up
 - [x] Knowledge Base Permission Control
 - [x] Query Rewrite
 - [x] Hybrid Score Fusion
-- [ ] Redis缓存与任务队列
+- [x] Redis缓存与任务队列
 - [ ] Elasticsearch 检索
 - [ ] Milvus / Chroma 向量数据库
 - [ ] 工业场景数据处理

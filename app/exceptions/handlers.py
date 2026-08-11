@@ -2,7 +2,8 @@ from fastapi import Request
 from starlette.responses import JSONResponse
 from app.exceptions.exceptions import (DocumentNotFound, UnsupportedDocumentType, DocumentEmptyError, LLMTimeoutError,
                                        LLMServiceError, KnowledgeBaseEmptyError, UserConflictError, UserNotFoundError,
-                                       PasswordError, TokenInvalidError, InvalidCredentialsError, ConversationNotFound)
+                                       PasswordError, TokenInvalidError, InvalidCredentialsError, ConversationNotFound,
+                                       NotFoundTask)
 
 
 def register_exception_handlers(app):
@@ -118,6 +119,16 @@ def register_exception_handlers(app):
 
     @app.exception_handler(ConversationNotFound)
     async def conversation_not_found_handler(request: Request, exc: ConversationNotFound):
+        return JSONResponse(
+            status_code=404,
+            content={
+                "code": 404,
+                "message": exc.message
+            }
+        )
+
+    @app.exception_handler(NotFoundTask)
+    async def task_not_found_handler(request: Request, exc: NotFoundTask):
         return JSONResponse(
             status_code=404,
             content={

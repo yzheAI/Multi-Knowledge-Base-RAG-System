@@ -56,3 +56,8 @@ class InvalidCredentialsError(Exception):
 class ConversationNotFound(Exception):
     def __init__(self, message="对话不存在"):
         self.message = message
+
+
+class NotFoundTask(Exception):
+    def __init__(self, message="任务不存在"):
+        self.message = message
