@@ -1,15 +1,16 @@
 import os
-from datetime import datetime
+import uuid
+from app.crud import knowledge_base, document_crud, chunk_crud
+from app.tasks.document_task import process_document_task
+from app.crud.task_crud import create_task
 from app.knowledge_base.manager import KnowledgeManager
 from app.config import SEARCH_TOP_K, KNOWLEDGE_BASE_PATH
-from app.document.pipeline import process_document
 from app.exceptions.exceptions import DocumentNotFound, KnowledgeBaseEmptyError
 from app.core.container import container
-from app.crud import document_crud, knowledge_base, chunk_crud
 
 
 async def upload(db, file, kb_name, owner_id):
-    # 获取知识库
+
     kdg = KnowledgeManager(KNOWLEDGE_BASE_PATH)
 
     kb = knowledge_base.get_kb_by_name(
@@ -20,9 +21,13 @@ async def upload(db, file, kb_name, owner_id):
 
     if not kb:
         raise KnowledgeBaseEmptyError()
-    # 保存文件到知识库目录
-    kb_path = kdg.get_path(kb_name, owner_id)
 
+    kb_path = kdg.get_path(
+        kb_name,
+        owner_id
+    )
+
+    # 上传整个文档至kb
     upload_dir = os.path.join(
         kb_path,
         "files"
@@ -42,58 +47,27 @@ async def upload(db, file, kb_name, owner_id):
         content = await file.read()
         f.write(content)
 
-    # 获取信息(chunks,vector,metadata)
-    result = process_document(
-        str(file_path)
-    )
+    # 创建task
+    task_id = str(uuid.uuid4())
 
-    # 上传文档信息至SQL
-    doc = document_crud.create_document(
-        db=db,
-        kb_id=kb.id,
-        filename=file.filename,
-        file_path=file_path,
-    )
-    # 构建metadata，存入chunks，上传至SQL
-    metadata = result["metadata"]
-
-    metadata.update({
-        "source": file.filename,
-        "upload_time": datetime.now().isoformat()
-    })
-
-    chunks = chunk_crud.create_chunks(
-        db=db,
-        document_id=doc.id,
-        chunks=result["chunks"],
-        metadata=metadata
-    )
-    # 使用数据库生成的chunk_id建立向量索引
-    chunk_ids = [
-        chunk.id
-        for chunk in chunks
-    ]
-
-    store = container.vector_manager.get_store(
-        kb_name,
+    create_task(
         db,
+        task_id,
+        file.filename,
         owner_id
     )
-    store.add(
-        result["vectors"],
-        result["chunks"],
-        chunk_ids=chunk_ids,
+    # 异步任务
+    process_document_task.delay(
+        task_id,
+        file_path,
+        file.filename,
+        kb_name,
+        owner_id
     )
 
-    store.save(kb_path)
-
-    container.vector_manager.remove_store(kb_name)
-
     return {
-        "filename": file.filename,
-        "document_id": doc.id,
-        "msg": "上传成功",
-        "analysis": result
+        "task_id": task_id,
+        "status": "pending"
     }
 
 
