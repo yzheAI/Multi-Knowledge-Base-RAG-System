@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+from urllib.parse import quote_plus
 load_dotenv()
 
 # 项目根目录
@@ -29,6 +30,7 @@ JSON_PATH = BASE_DIR / "app/data/dataset.json"
 REWRITE_JSON_PATH = BASE_DIR / "app/data/query_rewrite_dataset.json"
 KNOWLEDGE_BASE_PATH = DATA_DIR / "knowledge_bases"
 SAVE_JSON_PATH = BASE_DIR / "app/evaluation/results/retrieval_result.json"
+CELERY_ALWAYS_EAGER = False
 
 
 # mysql
@@ -43,9 +45,11 @@ class Settings:
 
     @property
     def PATH(self):
+        password = quote_plus(self.DB_PASSWORD)
         return (
-            f"mysql+pymysql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+            f"mysql+pymysql://{self.DB_USER}:{password}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
 
 
 settings = Settings()
+print(settings.PATH)

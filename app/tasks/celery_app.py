@@ -1,4 +1,5 @@
 from celery import Celery
+from app.config import CELERY_ALWAYS_EAGER
 
 
 celery_app = Celery(
@@ -16,4 +17,5 @@ celery_app.conf.update(
     accept_content=["json"],
     timezone="Asia/Shanghai",
     enable_utc=True,
+    task_always_eager=CELERY_ALWAYS_EAGER
 )
