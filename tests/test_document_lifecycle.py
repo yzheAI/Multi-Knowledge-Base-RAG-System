@@ -1,4 +1,5 @@
 import os
+import time
 
 
 def test_upload_and_get_files_api(client, auth_user, create_kb):
@@ -28,9 +29,27 @@ def test_upload_and_get_files_api(client, auth_user, create_kb):
 
     assert upload_response.status_code == 200
 
-    upload_data = upload_response.json()
+    task_id = upload_response.json()["data"]["task_id"]
 
-    doc_id = upload_data["data"]["document_id"]
+    # 等待 Celery 完成
+    for _ in range(30):
+        response = client.get(
+            f"/tasks/{task_id}",
+            headers=headers
+        )
+
+        task = response.json()["data"]
+
+        if task["status"] == "success":
+            break
+
+        if task["status"] == "failed":
+            raise AssertionError(task.get("error_message"))
+
+        time.sleep(0.5)
+
+    else:
+        raise AssertionError("Celery task timeout")
 
     response = client.get(
         "/files/files_message",

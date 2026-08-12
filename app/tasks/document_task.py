@@ -1,3 +1,4 @@
+from app.cache.retrieval_cache import RetrievalCache
 from app.exceptions.exceptions import KnowledgeBaseEmptyError
 from app.tasks.celery_app import celery_app
 from app.document.pipeline import process_document
@@ -21,6 +22,7 @@ def process_document_task(
     db = SessionLocal()
 
     try:
+        retrieval_cache = RetrievalCache()
         task_crud.update_task_status(
             db,
             task_id,
@@ -100,7 +102,10 @@ def process_document_task(
             "success",
             owner_id
         )
-
+        retrieval_cache.delete_by_kb(
+            owner_id,
+            kb.id
+        )
         return True
 
     except Exception as e:

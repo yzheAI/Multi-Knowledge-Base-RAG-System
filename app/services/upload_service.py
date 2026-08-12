@@ -7,6 +7,7 @@ from app.knowledge_base.manager import KnowledgeManager
 from app.config import SEARCH_TOP_K, KNOWLEDGE_BASE_PATH
 from app.exceptions.exceptions import DocumentNotFound, KnowledgeBaseEmptyError
 from app.core.container import container
+from app.cache.retrieval_cache import RetrievalCache
 
 
 async def upload(db, file, kb_name, owner_id):
@@ -208,6 +209,18 @@ async def file_delete(
         db,
         doc_id,
         owner_id
+    )
+
+    retrieval_cache = RetrievalCache()
+
+    kb = knowledge_base.get_kb_by_name(
+        db,
+        kb_name,
+        owner_id
+    )
+    retrieval_cache.delete_by_kb(
+        owner_id,
+        kb.id
     )
 
     return success_flag

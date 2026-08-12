@@ -7,6 +7,7 @@ import os
 from app.core.container import container
 from app.services.upload_service import file_delete
 import shutil
+from app.cache.retrieval_cache import RetrievalCache
 
 
 async def create(db, kb_name, owner_id):
@@ -120,6 +121,12 @@ async def delete_kb_service(db, kb_name, owner_id):
     # 删除缓存
     container.vector_manager.remove_store(
         kb.name
+    )
+
+    retrieval_cache = RetrievalCache()
+    retrieval_cache.delete_by_kb(
+        owner_id,
+        kb.id
     )
 
     return True

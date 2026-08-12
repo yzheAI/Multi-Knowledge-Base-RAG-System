@@ -2,6 +2,8 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+
+from app.cache.retrieval_cache import RetrievalCache
 from app.database.session import Base
 import uuid
 from main import app
@@ -195,3 +197,14 @@ def retrieval_kb(client, auth_user, create_kb):
 
     return kb_name
 
+
+@pytest.fixture
+def retrieval_cache():
+    cache = RetrievalCache()
+
+    yield cache
+
+    cache.delete_by_kb(
+        1,
+        10
+    )

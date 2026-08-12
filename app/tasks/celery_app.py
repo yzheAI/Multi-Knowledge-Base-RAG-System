@@ -5,6 +5,9 @@ celery_app = Celery(
     "rag",
     broker="redis://localhost:6379/0",
     backend="redis://localhost:6379/0",
+    include=[
+            "app.tasks.document_task",
+        ]
 )
 
 celery_app.conf.update(
