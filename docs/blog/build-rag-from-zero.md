@@ -346,7 +346,7 @@ FAISS和BM25完成召回之后，会产生大量的Chunk，
 Embedding生成过程设计SentenceTransformer模型推理，
 对于相同的Query，Embedding结果保持一致，因此采用：
 ```python
-def demo(kb_name, query)
+def demo(kb_name, query):
     cache_key = f"embedding:{query}"
 ```
 首先查询Redis：

@@ -60,6 +60,7 @@ def override_database():
 
     app.dependency_overrides.clear()
 
+
 # 专门提供给test_xxx
 @pytest.fixture
 def db():

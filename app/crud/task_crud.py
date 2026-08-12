@@ -39,3 +39,25 @@ def update_task_status(db, task_id, status, owner_id):
     if task:
         task.status = status
         db.commit()
+
+
+def delete_task(db, task_id, owner_id):
+    task = get_task(db, task_id, owner_id)
+
+    if not task:
+        return False
+
+    db.delete(task)
+    db.commit()
+
+    return task
+
+
+def get_tasks(db, owner_id):
+    tasks = (
+        db.query(Task)
+        .filter(Task.owner_id == owner_id)
+        .order_by(Task.created_at.desc())
+        .all()
+    )
+    return tasks
