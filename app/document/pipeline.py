@@ -7,11 +7,16 @@ from app.exceptions.exceptions import DocumentEmptyError
 
 
 def process_document(file_path: str):
+
     text = load_document(file_path)
+
     if not text or len(text.strip()) == 0:
         raise DocumentEmptyError("上传文件为空")
+
     chunks = split_text(text)
+
     chunk_cleaned = clean_chunks(chunks)
+
     if len(chunk_cleaned) == 0:
         raise DocumentEmptyError("无有效chunk")
 

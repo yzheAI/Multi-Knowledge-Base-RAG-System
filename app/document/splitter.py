@@ -94,4 +94,4 @@ def split_text(text: str, chunk_size: int = 200):
         chunk_size
     )
 
-    return clean_chunks(chunks)
+    return chunks
