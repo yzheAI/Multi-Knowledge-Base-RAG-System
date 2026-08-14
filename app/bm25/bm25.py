@@ -95,23 +95,6 @@ class BM25Store:
         with open(path, 'wb') as f:
             pickle.dump(data, f)
 
-    def load(self, kb_path: str):
-
-        path = os.path.join(
-            kb_path,
-            "bm25.pkl"
-        )
-
-        if os.path.exists(path):
-            with open(path, 'rb') as f:
-                obj = pickle.load(f)
-
-                self.tokenizer = obj['tokenizer']
-                self.bm25 = obj['bm25']
-                self.ids = obj['ids']
-
-        return True
-
     def delete_documents(
             self,
             chunk_ids: list[int]

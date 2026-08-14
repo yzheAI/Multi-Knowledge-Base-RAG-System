@@ -71,3 +71,56 @@ retrieve
 生成答案
 
 
+## Retrieval
+
+### 4.1 FAISS Semantic Retrieval
+
+#### Q1. 为什么 Query 不能直接进入 FAISS？
+
+Query 本身是文本，FAISS 接收的是向量。
+因此需要先通过 Embedding Model 将 Query 编码为向量，
+再转换为 FAISS 所要求的数据格式（如 float32）。
+
+#### Q2. Embedding 的 768 维是什么意思？
+
+表示文本被映射到 768 维向量空间中的一个点。
+这 768 个维度共同表示文本的语义特征，
+并不是对应 768 个词。
+
+#### Q3. 为什么使用 IndexFlatIP？
+
+IndexFlatIP 使用 Inner Product 进行精确搜索。
+项目中的 Embedding 向量经过 L2 Normalize 后：
+A · B = cosine_similarity(A, B)
+因此可以使用 Inner Product 实现 Cosine Similarity 检索。
+
+#### Q4. D 和 I 分别是什么？
+
+index.search(query_vector, k) 返回 D 和 I。
+
+D：Inner Product 得分，在本项目中可理解为相似度分数。
+I：FAISS 中对应向量的 ID。
+
+由于项目使用 IndexIDMap，并将 Chunk ID 作为向量 ID，
+因此 I 可以直接用于定位 MySQL 中的 Chunk。
+
+
+#### Q5. 为什么使用 IndexIDMap？
+
+FAISS 的向量需要与业务数据库中的 Chunk 建立对应关系。
+
+IndexIDMap + add_with_ids() 可以使：
+
+FAISS Vector ID = MySQL Chunk ID
+
+从而通过 FAISS 检索结果直接查询对应 Chunk。
+
+
+#### Q6. IndexFlatIP 是近似搜索吗？
+
+不是。
+
+IndexFlatIP 属于 精准复杂搜索，会对 Query 与所有向量计算内积，
+然后选出 Top-K。
+
+优点是结果精确，缺点是数据规模增大后计算成本上升。
