@@ -82,16 +82,23 @@ def clean_chunks(chunks: list[str]):
     return cleaned
 
 
-def split_text(text: str, chunk_size: int = 200):
+def split_text(
+        text: str,
+        chunk_size: int = 200
+):
     paragraphs = split_paragraph(text)
-    all_sentences = []
+
+    all_chunks = []
+
     for paragraph in paragraphs:
+
         sentences = split_sentence(paragraph)
-        all_sentences.extend(sentences)
 
-    chunks = sentences_merge(
-        all_sentences,
-        chunk_size
-    )
+        paragraphs_chunks = sentences_merge(
+            sentences,
+            chunk_size
+        )
 
-    return chunks
+        all_chunks.extend(paragraphs_chunks)
+
+    return all_chunks

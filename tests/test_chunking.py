@@ -68,3 +68,20 @@ def test_long_chunking():
 
     for chunk in chunks:
         assert len(chunk) > 0
+
+
+def test_chunk_not_cross_paragraph():
+    text = """
+    第一段第一句。
+    第一段第二句。
+    
+    第二段第一句。
+    第二段第二句。
+    """
+
+    result = split_text(
+        text,
+        chunk_size=30
+    )
+    assert result[0] == "第一段第一句。第一段第二句。"
+    assert result[1] == "第二段第一句。第二段第二句。"
