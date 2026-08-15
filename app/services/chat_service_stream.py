@@ -1,11 +1,9 @@
-from app.crud.conversation_crud import create_conversation, get_conversation, update_conversation_title
-from app.crud.knowledge_base import get_kb_by_name
-from app.exceptions.exceptions import KnowledgeBaseEmptyError
+from app.crud.conversation_crud import get_conversation, update_conversation_title
 from app.llm.qwen import chat_with_qwen_stream
-from app.prompts.history_builder import build_history
+from app.services.history_service import get_or_create_history
 from app.services.rag_service import retrieve_context, build_sources, build_rag_prompt
 import json
-from app.crud.message_crud import get_messages_by_conversation_id, create_message
+from app.crud.message_crud import create_message
 from app.query.rewrite import rewrite_query, need_rewrite
 
 
@@ -18,42 +16,19 @@ async def chat_service_stream(
         filters=None
 ):
 
-    if conversation_id:
-        messages = get_messages_by_conversation_id(
-            db,
-            conversation_id,
-            owner_id
-        )
+    conversation_id, history, is_new = get_or_create_history(
+        db,
+        conversation_id,
+        owner_id,
+        kb_name,
+        query
+    )
 
-    else:
-        kb = get_kb_by_name(
-            db,
-            kb_name,
-            owner_id
-        )
-
-        if kb is None:
-            raise KnowledgeBaseEmptyError()
-
-        kb_id = kb.id
-
-        conversation = create_conversation(
-            db,
-            owner_id,
-            kb_id,
-            title=query[:20]
-        )
-
-        conversation_id = conversation.conversation_id
-
+    if is_new:
         yield (
             "event: conversation\n"
-            f"data: {json.dumps({'conversation_id':conversation_id})}\n\n"
+            f"data: {json.dumps({'conversation_id': conversation_id})}\n\n"
         )
-
-        messages = []
-
-    history = build_history(messages)
 
     original_query = query
 
