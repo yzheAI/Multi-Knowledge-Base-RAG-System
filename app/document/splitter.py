@@ -38,7 +38,7 @@ def sentences_merge(
 
     for sentence in sentences:
 
-        if len(current) + len(sentence) <= chunk_size:
+        if current_len + len(sentence) <= chunk_size:
             current.append(sentence)
             current_len += len(sentence)
 

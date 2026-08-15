@@ -2,15 +2,15 @@
 
 ## 1. 模块概述
 
-Chunking Pipeline 负责将用户上传的原始文档转换为适合向量检索的文本块Chunk
-在RAG系统中，Embedding模型和检索模块并不会直接处理完整的文档，而是首先将文档切分为Chunk后进行处理
+Chunking Pipeline 负责将用户上传的原始文档转换为适合向量检索的文本块Chunk，
+在RAG系统中，Embedding模型和检索模块并不会直接处理完整的文档，而是首先将文档切分为Chunk后进行处理，
 因此Chunking的目标是：
 - 保留文本的完整性
 - 将Chunk长度控制在合适状态
 - 为后续Embedding、FAISS检索、BM25检索提供所需要的数据
 - 减少无意义文本进入向量库
 
-整体流程；
+整体流程：
 
 ```text
    Document
@@ -36,7 +36,7 @@ paragraphs = re.split(
     text
 )
 ```
-根据 换行+任意空白字符+换行 来区分不同段落。
+根据换行+任意空白字符+换行来区分不同段落。
 
 例：
 输入：
@@ -57,8 +57,8 @@ paragraphs = re.split(
 ### 2.2 切分Paragraph原因
 
 如果按照固定长度切分，可能会破坏文档原有的语义边界。
-可能会出现一个Chunk包含了两个自然段的内容，Embedding语义下降。
-因此为了保证Chunk的完整性和语义分界，先按照自然结构划分。
+可能会出现一个Chunk包含了两个自然段的内容，Embedding语义质量下降。
+因此为了保证Chunk的完整性和语义分界，先按照自然段结构划分。
 
 
 ## 3. Sentence Split
