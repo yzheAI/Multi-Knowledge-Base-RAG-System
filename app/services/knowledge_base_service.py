@@ -120,7 +120,8 @@ async def delete_kb_service(db, kb_name, owner_id):
 
     # 删除缓存
     container.vector_manager.remove_store(
-        kb.name
+        kb.name,
+        owner_id
     )
 
     retrieval_cache = RetrievalCache()

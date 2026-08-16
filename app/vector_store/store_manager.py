@@ -17,8 +17,9 @@ class VectorStoreManager:
             db,
             owner_id
     ):
+        store_key = f"{owner_id}_{kb_name}"
 
-        if kb_name not in self.stores:
+        if store_key not in self.stores:
 
             store = VectorStore(EMBEDDING_DIM)
 
@@ -41,10 +42,16 @@ class VectorStoreManager:
                 kb_path
             )
 
-            self.stores[kb_name] = store
+            self.stores[store_key] = store
 
-        return self.stores[kb_name]
+        return self.stores[store_key]
 
-    def remove_store(self, kb_name):
-        if kb_name in self.stores:
-            del self.stores[kb_name]
+    def remove_store(
+            self,
+            kb_name,
+            owner_id
+    ):
+        store_key = f"{owner_id}_{kb_name}"
+
+        if store_key in self.stores:
+            del self.stores[store_key]

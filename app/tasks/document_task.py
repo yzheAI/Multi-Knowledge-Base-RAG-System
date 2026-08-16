@@ -94,7 +94,10 @@ def process_document_task(
 
         store.save(kb_path)
 
-        container.vector_manager.remove_store(kb_name)
+        container.vector_manager.remove_store(
+            kb_name,
+            owner_id
+        )
 
         task_crud.update_task_status(
             db,
