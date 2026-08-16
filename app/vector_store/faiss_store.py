@@ -2,10 +2,9 @@ import faiss
 import numpy as np
 import os
 from app.bm25.bm25 import BM25Store
-from app.crud import chunk_crud
 
 
-# 封装FAISS，实现 存向量+存原文+搜相似文本
+# 封装FAISS，实现向量检索与关键词检索
 class VectorStore:
 
     def __init__(self, dim: int):
@@ -22,6 +21,10 @@ class VectorStore:
             texts,
             chunk_ids,
     ):
+        # =========================
+        # 1. 准备 Embedding
+        # =========================
+
         embeddings = np.array(
             embeddings
         ).astype("float32")  # 转成FAISS需要的格式
@@ -29,18 +32,26 @@ class VectorStore:
         if len(embeddings.shape) == 1:
             embeddings = embeddings.reshape(1, -1)
 
-        # 索引范围
+        # =========================
+        # 2. 准备 chunk_id
+        # =========================
+
         ids = np.array(
             chunk_ids
         ).astype("int64")
 
-        # index 添加向量和显式索引
+        # =========================
+        # 3. 添加到 FAISS
+        # =========================
         self.index.add_with_ids(
             embeddings,
             ids
-        )  # 存入 list[list[float]] 和 list[int]，每个向量对应一个序号
+        )
 
-        # 存入documents，方便传入bm25
+        # =========================
+        # 4. 添加到 BM25
+        # =========================
+
         documents = [
             {
                 "chunk_id": int(i),
@@ -96,31 +107,27 @@ class VectorStore:
     def load(
             self,
             index_path,
-            kb_id,
-            db
+            kb_path,
     ):
-        self.bm25 = BM25Store()  # 初始化bm25，防止多次load
+        # =========================
+        # 1. 加载 FAISS
+        # =========================
+
         if os.path.exists(index_path):
 
             self.index = faiss.read_index(
                 index_path
             )
 
-        documents = []
-        # 从数据库获取 chunks
-        chunks = chunk_crud.get_all_chunks_by_kb(
-            db,
-            kb_id
+        # =========================
+        # 2. 加载 BM25
+        # =========================
+
+        self.bm25 = BM25Store()  # 初始化bm25，防止多次load
+
+        self.bm25.load(
+            kb_path
         )
-
-        for chunk in chunks:
-            documents.append({
-                "chunk_id": chunk.id,
-                "text": chunk.content
-            })
-
-        if documents:
-            self.bm25.add_documents(documents)
 
     def delete(
             self,

@@ -11,7 +11,12 @@ class VectorStoreManager:
             KNOWLEDGE_BASE_PATH
         )
 
-    def get_store(self, kb_name, db, owner_id):
+    def get_store(
+            self,
+            kb_name,
+            db,
+            owner_id
+    ):
 
         if kb_name not in self.stores:
 
@@ -33,8 +38,7 @@ class VectorStoreManager:
 
             store.load(
                 f"{kb_path}/faiss.index",
-                kb_id=kb.id,
-                db=db
+                kb_path
             )
 
             self.stores[kb_name] = store
