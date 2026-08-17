@@ -15,9 +15,6 @@ class BM25Store:
             documents: list[dict]
     ):
         if not documents:
-            self.bm25 = None
-            self.ids = []
-            self.tokenizer = []
             return
 
         new_ids = [
