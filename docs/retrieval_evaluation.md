@@ -79,7 +79,7 @@
         Result
 
 其中：
-将候选集进行扩大：candidate_k = 20
+将候选集进行扩大：candidate_k = 10
 以此获取 Faiss Top20 + BM25 Top20
 最后对候选集进行融合筛选
 
@@ -93,32 +93,32 @@ Reranking
 ## 4. Experiment Results
 Faiss:
 
-| Metric | Value |
-| --- | --- |
+| Metric   | Value |
+|----------|-------|
 | Recall@1 | 0.259 |
 | Recall@3 | 0.431 |
 | Recall@5 | 0.500 |
-| MRR | 0.353 |
+| MRR      | 0.353 |
 
 
 BM25:
 
-| Metric | Value |
-| --- |-------|
-| Recall@1 | 0.500 |
-| Recall@3 | 0.776 |
-| Recall@5 | 0.879 |
-| MRR | 0.642 |
+| Metric   | Value |
+|----------|-------|
+| Recall@1 | 0.483 |
+| Recall@3 | 0.741 |
+| Recall@5 | 0.828 |
+| MRR      | 0.609 |
 
 
 ## 5. Hybrid Retrieval Experiments
 
 | 方案 | 方法 | Recall@1 | Recall@3 | Recall@5 | MRR    |
-|----| --- |----------| --- | --- |--------|
-| A  | Merge | 25.86%   | 43.10 | 50.00% | 38.66% |
-| B  | RRF_FUSION | 34.48%   | 56.90% | 70.69% | 50.05% |
-| C  | Merge+Reranker| 55.17%   | 79.31 | 84.48% | 66.64% |
-| D | RRF Fusion+Reranker| 62.07%   | 89.66% | 98.28% | 75.46% |
+| --- | --- |----------|----------|----------|--------|
+| A | Merge | 25.86%   | 43.10    | 50.00%   | 35.26% |
+| B | RRF_FUSION | 31.03%   | 58.62%   | 74.14%   | 46.32% |
+| C | Merge+Reranker| 44.83%   | 55.17%   | 55.17%   | 49.71% |
+| D | RRF Fusion+Reranker| 63.79%   | 86.21%   | 87.93%   | 74.28% |
 
 
 ## 6. Analysis
@@ -140,6 +140,6 @@ RRF通过rank进行融合
 | Dense Retrieval  | Faiss             |
 | Sparse Retrieval | BM25              |
 | Fusion           | RRF               |
-| Candidate Size   | 20                |
+| Candidate Size   | 10                |
 | Reranker         | bge-reranker-base |
 | Final TopK       | 5                 |

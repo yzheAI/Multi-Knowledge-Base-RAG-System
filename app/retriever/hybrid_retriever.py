@@ -22,7 +22,7 @@ class HybridRetriever(BaseRetriever):
             filters=None
     ):
 
-        candidate_k = 20
+        candidate_k = 10
 
         faiss_docs = self.faiss_retriever.retrieve(
             db,

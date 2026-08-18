@@ -79,19 +79,27 @@ flowchart TD
     C --> D[Celery delay]
     D --> E[Redis Broker]
     E --> F[Document Pipeline]
+
     F --> G[Chunk]
-    F --> H[metadata]
+    F --> H[Metadata]
+
     G --> I[MySQL]
     H --> I
     I --> J[Chunk ID]
-    F --> K[Vectors]
+
+    G --> K[Embedding]
     K --> L[FAISS]
     J --> L
-    F --> M[BM25]
-    M --> N[保存]
-    L --> N
-    N --> O[清理Retrieval Cache]
-    O --> P[Task Success]
+
+    G --> M[Tokenization]
+    M --> N[BM25]
+    J --> N
+
+    L --> O[持久化]
+    N --> O
+
+    O --> P[清理 Retrieval Cache]
+    P --> Q[Task Success]
 ```
 
 ## 4. 完整执行流程
@@ -159,7 +167,7 @@ Redis Broker
  ↓
 Celery Worker
 ```
-Redis在Celery中充当Broker消息代理，存放带执行的任务，
+Redis在Celery中充当Broker消息代理，存放待执行的任务，
 实现Web进程与Worker进程之间的任务消息传递
 
 ### 5.3 文档解析
