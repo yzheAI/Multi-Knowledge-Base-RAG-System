@@ -1,6 +1,7 @@
 import os
 import uuid
 from app.crud import knowledge_base, document_crud, chunk_crud
+from app.storage.file_storage import save_uploaded_file
 from app.tasks.document_task import process_document_task
 from app.crud.task_crud import create_task
 from app.knowledge_base.manager import KnowledgeManager
@@ -11,42 +12,13 @@ from app.cache.retrieval_cache import RetrievalCache
 
 
 async def upload(db, file, kb_name, owner_id):
-
-    kdg = KnowledgeManager(KNOWLEDGE_BASE_PATH)
-
-    kb = knowledge_base.get_kb_by_name(
+    # 上传保存文件
+    upload_info = await save_uploaded_file(
         db,
+        file,
         kb_name,
         owner_id
     )
-
-    if not kb:
-        raise KnowledgeBaseEmptyError()
-
-    kb_path = kdg.get_path(
-        kb_name,
-        owner_id
-    )
-
-    # 上传整个文档至kb
-    upload_dir = os.path.join(
-        kb_path,
-        "files"
-    )
-
-    os.makedirs(
-        upload_dir,
-        exist_ok=True
-    )
-
-    file_path = os.path.join(
-        upload_dir,
-        file.filename
-    )
-
-    with open(file_path, "wb") as f:
-        content = await file.read()
-        f.write(content)
 
     # 创建task
     task_id = str(uuid.uuid4())
@@ -57,10 +29,12 @@ async def upload(db, file, kb_name, owner_id):
         file.filename,
         owner_id
     )
+
     # 异步任务
     process_document_task.delay(
         task_id,
-        file_path,
+        upload_info["file_path"],
+        upload_info["kb_path"],
         file.filename,
         kb_name,
         owner_id
