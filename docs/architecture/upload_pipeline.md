@@ -26,21 +26,38 @@ Upload Pipeline 主要处理用户上传文档后的完整异步操作。
 
 ## 2. 业务目标
 
-用户上传文档，为了防止文档过大，需要进行大量的文档解析、Embedding和向量索引构建，
-进而导致HTTP长时间持续占用，影响用户使用体验，
-因此系统采用Celery异步任务处理：
+用户上传文档，系统首先将文件保存到知识库对应目录，
+然后创建异步任务，由Celery Worker后台执行文档处理流程。
+
+由于文档处理包含：
+- 文档解析
+- Chunk切分
+- Embedding生成
+- FAISS/BM25索引构建
+
+这些操作耗时较长，因此不能阻塞FastAPI请求。
+
+系统采用异步架构：
 ```text
-    用户上传文档
-        ↓
-     创建任务
-        ↓
-     返回task_id
-        ↓
-  Celery 异步后台处理
-        ↓
- 用户使用task_id查询处理任务
-        ↓
-    HTTP使用结束   
+    User Upload
+         ↓
+ FastAPI Upload API
+         ↓
+   upload_service
+         ↓
+  file_storage保存文件
+         ↓
+    create Task
+         ↓
+    Celery delay()
+         ↓
+     Redis Broker
+         ↓
+     Celery Worker
+         ↓
+    document_service
+         ↓
+    Document Pipeline
 ```
 
 如果文件使用同步处理：
@@ -69,37 +86,65 @@ Upload Pipeline 主要处理用户上传文档后的完整异步操作。
      后台处理
       
 ```
-通过使用Celery，系统把耗时任务异步交给后台进程执行， 避免阻塞Web接口
+通过使用Celery，系统把耗时任务异步交给后台进程执行， 避免阻塞Web接口。
+
+FastAPI只负责：
+- 文件接收
+- 文件保存
+- 创建任务
+- 返回task_id
+
+
+Worker负责：
+- 文档解析
+- 数据入库
+- 索引构建
+- Cache失效
 
 ## 3. 整体架构
 ```mermaid
 flowchart TD
-    A[User Upload] --> B[FastAPI Upload API]
-    B --> C[创建 Task]
-    C --> D[Celery delay]
-    D --> E[Redis Broker]
-    E --> F[Document Pipeline]
 
-    F --> G[Chunk]
-    F --> H[Metadata]
+A[User Upload] --> B[FastAPI Upload API]
 
-    G --> I[MySQL]
-    H --> I
-    I --> J[Chunk ID]
+B --> C[Upload Service]
 
-    G --> K[Embedding]
-    K --> L[FAISS]
-    J --> L
+C --> D[File Storage]
+D --> E[Local File System]
 
-    G --> M[Tokenization]
-    M --> N[BM25]
-    J --> N
+C --> F[Create Task]
+F --> G[Celery delay]
 
-    L --> O[持久化]
-    N --> O
+G --> H[Redis Broker]
 
-    O --> P[清理 Retrieval Cache]
-    P --> Q[Task Success]
+H --> I[Celery Worker]
+
+I --> J[Document Service]
+
+J --> K[Document Pipeline]
+
+K --> L[Chunk]
+K --> M[Metadata]
+K --> N[Embedding]
+
+L --> O[MySQL Document/Chunk]
+
+O --> P[chunk_id]
+
+N --> Q[FAISS]
+
+P --> Q
+
+L --> R[BM25]
+
+Q --> S[Save Index]
+R --> S
+
+S --> T[Remove VectorStore Cache]
+
+T --> U[Delete Retrieval Cache]
+
+U --> V[Task Success]
 ```
 
 ## 4. 完整执行流程
@@ -108,27 +153,52 @@ flowchart TD
 sequenceDiagram
     participant U as User
     participant API as FastAPI
-    participant M as Mysql
-    participant R as Redis
+    participant S as Upload Service
+    participant FS as File Storage
+    participant DB as Mysql
+    participant R as Redis Broker
     participant W as Celery Worker
-    participant F as Faiss
+    participant DS as Document Service
+    participant F as FAISS
     
-    U->>API: 上传文档
-    API->>M: 创建 Task(pending)
-    API->>R: 提交 Celery Task
-    API-->>U: 返回 task_id
-    W->>M: Task → processing
-    W->>M: 查询 KnowledgeBase
-    W->>W: 文档解析处理
-    W->>M: 创建 Document
-    W->>M: 创建 Chunk
-    W->>F: 写入 vectors + chunk_id
-    W->>F: 保存 FAISS与BM25
-    W->>M: Task → success
-    W->>M: 删除知识库检索缓存
+    U->>API: 上传文件
+
+API->>S: upload()
+
+S->>FS: 保存文件
+
+S->>DB: 创建Task(pending)
+
+S->>R: delay(task)
+
+API-->>U: 返回task_id
+
+
+W->>DB: Task processing
+
+W->>DS: handle_document_upload()
+
+DS->>DB: 查询KnowledgeBase
+
+DS->>DS: Parse/Split/Embedding
+
+DS->>DB: 创建Document
+
+DS->>DB: 创建Chunk
+
+DB-->>DS: 返回chunk_id
+
+DS->>F: 写入vector + chunk_id
+
+DS->>F: 保存索引
+
+DS->>DB: Task success
+
+DS->>R: 删除Retrieval Cache
     
 ```
-用户上传文档后，首先创建Task，状态为pending，上传到MySQL，并返回task_id，
+用户上传文档后，首先进行文档上传逻辑，保存文件到本地，
+然后创建Task，状态为pending，上传到MySQL，并返回task_id，
 文档处理进入异步阶段，Task的状态变为processing，开始查询对应知识库。
 文档进行parse,split,embedding处理，获取Chunk信息。
 系统创建Document、Chunk存入MySQL进行数据持久化并返回chunk_id，
@@ -140,35 +210,62 @@ Task状态转换为success标记已成功，删除知识库索引缓存。
 
 ### 5.1 文件上传与任务创建
 
-用户上传文件，根据知识库名、文件名进行路径拼接，将pdf/txt存入本地磁盘对应位置，
+用户上传文件由upload_service负责业务编排，
+根据知识库名、文件名进行路径拼接，将pdf/txt存入本地磁盘对应位置，
 创建Task任务，将状态设置为pending，返回task_id。
 为了进行异步任务，使用process_document_task.delay(),
 通过使用delay()，进程执行就会变成：
 ```text
-FastAPI
-  ↓
-发送任务
-  ↓
-Redis
-  ↓
-Celery Worker
-  ↓
-真正执行
+Upload API
+    ↓
+upload_service.upload()
+    ↓
+file_storage.save_uploaded_file()
+    ↓
+保存文件
+    ↓
+create_task()
+    ↓
+process_document_task.delay()
 ```
-FastAPI 不需要自己承担 PDF 解析、Embedding、FAISS 建索引这些任务。
+其中：
+
+file_storage负责：
+- 知识库路径管理
+- 文件目录创建
+- 文件保存
+
+upload_service负责：
+- 调用文件保存
+- 创建任务
+- 调度Celery
 
 ### 5.2 Celery异步任务
 
-系统使用Celery异步任务，
+Celery Task本身不负责具体业务逻辑。
 ```text
 FastAPI
  ↓
 Redis Broker
  ↓
 Celery Worker
+ ↓
+handle_document_upload()
+ ↓
+Document Pipeline
 ```
 Redis在Celery中充当Broker消息代理，存放待执行的任务，
-实现Web进程与Worker进程之间的任务消息传递
+实现Web进程与Worker进程之间的任务消息传递。
+
+Celery Task主要职责：
+
+- 创建数据库Session
+- 调用Document Service
+- 捕获异常
+- 更新失败状态
+- 关闭Session
+
+业务逻辑集中在document_service中。
 
 ### 5.3 文档解析
 
@@ -262,6 +359,36 @@ stateDiagram-v2
 - processing Worker: 正在处理
 - success: 处理成功
 - failed: 处理失败
+
+### 5.10 Service职责划分
+
+系统将上传流程按照职责进行拆分。
+#### upload_service
+负责：
+- 接收上传请求
+- 调用文件存储
+- 创建Task
+- 调度Celery
+
+#### file_storage
+负责：
+- 文件路径管理
+- 本地文件保存
+
+#### document_service
+负责：
+- 文档解析
+- Chunk生成
+- Document入库
+- Chunk入库
+- FAISS/BM25更新
+- Cache失效
+
+#### document_task
+负责：
+- 异步任务入口
+- 生命周期管理
+- 异常捕获
 
 ## 6. 数据流与数据关系
 
@@ -459,6 +586,12 @@ Task更新失败
 ## 11. 模块总结
 
 Upload Pipeline 是整个知识库系统的数据入口模块，主要负责将用户上传的文档转换为系统可以检索管理的知识数据。
+
+系统通过upload_service、file_storage、Celery Task以及document_service进行职责拆分：
+- upload_service负责请求编排
+- file_storage负责文件持久化
+- document_service负责文档处理和索引构建
+- Celery负责异步执行
 
 在文档上传过程中，系统通过使用Celery异步任务机制，将耗时较多的文档解析、文本切分、Embedding生成和索引构建
 等操作从Web请求中解耦，避免上传过程一直阻塞FastAPI接口，提高系统响应速度和用户体验。
