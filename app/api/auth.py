@@ -9,7 +9,10 @@ user_router = APIRouter(prefix='/auth', tags=['认证'])
 
 
 @user_router.post('/register')
-async def create_user(request: UserCreate, db: Session = Depends(get_db)):
+async def create_user(
+        request: UserCreate,
+        db: Session = Depends(get_db)
+):
     user = await create_user_service(
         db=db,
         username=request.username,
@@ -20,7 +23,10 @@ async def create_user(request: UserCreate, db: Session = Depends(get_db)):
 
 
 @user_router.post('/login')
-async def login(request: UserLogin, db: Session = Depends(get_db)):
+async def login(
+        request: UserLogin,
+        db: Session = Depends(get_db)
+):
     result = await login_user_service(
         db=db,
         username=request.username,

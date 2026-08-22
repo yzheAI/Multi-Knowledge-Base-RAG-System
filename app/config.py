@@ -33,6 +33,9 @@ KNOWLEDGE_BASE_PATH = DATA_DIR / "knowledge_bases"
 SAVE_JSON_PATH = BASE_DIR / "app/evaluation/results/retrieval_result.json"
 CELERY_ALWAYS_EAGER = True
 
+# JWT
+EXPIRE_MINUTES = 60
+ALGORITHM = 'HS256'
 
 # mysql
 class Settings:
