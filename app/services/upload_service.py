@@ -197,4 +197,9 @@ async def file_delete(
         kb.id
     )
 
+    container.vector_manager.remove_store(
+        kb_name,
+        owner_id
+    )
+
     return success_flag
