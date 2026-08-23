@@ -35,7 +35,7 @@ CELERY_ALWAYS_EAGER = True
 
 # JWT
 EXPIRE_MINUTES = 60
-ALGORITHM = 'HS256'
+
 
 # mysql
 class Settings:
