@@ -1,6 +1,6 @@
 from openai import OpenAI, APITimeoutError, APIError
 from app.exceptions.exceptions import LLMTimeoutError, LLMServiceError
-from app.config import API_KEY, LLM_BASE_URL
+from app.config import API_KEY, LLM_BASE_URL, LLM_MODEL, LLM_TEMPERATURE, LLM_MAX_TOKENS
 
 
 client = OpenAI(
@@ -12,7 +12,9 @@ client = OpenAI(
 def chat_with_qwen_stream(prompt: str):
     try:
         response = client.chat.completions.create(
-            model="qwen-plus",
+            model=LLM_MODEL,
+            temperature=LLM_TEMPERATURE,
+            max_tokens=LLM_MAX_TOKENS,
             messages=[
                 {
                     "role": "user",
@@ -38,7 +40,7 @@ def chat_with_qwen_stream(prompt: str):
 def chat_with_qwen(prompt: str):
     try:
         response = client.chat.completions.create(
-            model="qwen-plus",
+            model=LLM_MODEL,
             messages=[
                 {
                     "role": "user",

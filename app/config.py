@@ -18,8 +18,6 @@ API_KEY = os.getenv("DASHSCOPE_API_KEY")
 
 EMBEDDING_MODEL = "shibing624/text2vec-base-chinese"
 
-LLM_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-
 RERANK_MODEL_PATH = MODEL_DIR / "models/BAAI--bge-reranker-base/snapshots/master"
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -32,6 +30,13 @@ REWRITE_JSON_PATH = BASE_DIR / "app/data/query_rewrite_dataset.json"
 KNOWLEDGE_BASE_PATH = DATA_DIR / "knowledge_bases"
 SAVE_JSON_PATH = BASE_DIR / "app/evaluation/results/retrieval_result.json"
 CELERY_ALWAYS_EAGER = True
+
+# LLM
+LLM_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+LLM_MODEL = "qwen-plus"
+LLM_TEMPERATURE = 0.1
+LLM_MAX_TOKENS = 1024
+LLM_TIMEOUT = 30
 
 # JWT
 EXPIRE_MINUTES = 60
