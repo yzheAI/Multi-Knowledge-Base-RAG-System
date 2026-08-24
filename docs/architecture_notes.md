@@ -1,4 +1,4 @@
-AI Knowledge Base Architecture Notes
+# AI Knowledge Base Architecture Notes
 
 
 ## 为什么需要 VectorStore？
