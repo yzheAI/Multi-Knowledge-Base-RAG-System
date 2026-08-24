@@ -110,3 +110,30 @@ def update_conversation_title(
 
     db.commit()
     db.refresh(conversation)
+
+
+def delete_conversation_by_kb(
+        db,
+        kb_id,
+        user_id
+):
+    conversations = (
+        db.query(Conversation)
+        .filter(
+            Conversation.kb_id == kb_id,
+            Conversation.user_id == user_id
+        )
+        .all()
+    )
+
+    for conversation in conversations:
+
+        db.query(Message).filter(
+            Message.conversation_id == conversation.conversation_id,
+        ).delete(
+            synchronize_session=False
+        )
+
+        db.delete(conversation)
+
+    db.commit()

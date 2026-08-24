@@ -8,6 +8,7 @@ from app.core.container import container
 from app.services.upload_service import file_delete
 import shutil
 from app.cache.retrieval_cache import RetrievalCache
+from app.crud.conversation_crud import delete_conversation_by_kb
 
 
 async def create(db, kb_name, owner_id):
@@ -92,7 +93,17 @@ async def delete_kb_service(db, kb_name, owner_id):
     kb = get_kb_by_name(db, kb_name, owner_id)
     if not kb:
         raise KnowledgeBaseEmptyError("知识库为空")
-    docs = get_documents_by_kb(db, kb.id)
+
+    delete_conversation_by_kb(
+        db,
+        kb.id,
+        owner_id
+    )
+
+    docs = get_documents_by_kb(
+        db,
+        kb.id
+    )
 
     doc_ids = [
         doc.id
