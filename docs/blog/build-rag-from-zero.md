@@ -26,56 +26,40 @@
 - 支持检索结果来源追踪，提高系统可解释性
 
 ## 2. 系统整体架构
-
-                                 User
+```text
+                                User
                                   |
                              Vue3 Frontend
                                   |
                             FastAPI Backend
                                   |
-                      +-----------+-----------+
-                      |                       |
-                    Upload                 Query
-                      |                       |
-              Document Pipeline          Chat Pipeline
-                      |                       |
-              PDF/TXT Parsing                |
-                      |
-              Chunk Split
-                      |
-              Embedding Generation
-                      |
-                      |
-               Database Layer
-                      |
-             +--------+--------+
-             |                 |
-    Knowledge Base A   Knowledge Base B
-             |                 |
-       MySQL Metadata   MySQL Metadata
-             |
-    VectorStoreManager
+                      +-----------+--------------+
+                      |                          |
+                    Upload                     Query
+                      |                          |
+              Document Pipeline             Chat Pipeline
+                      |                          |
+              PDF/TXT Parsing                    |
+                      |                    Hybrid Retrieval
+                  Chunk Split                    |
+                      |                    Metadata Filter
+             Embedding Generation                |
+                      |                         RRF
+               Database Layer                    |
+                      |                  CrossEncoder Rerank
+             +--------+--------+                 |
+      Knowledge Base A  Knowledge Base B  Context Construction
+             |                 |                 |
+       MySQL Metadata      MySQL Metadata     Qwen LLM
+             |                                   |
+    VectorStoreManager                Answer + Source Tracking
              |
          +---+----------------+
          |                    |
      FAISS Index        BM25 Index
-         |
-         |
-    Hybrid Retrieval
-         |
-    Metadata Filter
-         |
-    Deduplication
-         |
-    CrossEncoder Rerank
-         |
-    Context Construction
-         |
-      Qwen LLM
-         |
-    Answer + Source Tracking
 
-
+```
+                                 
 ## 3. 技术选型
 
 ### Backend
@@ -109,21 +93,50 @@ BM25关键词存储
 
 ## 4. 文档处理流程
 
-PDF/TXT
- ↓
-Parser
- ↓
-Text Split
- ↓
-Chunk
- ↓
-MySQL生成chunk_id
- ↓
-Embedding
- ↓
-FAISS建立索引
- ↓
-BM25建立索引
+```mermaid
+flowchart TD
+
+A[User Upload] --> B[FastAPI Upload API]
+
+B --> C[Upload Service]
+
+C --> D[File Storage]
+D --> E[Local File System]
+
+C --> F[Create Task]
+F --> G[Celery delay]
+
+G --> H[Redis Broker]
+
+H --> I[Celery Worker]
+
+I --> J[Document Service]
+
+J --> K[Document Pipeline]
+
+K --> L[Chunk]
+K --> M[Metadata]
+K --> N[Embedding]
+
+L --> O[MySQL Document/Chunk]
+
+O --> P[chunk_id]
+
+N --> Q[FAISS]
+
+P --> Q
+
+L --> R[BM25]
+
+Q --> S[Save Index]
+R --> S
+
+S --> T[Remove VectorStore Cache]
+
+T --> U[Delete Retrieval Cache]
+
+U --> V[Task Success]
+```
 
 
 ## 5. 知识库管理
@@ -138,8 +151,9 @@ BM25建立索引
 - MySQL Metadata
 
 系统通过VectorStoreManager，
-根据kb_name管理不同知识库对应的向量
+根据kb_name和owner_id管理不同知识库对应的向量
 
+```text
 knowledgeBase
       |
       |
@@ -147,9 +161,9 @@ knowledgeBase
       |
       |
     Chunk
-
+```
 在查询过程中，用户输入kb_name，定位到对应的VectorStore，
-通过不同的对象对当前知识库进行检索，从而完成知识库隔离
+通过不同的对象对当前知识库进行检索，从而完成知识库隔离。
 
 
 ## 6. 多用户知识库系统设计
@@ -161,29 +175,25 @@ knowledgeBase
 防止知识库隐私泄露。
 
 系统整体结构：
-
+```text
         User
-    
           |
-
     KnowledgeBase
-
           |
-
        Document
-
           |
-
         Chunk
+```
 
 其中：
-    KnowledgeBase 通过 owner_id 关联用户
-
+    KnowledgeBase通过owner_id关联用户
+```text
     User
      |
      | 1:N
      |
     Knowledge
+```
 
 每个用户可以创建管理多个知识库，
 但是各用户只能访问自己的知识库。
@@ -193,7 +203,7 @@ knowledgeBase
 系统采用JWT实现用户身份认证。
 
 登录流程：
-
+```text
         User
          ↓
      输入用户密码
@@ -203,9 +213,10 @@ knowledgeBase
     生成JWT Token
          ↓
     客户端获取Token
+```
 
 后续再次登录：
-    
+```text
     用户携带Token
         ↓
      解析JWT
@@ -213,37 +224,64 @@ knowledgeBase
     获取user_id
         ↓
       权限校验
+```
 
 ### 6.2 知识库权限隔离
 
 为了防止用户能够访问其他用户知识库，造成数据泄露或丢失，
 将所有的知识库操作都绑定当前用户身份(user_id)。
 
-查询知识库：user_id + kb_name 用于定位当前用户拥有的知识库。
+查询知识库：user_id + kb_name用于定位当前用户拥有的知识库。
 
 对于上传、删除、查询知识库：
 使用数据库验证 KnowledgeBase.owner_id == current_user.id,
-对符合条件的kb进行操作，否则拒绝访问
+对符合条件的kb进行操作，否则拒绝访问。
 
 ### 6.3 多用户上下文记忆隔离
 
-在每个聊天对话框中，如果不同的用户共享同一个Conversation Memory,
-会出现不同用户之间记忆数据共享的情况，导致历史上下文污染。
+为了支持多轮对话场景，系统设计数据库持久化的Conversation管理机制。
 
-因此系统设计MemoryManager管理不同用户的聊天上下文。
+传统RAG系统通常将Conversation History保存在内存中，
+这种方式存在服务重启后数据丢失以及多用户上下文混淆的问题。
 
-在获取当前上下文信息时，首先通过(user_id,kb_name)定位到符合条件的历史上下文。
-例如：
+因此系统采用MySQL持久化存储用户聊天记录。
 
-    admin1 + copper_based
-            |
-         历史记录   
+数据结构：
+```text
+User
+ |
+Conversation
+ |
+Message
+```
 
-    admin2 + medical
-            |
-        历史记录2
+其中：
+- Conversation记录一次完整对话会话
+- Message保存用户问题和模型回答
+- Conversation通过user_id关联用户
 
-不同用户之间聊天历史信息进行隔离
+查询历史上下文时：
+```text
+user_id
+    +
+conversation_id
+        |
+        ↓
+     Message History
+        |
+        ↓
+    Prompt Construction
+```
+
+不同用户之间通过user_id进行隔离，
+不同会话之间通过conversation_id进行区分。
+
+这样可以保证：
+
+- 用户聊天记录持久化
+- 多用户上下文隔离
+- 服务重启后历史对话不会丢失
+
 
 ### 6.4 Container统一管理核心组件
 
@@ -251,11 +289,9 @@ knowledgeBase
 - VectorStoreManager
 - Retriever
 - Reranker
-- MemoryManager
 
 避免业务代码重复创建对象，服务启动时Container仅创建一次，
 且组件实例在当前服务进程生命周期内保持，业务模块通过Container获取已有组件。
-
 
 ## 7. Query Rewrite 与检索系统设计
 ### 7.1 Query Rewrite
@@ -342,10 +378,10 @@ FAISS和BM25完成召回之后，会产生大量的Chunk，
 会大大增加系统的响应时间和模型推理开销。
 因此系统引入Redis作为缓存层，以此减少重复计算，提高系统性能。
 
-#### 1. Embedding Cache
+#### Embedding Cache
 Embedding生成过程设计SentenceTransformer模型推理，
 对于相同的Query，Embedding结果保持一致，因此采用：
-```python
+```text
 def demo(kb_name, query):
     cache_key = f"embedding:{query}"
 ```
@@ -363,7 +399,7 @@ Redis
    写入Redis
 ```
 
-#### 2. Retrieval Cache
+#### Retrieval Cache
 Embedding完成后，Hybrid Retrieval仍然需要大量计算：
 ```text
 FAISS Search
@@ -375,7 +411,7 @@ RRF Fusion
 Rerank
 ```
 由于召回过程计算成本大，因此系统进一步缓存Retriever结果，
-```python
+```text
 def demo(kb_name, query):
     cache_key = f"retrieval:{kb_name}:{query}"
 ```
@@ -435,15 +471,15 @@ Hit      Miss
 ### 8.1 问题分析
 在RAG系统中，文档上传不仅仅是保存文件，还需要执行以下复杂操作：
 ```text
-PDF/TXT解析
+  PDF/TXT解析
       ↓
-Chunk切分
+   Chunk切分
       ↓
-Embedding生成
+ Embedding生成
       ↓
-FAISS构建
+   FAISS构建
       ↓
-BM25构建
+   BM25构建
 ```
 其中Embedding生成涉及了深度学习模型推理，对于大型文档耗时较多。
 如果直接在HTTP请求中执行，会导致以下问题：
@@ -480,7 +516,8 @@ User Upload
       |
  更新任务状态
 ```
-FastAPI仅负责接受请求，耗时任务由Worker后台执行，避免阻塞API服务。
+系统设计采用Celery+Redis异步任务架构。
+在本地开发环境由于GPU资源限制，采用Celery eager模式执行任务；生产环境可部署独立Worker。
 
 ### 8.3 任务状态管理
 系统设计Task数据表
@@ -524,6 +561,39 @@ MySQL
 ```
 
 ## 9. LLM问答流程
+
+用户输入Query后，系统执行完整RAG流程：
+
+```text
+User Query
+    ↓
+Query Rewrite
+    |
+    | (如果存在上下文依赖)
+    ↓
+Hybrid Retrieval
+    ↓
+FAISS + BM25
+    ↓
+RRF Fusion
+    ↓
+CrossEncoder Rerank
+    ↓
+Context Construction
+    ↓
+Qwen LLM
+    ↓
+Answer Generation
+    ↓
+Source Tracking
+```
+
+其中：
+- Query Rewrite负责解决多轮对话中的指代和省略问题，将用户输入转换为适合检索的完整Query。
+- Retriever负责从当前知识库中召回相关Chunk。
+- Reranker进一步计算Query与Chunk之间的语义相关性，选择Top-K高质量上下文。
+- 系统将检索结果、历史Conversation以及Prompt模板组合，构建最终LLM输入。
+- LLM根据检索到的企业知识生成回答，同时返回对应Source信息，提高答案可解释性。
 
 ## 10. 系统评估
 
@@ -571,6 +641,7 @@ MRR从52.21%提升至70.54%。
 
 KnowledgeBase 和 Document 存在一对多的关系，即：
 
+```text
     KnowledgeBase
         |
         |
@@ -578,13 +649,14 @@ KnowledgeBase 和 Document 存在一对多的关系，即：
         |
         |
       Chunk
+```
 
 当 KnowledgeBase 下仍然存在 Document 记录时，MySQL不允许删除父表数据。
 
 #### 原因分析
 在删除流程中，部分Document可能不存在对应的Chunk，
 原逻辑：
-```
+```text
 if not chunk_ids:
     return False
 ```
@@ -592,7 +664,7 @@ if not chunk_ids:
 Document没有成功删除，KnowledgeBase 删除时触发外键约束异常
 
 #### 解决方案
-```
+```text
 if not chunk_ids:
 
     document_crud.delete_document(
@@ -627,7 +699,7 @@ if not chunk_ids:
 而是由于引入了VectorStoreManager缓存后，内存中的VectorStore对象状态
 与磁盘索引文件不一致导致，也就是在删除知识库之后，没有对缓存进行处理。
 
-
+```text
       Memory Cache
 
     VectorStoreManager
@@ -638,60 +710,51 @@ if not chunk_ids:
             |
         FAISS Index
         BM25 Store
-
+```
 #### 原因分析
 为了避免每次查询都重新加载FAISS索引和BM25数据，以及更方便的进行多知识库管理，
 系统使用了 VectorStoreManager 对 VectorStore 对象进行缓存。
 
 首次访问知识库：
 
-
-    get_store(kb_name)
-        
+```text
+    get_store(kb_name)   
             ↓
-
      创建 VectorStore
-
             ↓
-
           load()
-
             ↓
-
       读取 faiss_index
-
             ↓
-
         加载BM25数据
-
             ↓
-
          保存到缓存
+```                 
 后续查询复用缓存：
-
+```text
     cache["knowledge_base"]
-    
             |
             |
         VectorStore
-    
             |
             |
         FAISS Index
         BM25 Store
+```
 
-执行知识库删除之后，原流程只修改数据库和磁盘文件，缓存仍然存在。
+初始实现中，删除知识库时仅修改数据库和磁盘索引文件，没有同步清理VectorStore缓存，
+导致内存中的旧VectorStore对象仍然被复用。
 
-
-    Memory Cache
+```text
+   Memory Cache
     VectorStore
-
         |
         |
-
      FAISS旧索引
      BM25旧数据
-已删除知识库对应的旧 VectorStore 对象仍然可以被访问，内存索引与磁盘索引不一致
+```
+  
+已删除知识库对应的旧 VectorStore 对象仍然可以被访问，内存索引与磁盘索引不一致。
 
 #### 解决方案
 采用 Cache Invalidation（缓存失效）机制。
@@ -700,42 +763,46 @@ if not chunk_ids:
 ```python
 def remove_store(
         self,
-        kb_name
-):
-    self.stores.pop(
         kb_name,
-        None
-    )
+        owner_id
+):
+    store_key = f"{owner_id}_{kb_name}"
+
+    if store_key in self.stores:
+        del self.stores[store_key]
 ```
 
 知识库删除时，由于删除过程需要依赖VectorStore 中的 FAISS/BM25 状态，因此不能提前删除缓存。
 由于删除 Document 时需要依赖 KnowledgeBase 下的文档关系，因此数据库中的 KnowledgeBase 记录需要在相关资源清理完成后删除。
 因此最终删除流程为：
 
-
-    删除Document
-
-        ↓
-
-     删除Chunk
-
-        ↓
-
-    更新/删除FAISS索引
-    更新/删除BM25索引
-
-        ↓
-
-    删除本地索引文件
-
-        ↓
-
-    清理VectorStore缓存
-
-        ↓
-
+```text
+KnowledgeBase Delete Request
+           ↓
+    查询KnowledgeBase
+           ↓
+    删除Conversation
+           ↓
+     查询Documents
+           ↓
+     遍历删除Document
+           ↓
+      删除Chunk数据
+           ↓           
+    删除FAISS/BM25索引
+           ↓
+     删除Document记录
+           ↓
+       删除物理文件
+           ↓
+    清理Retrieval Cache
+           ↓
+   清理VectorStore Cache
+           ↓
+      删除知识库目录
+           ↓
     删除KnowledgeBase记录
-
+```
 
 #### 工程收益
 通过使用缓存失效机制：
@@ -760,13 +827,13 @@ Memory: VectorStore Cache
 
 在RAG系统中，Embedding模型和CrossEncoder Reranker模型属于核心推理组件，
 在此期间需要占用大量的显存，时间开销大。
-#### 1. Lazy Loading 与 Thread-safe Initialization
+#### Lazy Loading 与 Thread-safe Initialization
 
 ##### 原因分析
 在初始实现中；
 
 Embedding模型：
-```
+```text
 model = SentenceTransformer(
     EMBEDDING_MODEL
 )
@@ -774,7 +841,7 @@ model = SentenceTransformer(
 在程序启动或模块首次导入时加载模型。
 
 CrossEncoder模型：
-```
+```text
 model = AutoModelForSequenceClassification.from_pretrained(...)
 ```
 初始实现中，在Reranker模块初始化阶段加载。
@@ -793,6 +860,7 @@ model = AutoModelForSequenceClassification.from_pretrained(...)
 系统改为仅首次使用时加载模型，
 降低资源占用、提升服务启动速度。
 
+```text
       请求
  
        ↓
@@ -810,9 +878,10 @@ model = AutoModelForSequenceClassification.from_pretrained(...)
        ↓
 
     缓存模型对象
+```
 
 核心逻辑：
-```
+```text
 if model is None:
 
     with lock:
@@ -826,10 +895,10 @@ if model is None:
 - 模型只加载一次
 - 并发请求不会重复初始化
 
-#### 2. CrossEncoder Batch Inference优化
+#### CrossEncoder Batch Inference优化
 
 初始Rerank流程：
-
+```text
     Query + Document1
             ↓
            推理
@@ -837,10 +906,12 @@ if model is None:
     Query + Document2
             ↓
            推理
+```
+
 每个query-document二元组单独进行模型推理
 
 优化后：
-
+```text
     [
     (Query, Document1),
     (Query, Document2),
@@ -854,15 +925,72 @@ if model is None:
               ↓
     
     Batch Inference
+```
+
 通过批量推理减少模型调用次数，提高Reranker排序效率。
 
 #### 工程收益
 通过模型生命周期优化：
 - 降低服务启动时间
 - 减少无效模型加载
-- 提高并发环境稳定性
+- 提升服务运行过程中的模型管理稳定性
 
-使RAG系统具备更接近生产环境的模型管理能力
+使RAG系统具备更接近生产环境的模型管理能力。
 
 
 ## 12. 后续优化
+
+### 12.1 工业领域知识增强
+
+针对工业场景特点，引入：
+
+- 工业设备文档知识库
+- 故障维修记录
+- 工艺流程文档
+- 专业术语优化
+
+### 12.2 Retrieval Optimization
+
+进一步优化检索效果：
+
+- Elasticsearch关键词检索
+- Milvus向量数据库
+- Hybrid Score Fusion优化
+- Hard Negative Mining
+
+### 12.3 Document Understanding
+
+增强复杂文档处理能力：
+
+- Word解析
+- Excel表格解析
+- 图片OCR
+- PDF结构化解析
+
+### 12.4 LLM Agent Workflow
+
+探索：
+
+- Tool Calling
+- Agent任务规划
+- 自动知识检索流程
+
+## 13. 项目总结
+
+本项目从0到1实现了一个完整的企业级RAG知识库系统。
+
+相比基础RAG流程，系统重点关注实际工程应用中的问题：
+
+- 多知识库数据隔离
+- 多用户权限控制
+- 检索效果评估
+- 异步任务处理
+- 缓存一致性管理
+- 模型生命周期优化
+
+
+通过FastAPI、MySQL、Redis、Celery以及向量检索技术，
+实现了从文档处理、知识管理、智能检索到LLM生成的完整闭环。
+
+项目不仅验证了RAG技术流程，
+同时针对真实工程场景中的数据一致性、资源管理和系统性能进行了优化。

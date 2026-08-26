@@ -31,7 +31,13 @@ B --> C[RAG Service]
 
 C --> D[Knowledge Base Selector]
 
-D --> E[VectorStoreManager]
+D --> His[Load History]
+
+His --> Query[Query Rewrite]
+
+Query --> H[Query Processing]
+
+H --> E[VectorStoreManager]
 
 
 E --> F[Load VectorStore Instance]
@@ -39,10 +45,6 @@ E --> F[Load VectorStore Instance]
 
 F --> G1[FAISS Index]
 F --> G2[BM25 Index]
-
-
-C --> H[Query Processing]
-
 
 H --> I1[SentenceTransformer Embedding]
 
@@ -87,6 +89,12 @@ Q --> Q2[Document]
 Q --> Q3[Chunk Text + Metadata]
 
 Q --> Q4[Chunk ID Mapping]
+
+Q1 --> Q5[Conversation]
+
+Q5 --> Q6[Message History]
+
+Q6 --> His[Load History]
 
 J1 --> R[Chunk ID Mapping]
 
