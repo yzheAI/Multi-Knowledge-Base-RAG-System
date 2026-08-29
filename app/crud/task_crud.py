@@ -1,13 +1,15 @@
 from app.models.task import Task
+from app.tasks.status import TaskStatus
 
 
-def create_task(db, task_id, filename, owner_id):
+def create_task(db, task_id, filename, owner_id, kb_id):
 
     task = Task(
         task_id=task_id,
         filename=filename,
-        status="pending",
+        status=TaskStatus.PENDING,
         owner_id=owner_id,
+        kb_id=kb_id,
     )
 
     db.add(task)
@@ -61,3 +63,29 @@ def get_tasks(db, owner_id):
         .all()
     )
     return tasks
+
+
+def update_task_progress(
+        db,
+        task_id,
+        progress,
+        owner_id
+):
+    task = get_task(
+        db,
+        task_id,
+        owner_id
+    )
+
+    if task is None:
+        return None
+
+    task.progress = max(
+        0,
+        min(progress, 100)
+    )
+
+    db.commit()
+    db.refresh(task)
+    return task
+

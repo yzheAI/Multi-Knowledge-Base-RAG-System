@@ -13,7 +13,7 @@ from app.cache.retrieval_cache import RetrievalCache
 
 async def upload(db, file, kb_name, owner_id):
     # 上传保存文件
-    upload_info = await save_uploaded_file(
+    upload_info, kb = await save_uploaded_file(
         db,
         file,
         kb_name,
@@ -27,7 +27,8 @@ async def upload(db, file, kb_name, owner_id):
         db,
         task_id,
         file.filename,
-        owner_id
+        owner_id,
+        kb_id=kb.id
     )
 
     # 异步任务

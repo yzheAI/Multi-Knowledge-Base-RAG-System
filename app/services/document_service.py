@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from app.tasks.status import TaskStatus
 from app.cache.retrieval_cache import RetrievalCache
 from app.core.container import container
 from app.crud import task_crud, knowledge_base, document_crud, chunk_crud
@@ -20,7 +20,14 @@ def handle_document_upload(
     task_crud.update_task_status(
         db,
         task_id,
-        "processing",
+        TaskStatus.PROCESSING,
+        owner_id
+    )
+
+    task_crud.update_task_progress(
+        db,
+        task_id,
+        10,
         owner_id
     )
 
@@ -37,6 +44,13 @@ def handle_document_upload(
     # 获取chunk信息
     result = process_document(
         file_path,
+    )
+
+    task_crud.update_task_progress(
+        db,
+        task_id,
+        30,
+        owner_id
     )
 
     # 上传doc至MySQL
@@ -62,6 +76,13 @@ def handle_document_upload(
         metadata=metadata
     )
 
+    task_crud.update_task_progress(
+        db,
+        task_id,
+        50,
+        owner_id
+    )
+
     # 使用数据库生成的chunk_id建立向量索引
     chunk_ids = [
         chunk.id
@@ -79,7 +100,21 @@ def handle_document_upload(
         chunk_ids=chunk_ids,
     )
 
+    task_crud.update_task_progress(
+        db,
+        task_id,
+        80,
+        owner_id
+    )
+
     store.save(kb_path)
+
+    task_crud.update_task_progress(
+        db,
+        task_id,
+        90,
+        owner_id
+    )
 
     container.vector_manager.remove_store(
         kb_name,
@@ -94,9 +129,17 @@ def handle_document_upload(
         kb.id
     )
 
+    task_crud.update_task_progress(
+        db,
+        task_id,
+        100,
+        owner_id
+    )
+
     task_crud.update_task_status(
         db,
         task_id,
-        "success",
+        TaskStatus.SUCCESS,
         owner_id
     )
+

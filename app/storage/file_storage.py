@@ -52,4 +52,4 @@ async def save_uploaded_file(
         "kb_path": kb_path,
     }
 
-    return path
+    return path, kb

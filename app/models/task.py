@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
 from sqlalchemy.sql import func
 from app.database.session import Base
+from app.tasks.status import TaskStatus
 
 
 class Task(Base):
@@ -8,7 +9,6 @@ class Task(Base):
     id = Column(
         Integer,
         primary_key=True,
-        index=True,
     )
 
     task_id = Column(
@@ -19,17 +19,40 @@ class Task(Base):
 
     filename = Column(
         String(255),
+        nullable=False,
     )
 
     owner_id = Column(
         Integer,
         ForeignKey('users.id'),
-        nullable=False
+        nullable=False,
+        index=True
+    )
+
+    kb_id = Column(
+        Integer,
+        ForeignKey('knowledge_base.id'),
+        nullable=False,
+        index=True
     )
 
     status = Column(
         String(50),
-        default='pending',
+        nullable=False,
+        default=TaskStatus.PENDING,
+        index=True
+    )
+
+    progress = Column(
+        Integer,
+        nullable=False,
+        default=0
+    )
+
+    retry_count = Column(
+        Integer,
+        nullable=False,
+        default=0
     )
 
     error_message = Column(Text)
@@ -37,4 +60,10 @@ class Task(Base):
     created_at = Column(
         DateTime,
         server_default=func.now()
+    )
+
+    updated_at = Column(
+        DateTime,
+        server_default=func.now(),
+        onupdate=func.now()
     )
