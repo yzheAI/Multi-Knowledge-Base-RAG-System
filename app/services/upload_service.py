@@ -28,7 +28,9 @@ async def upload(db, file, kb_name, owner_id):
         task_id,
         file.filename,
         owner_id,
-        kb_id=kb.id
+        kb_id=kb.id,
+        file_path=upload_info["file_path"],
+        kb_path=upload_info["kb_path"],
     )
 
     # 异步任务

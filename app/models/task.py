@@ -36,6 +36,16 @@ class Task(Base):
         index=True
     )
 
+    file_path = Column(
+        String(500),
+        nullable=False,
+    )
+
+    kb_path = Column(
+        String(500),
+        nullable=False,
+    )
+
     status = Column(
         String(50),
         nullable=False,

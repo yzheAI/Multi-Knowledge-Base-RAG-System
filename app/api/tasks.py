@@ -6,6 +6,7 @@ from app.crud import task_crud
 from app.database.session import get_db
 from app.exceptions.exceptions import NotFoundTask
 from app.models import User
+from app.services.task_service import retry_task_service
 
 tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -15,12 +16,14 @@ tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
     response_model=TaskListResponse,
 )
 def get_all_tasks(
+        kb_id: int,
         db: Session = Depends(get_db),
         user: User = Depends(get_current_user)
 ):
     tasks = task_crud.get_tasks(
         db,
         user.id,
+        kb_id
     )
     return {
         "data": [
@@ -83,5 +86,25 @@ def delete_task(
     return {
         "task_id": task.task_id,
         "status": "task deleted",
+    }
+
+
+@tasks_router.post("/{task_id}/retry")
+def retry_task(
+        task_id: str,
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_user)
+):
+    task = retry_task_service(
+        db,
+        task_id,
+        user.id
+    )
+
+    return {
+        "task_id": task.task_id,
+        "status": task.status,
+        "progress": task.progress,
+        "retry_count": task.retry_count,
     }
 

@@ -41,6 +41,9 @@ LLM_TIMEOUT = 30
 # JWT
 EXPIRE_MINUTES = 60
 
+# Task
+MAX_RETRY_COUNT = 3
+
 
 # mysql
 class Settings:

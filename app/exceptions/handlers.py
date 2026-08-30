@@ -3,7 +3,7 @@ from starlette.responses import JSONResponse
 from app.exceptions.exceptions import (DocumentNotFound, UnsupportedDocumentType, DocumentEmptyError, LLMTimeoutError,
                                        LLMServiceError, KnowledgeBaseEmptyError, UserConflictError, UserNotFoundError,
                                        PasswordError, TokenInvalidError, InvalidCredentialsError, ConversationNotFound,
-                                       NotFoundTask)
+                                       NotFoundTask, TaskNotFailed, RetryCountLimit)
 
 
 def register_exception_handlers(app):
@@ -133,6 +133,26 @@ def register_exception_handlers(app):
             status_code=404,
             content={
                 "code": 404,
+                "message": exc.message
+            }
+        )
+
+    @app.exception_handler(TaskNotFailed)
+    async def task_not_failed_handler(request: Request, exc: TaskNotFailed):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "code": 400,
+                "message": exc.message
+            }
+        )
+
+    @app.exception_handler(RetryCountLimit)
+    async def retry_count_limit_handler(request: Request, exc: RetryCountLimit):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "code": 400,
                 "message": exc.message
             }
         )

@@ -2,7 +2,15 @@ from app.models.task import Task
 from app.tasks.status import TaskStatus
 
 
-def create_task(db, task_id, filename, owner_id, kb_id):
+def create_task(
+        db,
+        task_id,
+        filename,
+        owner_id,
+        kb_id,
+        file_path,
+        kb_path
+):
 
     task = Task(
         task_id=task_id,
@@ -10,6 +18,8 @@ def create_task(db, task_id, filename, owner_id, kb_id):
         status=TaskStatus.PENDING,
         owner_id=owner_id,
         kb_id=kb_id,
+        file_path=file_path,
+        kb_path=kb_path
     )
 
     db.add(task)
@@ -55,10 +65,13 @@ def delete_task(db, task_id, owner_id):
     return task
 
 
-def get_tasks(db, owner_id):
+def get_tasks(db, owner_id, kb_id):
     tasks = (
         db.query(Task)
-        .filter(Task.owner_id == owner_id)
+        .filter(
+            Task.owner_id == owner_id,
+            Task.kb_id == kb_id,
+        )
         .order_by(Task.created_at.desc())
         .all()
     )
@@ -89,3 +102,21 @@ def update_task_progress(
     db.refresh(task)
     return task
 
+
+def retry_task(db, task_id, owner_id):
+    task = get_task(
+        db,
+        task_id,
+        owner_id
+    )
+    if task is None:
+        return None
+
+    task.retry_count += 1
+    task.progress = 0
+    task.status = TaskStatus.PENDING
+    task.error_message = None
+
+    db.commit()
+    db.refresh(task)
+    return task

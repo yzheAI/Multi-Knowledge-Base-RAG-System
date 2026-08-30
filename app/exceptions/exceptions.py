@@ -61,3 +61,13 @@ class ConversationNotFound(Exception):
 class NotFoundTask(Exception):
     def __init__(self, message="任务不存在"):
         self.message = message
+
+
+class RetryCountLimit(Exception):
+    def __init__(self, message="重试次数过多"):
+        self.message = message
+
+
+class TaskNotFailed(Exception):
+    def __init__(self, message="上传未失败"):
+        self.message = message
