@@ -1,10 +1,12 @@
 from datetime import datetime
+
+from app.tasks.state_machine import transition_task
 from app.tasks.status import TaskStatus
 from app.cache.retrieval_cache import RetrievalCache
 from app.core.container import container
 from app.crud import task_crud, knowledge_base, document_crud, chunk_crud
 from app.document.pipeline import process_document
-from app.exceptions.exceptions import KnowledgeBaseEmptyError
+from app.exceptions.exceptions import KnowledgeBaseEmptyError, NotFoundTask
 
 
 def handle_document_upload(
@@ -17,12 +19,21 @@ def handle_document_upload(
         owner_id
 ):
     # 更新状态
-    task_crud.update_task_status(
+    task = task_crud.get_task(
         db,
         task_id,
-        TaskStatus.PROCESSING,
         owner_id
     )
+
+    if task is None:
+        raise NotFoundTask()
+
+    # PENDING -> PROCESSING
+    transition_task(
+        task,
+        TaskStatus.PROCESSING
+    )
+    db.commit()
 
     task_crud.update_task_progress(
         db,
@@ -136,10 +147,9 @@ def handle_document_upload(
         owner_id
     )
 
-    task_crud.update_task_status(
-        db,
-        task_id,
-        TaskStatus.SUCCESS,
-        owner_id
+    transition_task(
+        task,
+        TaskStatus.SUCCESS
     )
+    db.commit()
 

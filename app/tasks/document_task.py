@@ -2,6 +2,7 @@ from app.services import document_service
 from app.tasks.celery_app import celery_app
 from app.database.session import SessionLocal
 from app.crud import task_crud
+from app.tasks.state_machine import transition_task
 from app.tasks.status import TaskStatus
 
 
@@ -37,7 +38,10 @@ def process_document_task(
         )
 
         if task:
-            task.status = TaskStatus.FAILED
+            transition_task(
+                task,
+                TaskStatus.FAILED,
+            )
             task.error_message = str(e)
             db.commit()
 

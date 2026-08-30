@@ -1,4 +1,5 @@
 from app.models.task import Task
+from app.tasks.state_machine import transition_task
 from app.tasks.status import TaskStatus
 
 
@@ -39,18 +40,6 @@ def get_task(db, task_id, owner_id):
         .first()
     )
     return task
-
-
-def update_task_status(db, task_id, status, owner_id):
-    task = get_task(
-        db,
-        task_id,
-        owner_id
-    )
-
-    if task:
-        task.status = status
-        db.commit()
 
 
 def delete_task(db, task_id, owner_id):
@@ -114,8 +103,11 @@ def retry_task(db, task_id, owner_id):
 
     task.retry_count += 1
     task.progress = 0
-    task.status = TaskStatus.PENDING
     task.error_message = None
+    transition_task(
+        task,
+        TaskStatus.PENDING
+    )
 
     db.commit()
     db.refresh(task)
