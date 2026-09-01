@@ -812,9 +812,9 @@ KnowledgeBase Delete Request
 
 #### 设计总结
 RAG系统不仅含有数据库、磁盘存储层，在一定条件下还存在缓存存储层。
-MySQL: Document + Chunk
-File System: FAISS Index + BM25 Index
-Memory: VectorStore Cache
+- MySQL: Document + Chunk
+- File System: FAISS Index + BM25 Index
+- Memory: VectorStore Cache
 当多个存储层同时维护同一业务数据时，需要考虑数据一致性问题。
 因此，对于涉及索引变化的操作，需要进行：
 - 新增文档
