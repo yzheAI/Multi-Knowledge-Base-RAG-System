@@ -58,7 +58,7 @@ def build_sources(contexts):
         {
             "chunk_id": ctx["chunk_id"],
             "source": ctx["metadata"].get("source"),
-            "score": ctx["score"],
+            "score": ctx["rerank_score"],
             "content": ctx["text"]
         }
         for ctx in contexts

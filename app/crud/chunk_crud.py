@@ -40,13 +40,12 @@ def create_chunks(
             metadata_info=metadata,
             chunk_index=index
         )
-        db.add(chunk)
+
         chunk_object.append(chunk)
 
+    db.add_all(chunk_object)
     db.commit()
 
-    for chunk in chunk_object:
-        db.refresh(chunk)
     return chunk_object
 
 
@@ -67,19 +66,15 @@ def delete_chunks_by_document_id(
         db: Session,
         document_id: int,
 ):
-    chunks = get_chunks_by_document_id(
-        db,
-        document_id
+    deleted_count = (
+        db.query(Chunk)
+        .filter(Chunk.document_id == document_id)
+        .delete(synchronize_session=False)
     )
 
-    if not chunks:
-        return False
-
-    for chunk in chunks:
-        db.delete(chunk)
     db.commit()
 
-    return True
+    return deleted_count > 0
 
 
 def get_all_chunks_by_kb(
