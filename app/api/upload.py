@@ -6,6 +6,7 @@ from app.models.user import User
 from app.schemas.response_schema import ResponseModel
 from app.services.upload_service import upload, search_files, get_all_files, file_delete
 from utils.response import success
+from app.schemas.document_types import DocumentType
 
 
 upload_router = APIRouter(prefix="/files", tags=["文件上传"])
@@ -16,13 +17,15 @@ async def upload_file(
         db: Session = Depends(get_db),
         file: UploadFile = File(...),
         kb_name: str = Form(...),
-        current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user),
+        document_type: DocumentType = Form(...),
 ):
     result = await upload(
         db,
         file,
         kb_name,
-        current_user.id
+        current_user.id,
+        document_type.value
     )
 
     return success(result)

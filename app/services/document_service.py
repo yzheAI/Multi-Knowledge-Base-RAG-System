@@ -16,7 +16,8 @@ def handle_document_upload(
         kb_path,
         filename,
         kb_name,
-        owner_id
+        owner_id,
+        document_type,
 ):
     # 更新状态
     task = task_crud.get_task(
@@ -69,6 +70,7 @@ def handle_document_upload(
         db=db,
         kb_id=kb.id,
         filename=filename,
+        document_type=document_type,
         file_path=file_path,
     )
 
@@ -77,7 +79,8 @@ def handle_document_upload(
 
     metadata.update({
         "source": filename,
-        "upload_time": datetime.now().isoformat()
+        "document_type": document_type,
+        "upload_time": datetime.now().isoformat(),
     })
 
     chunks = chunk_crud.create_chunks(

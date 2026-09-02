@@ -14,7 +14,8 @@ def process_document_task(
         kb_path,
         filename,
         kb_name,
-        owner_id
+        owner_id,
+        document_type
 ):
     db = SessionLocal()
 
@@ -26,7 +27,8 @@ def process_document_task(
             kb_path,
             filename,
             kb_name,
-            owner_id
+            owner_id,
+            document_type
         )
 
     except Exception as e:

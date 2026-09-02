@@ -33,7 +33,9 @@ async def create(db, kb_name, owner_id):
         owner_id
     )
 
-    kb_path = kdg.get_path(kb_name, owner_id)
+    kb_id = kb.id
+
+    kb_path = kdg.get_path(kb_id, owner_id)
 
     upload_dir = os.path.join(
         kb_path,
@@ -124,7 +126,9 @@ async def delete_kb_service(db, kb_name, owner_id):
         KNOWLEDGE_BASE_PATH
     )
 
-    kb_path = kdg.get_path(kb_name, owner_id)
+    kb_id = kb.id
+
+    kb_path = kdg.get_path(kb_id, owner_id)
 
     if os.path.exists(kb_path):
         shutil.rmtree(kb_path)

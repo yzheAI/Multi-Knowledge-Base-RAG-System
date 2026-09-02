@@ -31,8 +31,8 @@ def create_chunks(
         chunks: list[str],
         metadata: dict
 ):
-    chunk_object = []
 
+    chunk_object = []
     for index, content in enumerate(chunks):
         chunk = Chunk(
             document_id=document_id,
@@ -47,7 +47,6 @@ def create_chunks(
 
     for chunk in chunk_object:
         db.refresh(chunk)
-
     return chunk_object
 
 

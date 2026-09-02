@@ -22,11 +22,11 @@ class KnowledgeManager:
 
         return kb
 
-    def get_path(self, kb_name, owner_id):
+    def get_path(self, kb_id, owner_id):
         return os.path.join(
             self.base_path,
             str(owner_id),
-            kb_name
+            str(kb_id)
         )
 
     def list(self, db, owner_id):

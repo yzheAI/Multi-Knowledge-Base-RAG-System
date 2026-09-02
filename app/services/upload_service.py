@@ -11,7 +11,13 @@ from app.core.container import container
 from app.cache.retrieval_cache import RetrievalCache
 
 
-async def upload(db, file, kb_name, owner_id):
+async def upload(
+        db,
+        file,
+        kb_name,
+        owner_id,
+        document_type
+):
     # 上传保存文件
     upload_info, kb = await save_uploaded_file(
         db,
@@ -40,7 +46,8 @@ async def upload(db, file, kb_name, owner_id):
         upload_info["kb_path"],
         file.filename,
         kb_name,
-        owner_id
+        owner_id,
+        document_type
     )
 
     return {
@@ -134,7 +141,13 @@ async def file_delete(
         owner_id
     )
 
-    kb_path = kdg.get_path(kb_name, owner_id)
+    kb = knowledge_base.get_kb_by_name(
+        db,
+        kb_name,
+        owner_id
+    )
+
+    kb_path = kdg.get_path(kb.id, owner_id)
 
     # 取出要删除的chunks，得到ids进行向量删除
     chunks = chunk_crud.get_chunks_by_document_id(

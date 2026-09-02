@@ -23,7 +23,7 @@ async def save_uploaded_file(
         raise KnowledgeBaseEmptyError()
 
     kb_path = kdg.get_path(
-        kb_name,
+        kb.id,
         owner_id
     )
 

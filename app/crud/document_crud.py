@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-
+from app.schemas.document_types import DocumentType
 from app.models import KnowledgeBase
 from app.models.document import Document
 
@@ -8,12 +8,14 @@ def create_document(
         db: Session,
         kb_id: int,
         filename: str,
-        file_path: str = None
+        document_type: DocumentType,
+        file_path: str = None,
 ):
     document = Document(
         kb_id=kb_id,
         filename=filename,
-        file_path=file_path
+        file_path=file_path,
+        document_type=document_type,
     )
 
     db.add(document)

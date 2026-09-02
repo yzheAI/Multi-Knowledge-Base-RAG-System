@@ -23,15 +23,15 @@ class VectorStoreManager:
 
             store = VectorStore(EMBEDDING_DIM)
 
-            kb_path = self.kb_manager.get_path(
-                owner_id=owner_id,
-                kb_name=kb_name
-            )
-
             kb = get_kb_by_name(
                 db,
-                name=kb_name,
-                owner_id=owner_id
+                kb_name,
+                owner_id
+            )
+
+            kb_path = self.kb_manager.get_path(
+                owner_id=owner_id,
+                kb_id=kb.id
             )
 
             if kb is None:

@@ -22,6 +22,11 @@ class Document(Base):
         nullable=False
     )
 
+    document_type = Column(
+        String(50),
+        nullable=True
+    )
+
     file_path = Column(
         String(500)
     )
