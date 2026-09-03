@@ -1,0 +1,1479 @@
+[
+    {
+        "question": "MD18893 的设置值与自动刀具保护区的最大数量有什么关系？",
+        "answer": "每个自动刀具保护区对应一个保护区单元，因此 MD18893 设置的保护区单元最大数量同时也定义了可参数设置的自动刀具保护区的最大数量。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "监控和补偿.pdf",
+                "chunk_id": 2470
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "哪些因素会使自动刀具保护区对三角形的需求提升？",
+        "answer": "刀具的几何复杂度越高，以及参数设置的碰撞公差越小时，自动刀具保护区对三角形的需求会提升。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "监控和补偿.pdf",
+                "chunk_id": 2474
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "刀具半径补偿为什么需要移动刀具中心点轨迹？",
+        "answer": "因为轮廓和刀具轨迹并不一致，铣刀或刀沿中心点需要依据刀具半径运行在一条与编程轮廓等距的轨迹上。控制系统通过生效刀具的刀具半径移动刀具中心点轨迹，从而使刀沿能够准确地运行在编程的轨迹上。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3704
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "什么是刀具半径补偿？",
+        "answer": "刀具半径补偿是指：由于编程轮廓与实际刀具轨迹并不一致，控制系统会根据生效刀具的刀具半径，从刀具补偿存储器获取刀具半径，并在编辑程序期间移动刀具中心点轨迹，使刀沿能够准确地沿编程轨迹运行。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3704
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "D号和CE号分别有什么作用？",
+        "answer": "D号是零件程序中的刀沿补偿号，用于零件程序中的标识和屏幕上的显示，是一个任意数字；CE号是刀具目录中的编号，在设备改造时用于指出具体的物理刀沿。D号和CE号分开管理。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3727
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "为什么在对D号重命名时需要为每个刀沿引入CE号？",
+        "answer": "因为D号重命名时，会遗失通过刀具目录确定的刀沿号相关信息，重命名后无法再看出该刀沿原来对应刀具目录中的哪个刀沿。引入CE号后，CE号会在D号重命名时被保留，并可在设备改造时指出具体的物理刀沿。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3727
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "CE号通过什么系统变量定义？变量中的 t 和 d 分别代表什么？",
+        "answer": "CE号通过系统变量 $TC_DPCE[t,d] 定义，其中 t 代表内部T号，d代表D号。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3728
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "定义CE号时系统会进行什么冲突检查？",
+        "answer": "定义CE号时系统会进行冲突检查，即一把刀具的刀沿编号必须各不相同。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3728
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "什么情况下建议设置 $TC_DPCE？",
+        "answer": "只有当最大的刀沿号（MD18105）大于每把刀具最大的刀沿数量（MD18106）时，才建议设置 $TC_DPCE。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3728
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "GETDNO 用于确定什么？在输入的参数不存在D号或D号无效时分别会怎样？",
+        "answer": "GETDNO 用于确定刀具某刀沿的D号。如果输入的参数不存在D号，则设定 d=0；如果该D号无效，将返回一个大于32000的值。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3731
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "SETDNO 的作用是什么？在哪些情况下会返回 FALSE 或产生报警？",
+        "answer": "SETDNO 用于设置或修改刀具T的刀沿CE的D号。如果输入的参数不存在数据组，则返回 FALSE；句法错误会导致报警。同时，不可以明确地将D号设为0。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3731
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "一个TO单元内的刀具D编号有什么限制？",
+        "answer": "所有在一个TO单元内定义的刀具的D编号只能出现一次，备用刀具不考虑。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3731
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "GETACTTD 用于确定什么？它是否检查D号的单一性？",
+        "answer": "GETACTTD 用于确定绝对D号所对应的T号，但不检查D号的单一性。如果一个TO单元内有多个相同的D号，将返回第一个找到的刀具的T号。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3731
+            },
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3732
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "DZERO 的作用是什么？",
+        "answer": "DZERO 将TO单元的所有D号标识为无效，该指令用于设备改造。被如此标识的补偿数据组不再由语言指令CHKDNO检查。若要重新访问这些补偿数据组，必须重新使用SETDNO设定D号。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3732
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "为什么 CHKDNO(2,3,30) 的返回值为 FALSE？",
+        "answer": "因为刀具2和刀具3中均存在D编号30，重复编写了D=30，违反了一个TO单元内刀具D编号必须唯一的要求，因此返回值为 FALSE。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3736
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "CHKDNO 用于检查什么？",
+        "answer": "CHKDNO 用于检查刀具的D编号是否唯一。一个TO单元内定义的所有刀具的D编号须为唯一。未设定参数时，系统会检查所有刀具的D编号并进行比较。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3735
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "MD18106 的作用是什么？",
+        "answer": "如果启用有n个刀沿的刀具，应将MD18106设置为n，这样可以避免为刀具定义不允许的刀沿。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3736
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "当刀具管理未激活时，可以发现哪些问题？",
+        "answer": "当刀具管理未激活时，可以发现缺少D补偿数据组和零件程序错误的问题。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3747
+            }
+        ],
+        "category": "list"
+    },
+    {
+        "question": "为什么在刀具管理未激活时无法发现“刀具不在刀库中”的问题？",
+        "answer": "因为在刀具补偿时NC不存在刀库信息，所以无法发现“刀具不在刀库中”的问题。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3747
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "缺少D补偿数据组时，程序加工会如何处理？",
+        "answer": "程序加工会停留在D值出错的程序段处，与机床数据MD22550的值无关。操作员需要修正程序，或者重新装载出错的程序段。为此需要D号和T号。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3747
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "T值编程错误导致NC程序停止后，操作员可以采取哪些措施使程序继续运行？",
+        "answer": "操作员可以修正出错的零件程序；由HMI补充提供缺少的刀沿补偿数据；或者在“覆盖”状态下在NC中导入缺少的刀沿补偿数据。操作员干预后按下启动键并重新执行被拒绝的程序段。如果错误被正确修正，程序继续运行，否则会重新产生报警。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3749
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "MD22550=1时，如果在刀具准备（T编程）程序段中发现错误，会如何处理？",
+        "answer": "发现错误后不会立即停止加工，而是一开始将错误忽略，继续加工，直到NC程序提出换刀请求（通常是M06）。程序应停在该位置。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3750
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "为什么通常不能通过“补偿程序段”修改已经执行完毕的T程序段？",
+        "answer": "因为编程的T地址可以位于M06指令之前的任意程序行，或者T地址和M06指令可以处于不同的子程序中，因此在发现T值编程错误时，相关T程序段通常已经执行完毕，不能通过补偿程序段进行修改。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3750
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "刀具参数用于描述哪些刀具数据？具体需要哪些刀具参数由什么决定？",
+        "answer": "刀具参数用于描述刀具类型、几何尺寸和工艺说明等数据。这些数据会映射到刀具参数，具体需要哪些刀具参数取决于刀具类型，而且某些刀具参数可能根据刀具类型具有不同的含义。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3758
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "$TC_DP1 和 $TC_DP2 分别表示什么？",
+        "answer": "$TC_DP1 表示刀具类型；$TC_DP2 表示刀沿位置，其用于轮廓刀具的2D刀具半径补偿中的车刀或铣刀/磨具。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3758
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "$TC_DP6 表示什么？不同刀具类型下它的含义是否相同？",
+        "answer": "$TC_DP6 表示几何半径1，但具体含义取决于刀具类型。例如，车削时表示刀沿的圆弧半径；3D端铣时表示刀具半径；槽锯时表示直径。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3759
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "刀具半径补偿启用或关闭时，如何调整刀具逼近或离开轮廓的方式？",
+        "answer": "在刀具半径补偿启用或关闭时（G40/G41/G42），可以在程序中通过G指令组17调整刀具逼近或离开轮廓的方式，以适应不同的目标轮廓形状或毛坯形状。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3803
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "使用KONT进退刀时，刀具位于轮廓之前和之后分别如何处理？",
+        "answer": "当刀具位于轮廓之前时，进退刀方式与NORM相同；当刀具位于轮廓之后时，以KONT进刀，根据程序中写入的拐角特性G450/G451，刀具以圆弧轨迹绕行起点，或者经过等距线交点后移动到起点。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3806
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "G450和G451在KONT进刀时起什么作用？",
+        "answer": "当刀具位于轮廓后方并使用KONT进刀时，G450/G451用于确定刀具绕行起点的拐角特性：刀具可以以圆弧轨迹绕行起点，或者经过等距线交点后移动到起点。G450/G451适用于当前程序段到下一程序段的过渡。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3806
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "为什么使用KONTT和KONTC时可以在程序中写入与进退刀同时进行的垂直于轮廓平面的行程？",
+        "answer": "因为KONTT和KONTC的线性进退刀程序段会在内部转换成对应的多项式曲线，并在三根轴上保持恒定曲率或切向，因此可以写入与进退刀同时进行的、垂直于轮廓平面的行程。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3809
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "在所述半径20毫米刀具加工半径20毫米圆弧的情况下，KONTT和KONTC的退刀方式有什么区别？",
+        "answer": "在该情况下，KONTC要求保持恒定曲率，因此退刀程序段首先执行Y轴负向分量的运行；KONTT的退刀程序段不会执行这一动作。但使用KONTT时，在程序段过渡处会出现加速度跃变。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3810
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "使用KONTC从X0,Y0进刀以及退刀到该点时，为什么可能损伤轮廓？",
+        "answer": "使用KONTC从X0,Y0进刀以及退刀到该点时，在四分圆后会紧跟一条直线，该直线一直延伸到X20Y-20，因此会损伤轮廓。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3811
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "G450和G451分别采用什么方式绕行工件外角？",
+        "answer": "G450使刀具沿圆弧轨迹绕行工件拐角，圆弧半径为刀具半径；G451使刀具移动到编程轮廓等距线的交点处，通过经过该交点的方式绕行工件拐角。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3812
+            },
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3813
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "为什么默认启用“多项式交点法”？它对G451和连续轨迹模式G64有什么作用？",
+        "answer": "默认启用“多项式交点法”，可以确保G451也能用于包含多项式（样条）参与运算的外角；同时可以避免在连续轨迹模式G64下发生速度跌落，因为使用G450必然会产生该影响。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3814
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "使用G450时为什么加工不出锋利的外轮廓角？如果仍需要锋利外角，应如何处理？",
+        "answer": "使用G450时，系统会使刀具中心点轨迹沿过渡圆弧移动，因此刀沿会停留在外角的编程位置上，无法加工出锋利的外轮廓角。如果仍需要加工出锋利的外角，可以在程序中使用地址DISC进行提刀编程，使过渡圆弧变为锥形截面，从外角提刀。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3815
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "在圆内侧加工时，什么情况下会因补偿半径过大而拒绝加工？",
+        "answer": "如果在圆内侧进行加工时，补偿半径大于所编程的圆半径，则系统会拒绝进行加工，并产生报警10758“使用可变补偿值的曲率半径过小”。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3827
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "如何通过SD42496$SC_CUTCOM_CLSD_CONT保持封闭轮廓稳定？",
+        "answer": "设置SD42496$SC_CUTCOM_CLSD_CONT≠0时，在跳过第一个程序段的情况下，系统总是会到达第二个可能的交点，因此无需第三个程序段即可形成稳定的封闭轮廓。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3828
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "如果刀具半径补偿在预处理时出现报警，主处理中的加工会在什么时候暂停？",
+        "answer": "如果在预处理时刀具半径补偿出现报警，主处理中的加工会在下一个能到达的程序段结尾处暂停。通常该位置是当前插补程序段的结尾处；如果Look-Ahead预读功能有效，则需要等轴都变为停止状态。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3829
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "SD42490$SC_CUTCOM_G40_STOPRE分别设置为FALSE和TRUE时，预处理程序停止后取消刀具半径补偿的退刀特性有什么区别？",
+        "answer": "当SD42490$SC_CUTCOM_G40_STOPRE为FALSE（缺省）时，如果刀具半径补偿激活且在G40程序段前发生预停，刀具会从预停前的终点位置运行至选择程序段的起始点，随后该程序段自我处理，通常产生两个不再激活刀具半径补偿的运行程序段。当该设定为TRUE时，在相同情况下，系统选择第一个轮廓单元上靠近段首的交点。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3841
+            },
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3842
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "G451的工作原理是什么？它适用于哪些轮廓？",
+        "answer": "G451表示刀具运行到两个等距线的交点，等距线与编程轮廓相隔的距离等于刀具半径。刀具在工件拐角处空运行。G451仅适用于直线和圆弧。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3873
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "刀具半径补偿有效时再次写入G41或G42会发生什么？重新逼近轮廓时使用哪种进退刀方式？",
+        "answer": "刀具半径补偿有效时再次写入G41或G42相当于封锁补偿。对于包含G41或G42的运行程序段，系统会进行相应修正，使其终点成为下一程序段起点的偏移点，无需插入中间程序段。重新逼近轮廓时与第17组G代码规定的NORM/KONT进退刀方式无关，而总是使用NORM。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3889
+            },
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3890
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "在包含垂直于加工平面分量的运动中，P1至P4路径对该分量有什么要求？如果发生反向会怎样？",
+        "answer": "系统会监控通过DISCL定义的位于P1和P3之间的点。在包含垂直于加工平面分量的运动中，这些分量的符号必须相同，不允许出现反向，否则会输出报警。识别换向时允许一定公差，该公差可通过MD20204$MC_WAB_CLEARANCE_TOLERANCE进行定义。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3904
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "SAR功能至少需要观察哪些程序段？中间程序段的数量由什么机床数据限制？",
+        "answer": "SAR功能必须始终观察至少两个程序段：SAR程序段自身，以及定义逼近或回退方向的程序段。两个程序段之间可以编程其他程序段，中间程序段的最大数量由MD20202$MC_WAB_MAXNUM_DUMMY_BLOCKS限制。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3927
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "SAR生成的轮廓在使用刀具半径补偿处理时，会按照什么方式处理？",
+        "answer": "由SAR功能生成的整个轮廓在使用刀具半径补偿进行处理时，被当作显式编程的方式来处理，包括防撞监控、交点计算以及逼近特性NORM/KONT。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3928
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "SAR逼近时，在SAR程序段和定义切线方向的后续程序段之间插入预处理程序停止会有什么后果？",
+        "answer": "在SAR程序段和定义切线方向的后续程序段之间不允许插入预处理程序停止。无论是显式编程还是由控制器自动插入的预处理程序停止，都会导致报警。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具.pdf",
+                "chunk_id": 3929
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "SINUMERIK中的多刀是什么？使用多刀有什么作用？",
+        "answer": "多刀是车削工艺中的一个迷你转塔，带有一定数量的刀具，可以像普通刀具一样装载进刀库以及从刀库卸载。使用多刀可以在一个刀库位置上插入多个刀具。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 4924
+            },
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 4925
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "多刀在装载、卸载或移动时是如何处理的？在多刀上安装或移除刀具会产生PLC接口上的刀具管理任务吗？",
+        "answer": "多刀在装载至刀库和从刀库卸载时被视为一个刀具，并且作为一个整体进行手动安装、装载、卸载或移动。在多刀上安装刀具或者从多刀上移除刀具不会在PLC接口上产生刀具管理任务。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 4925
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "多刀的名称有什么要求？是否需要定义Duplo号？",
+        "answer": "多刀名称与刀具名称和刀库名称一样，来源于相同的名称范围。不同的多刀必须具有不同的名称，并且不定义Duplo号。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 4926
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "刀具管理可以接收哪些任务？",
+        "answer": "刀具管理可以接收准备换刀和执行换刀任务（T指令、M06）、刀具移动任务（MVTOOL）以及刀库定位任务（POSM）。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 4952
+            }
+        ],
+        "category": "list"
+    },
+    {
+        "question": "刀具管理从T指令、M06、MVTOOL和POSM等任务中获取什么信息？",
+        "answer": "刀具管理从这些任务中获取刀具需要进行的刀位变化，并将任务交给PLC。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 4952
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "刀具管理中的“装刀”和“卸刀”分别是什么操作？",
+        "answer": "装刀是通过参数“源刀位”的装载位，将刀具装入参数“目标刀位”的刀库刀位；卸刀是将参数“源刀位”的刀库刀位中的刀具卸载至参数“目标刀位”的卸载位。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 4965
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "刀具管理中的“换位”和“定位”分别执行什么操作？",
+        "answer": "换位是将参数“源刀位”的刀库刀位中的刀具换位至参数“目标刀位”的刀库刀位；定位是将参数“源刀位”的刀库刀位定位至参数“目标刀位”的换刀、装载或卸载位，同时刀具仍保留在其刀库刀位中。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 4966
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "刀具管理中的定位任务有什么特点？",
+        "answer": "定位任务由零件程序发出，是NC特性。定位时，刀具被定位到换刀、装载或卸载位，但仍保留在原来的刀库刀位中。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 4966
+            }
+        ],
+        "category": "fact"
+    },
+    {
+    "question": "刀具管理中的中间应答和结束应答分别有什么作用？",
+    "answer": "中间应答用于向刀具管理提供任务中间步骤的信息，刀具管理据此记录当前的刀具位置更改，零件程序须等待；结束应答用于完成任务，并允许零件程序继续执行。",
+    "kb_name": "SINUMERIK 828D 工业设备知识库",
+    "relevant_chunks": [
+      {
+        "source": "刀具管理.pdf",
+        "chunk_id": 5034
+      }
+    ],
+    "category": "comparison"
+  },
+  {
+    "question": "刀具管理中的中间应答有什么限制？",
+    "answer": "中间应答只能提供任务中间步骤的目标位置，源位置在任务或最后的中间应答中提供；中间应答只能在结束应答之前进行。",
+    "kb_name": "SINUMERIK 828D 工业设备知识库",
+    "relevant_chunks": [
+      {
+        "source": "刀具管理.pdf",
+        "chunk_id": 5034
+      }
+    ],
+    "category": "fact"
+  },
+    {
+        "question": "PPU电缆固定的操作步骤有哪些？",
+        "answer": "PPU电缆固定包括以下操作步骤：1.在X150P1和X150P2接口处插入PROFINET电缆；2.在LAN接口X130、X120和X127插入以太网电缆；3.在X100–X102处插入DRIVE-CLiQ电缆；4.在X143.1和X143.2处插入手轮端子；5.在X122、X132处插入数字量输入/输出端子；6.在X242、X252处插入输入/输出端子；7.将电源端子插入X1；8.将模拟主轴电缆的电缆屏蔽连接到电缆拉力释放装置的X252处；9.将电缆固定在X150P1、X150P2、X120、X130、X127、X100-X102、X143.1/X143.2、X122、X132、X242、X252和X1处。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10543
+            },
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10544
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "PPU电缆拉力释放装置上需要连接哪些类型的电缆和端子？",
+        "answer": "需要连接PROFINET电缆、以太网电缆、DRIVE-CLiQ电缆、手轮端子、数字量输入/输出端子、输入/输出端子以及电源端子。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10543
+            }
+        ],
+        "category": "list"
+    },
+    {
+        "question": "模拟主轴电缆的电缆屏蔽应连接到什么位置？",
+        "answer": "应将模拟主轴电缆的电缆屏蔽连接到电缆拉力释放装置的X252处。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10544
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "PPU电缆应固定在哪些接口位置？",
+        "answer": "电缆应固定在电缆拉力释放装置的X150P1、X150P2、X120、X130、X127、X100-X102、X143.1/X143.2、X122、X132、X242、X252和X1处。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10544
+            }
+        ],
+        "category": "list"
+    },
+    {
+        "question": "固定PPU电缆时应使用什么类型的电缆扎带？",
+        "answer": "固定PPU电缆时应使用非导电电缆扎带（塑料）；如果电缆扎带需要接触，则应使用金属电缆扎带。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10544
+            },
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10545
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "固定电缆时，什么时候使用非导电电缆扎带，什么时候使用金属电缆扎带？",
+        "answer": "通常使用非导电电缆扎带（塑料）进行固定；如果电缆扎带需要接触，则使用金属电缆扎带。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10544
+            },
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10545
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "PPU模块和组件可以安装在哪些位置？",
+        "answer": "PPU模块和组件仅可被安装在外壳、控制柜或隔离的电气操作区域中。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10548
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "哪些人员可以接触安装PPU模块和组件的外壳、控制柜或隔离的电气操作区域？",
+        "answer": "只有经培训人员或授权人员才可接触外壳、控制柜或进入隔离的电气操作区域。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10548
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "安装SINUMERIK 828D或进行接线时，系统需要满足什么供电条件？",
+        "answer": "安装SINUMERIK 828D或进行接线时，整个系统都必须断电。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10549
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "如果未按照制造商指定的方式使用设备，可能会有什么影响？",
+        "answer": "如果未按照制造商指定的方式使用设备，则设备提供的保护可能受损。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10549
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "SINUMERIK 828D安装或接线时为什么必须断电？",
+        "answer": "资料明确指出，安装SINUMERIK 828D或进行接线时，整个系统都必须断电，以避免电击危险。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10549
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "采用DIN导轨安装组件时，具体安装步骤是什么？",
+        "answer": "安装时，首先稍稍向后倾斜组件，将钩子卡入DIN导轨中；然后在DIN导轨上轻晃组件，直到背面的安装滑片完全嵌入导轨。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10557
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "采用DIN导轨安装时，如何拆卸组件？",
+        "answer": "首先在挂耳处向下拉动安装滑片，使滑片从安装导轨中松脱；然后向前轻晃组件，再向上从DIN导轨中移除组件。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10557
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "DIN导轨安装中，安装滑片的作用是什么？",
+        "answer": "安装滑片用于使组件与DIN导轨可靠嵌合。安装时需要轻晃组件，直到背面的安装滑片完全嵌入导轨；拆卸时则需要向下拉动安装滑片，使其从安装导轨中松脱。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10557
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "安装PU时需要注意什么？",
+        "answer": "安装PU时必须仔细遵守相关安装事项，以确保PU正确安装；采用不允许的安装位置会导致功能异常。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10558
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "采用DIN导轨安装时，安装和拆卸组件的操作有什么区别？",
+        "answer": "安装时，需要稍稍向后倾斜组件并将钩子卡入DIN导轨，然后轻晃组件使安装滑片完全嵌入导轨；拆卸时，则需要先向下拉动安装滑片使其从导轨中松脱，再向前轻晃组件并向上移除。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10557
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "PPU张力夹的最大紧固扭矩是多少？",
+        "answer": "张力夹的最大紧固扭矩为0.5 Nm，且不得超出该紧固扭矩。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10567
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "PPU允许的安装位置最多可以偏离垂直位置多少度？",
+        "answer": "允许的安装位置最多只允许偏离垂直位置60º。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10567
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "为什么安装PPU时不能损坏密封条？安装时应注意什么？",
+        "answer": "安装设备时绝对不能损坏密封条，否则无法实现可达到的最高防护等级。因此，应将PPU居中放入安装开口中。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10567
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "安装PPU时可以使用吸爪提起正面的玻璃吗？",
+        "answer": "不可以。安装PPU时请勿使用吸爪提起正面的玻璃，以避免造成损坏。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10567
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "安装PPU上部电缆拉力释放装置需要使用什么工具和紧固扭矩？",
+        "answer": "安装上部电缆拉力释放装置使用的工具为Torx10，紧固扭矩为0.8 Nm。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10568
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "上部电缆拉力释放装置应该在什么时候组装？",
+        "answer": "上部电缆拉力释放装置及其螺丝包含在交付范围内，需要将它们组装起来，最好在插入所有电缆之后进行组装。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10568
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "DRIVE-CLiQ组件的接线要求主要分为哪两类？",
+        "answer": "DRIVE-CLiQ组件的接线要求分为必须在任何情况下遵守的DRIVE-CLiQ接线规则，以及可以避免扩展后二次更改拓扑的接线推荐。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10584
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "DRIVE-CLiQ组件的最大数量以及允许的接线方式取决于哪些因素？",
+        "answer": "DRIVE-CLiQ组件的最大数量以及允许的接线方式取决于必须遵守的DRIVE-CLiQ接线规则、已激活驱动的数量和类型、配套控制单元上的功能、配套控制单元的计算能力，以及设置的处理周期和通讯周期。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10584
+            },
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10585
+            }
+        ],
+        "category": "list"
+    },
+    {
+        "question": "除了必须遵守的DRIVE-CLiQ接线规则外，PPU手册还提供了哪些内容？",
+        "answer": "除了必须遵守的DRIVE-CLiQ接线规则外，PPU手册还提供了一些接线推荐和拓扑示例。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10585
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "DRIVE-CLiQ拓扑示例中的组件是否可以进行调整？",
+        "answer": "可以。拓扑示例中的组件可以移除、补充或用其他组件替换。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10585
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "更换DRIVE-CLiQ组件型号或补充更多组件后，应使用什么工具检查拓扑？",
+        "answer": "在用另一个型号的组件替换或补充更多组件时，可以使用SIZER工具来检查拓扑。通过SIZER检查后的拓扑便可以运行，是正确拓扑。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10585
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "PPU的DIAG诊断LED呈绿色点亮表示什么状态？",
+        "answer": "表示一切正常。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10763
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "PPU的DIAG诊断LED呈黄色点亮表示什么？",
+        "answer": "表示存在软件相关故障，需要处理，并应联系热线。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10763
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "PPU的DIAG诊断LED呈黄色闪烁（0.5 Hz）表示什么？",
+        "answer": "表示使用Ctrl+Alt+D快捷方式启动的数据备份操作正在运行。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10763
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "PPU的DIAG诊断LED呈红色点亮表示什么？出现这种状态时应如何处理？",
+        "answer": "表示硬件相关测试失败，例如启动期间的内存测试失败。如果多次关闭和启动后状态仍没有变化，应更换设备。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10763
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "PPU启动时，所有LED指示灯会出现什么状态？",
+        "answer": "PPU启动时，所有LED指示灯都会短暂亮橙色。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10763
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "操作人员控制区域同时按下多个按键时，最多能够可靠识别出几个按键？",
+        "answer": "最多只能可靠识别出两个按键。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10813
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "同时按下多个按键时，如果没有安全相关按键被识别，会发生什么？",
+        "answer": "所有按键信号都将为零，并且没有按键会生效。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10813
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "控制设备的开孔在不使用时应如何处理？",
+        "answer": "不使用时请勿打开开孔。安装控制设备时应密封开孔，建议使用西门子选件。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10813
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "操作人员控制区域中用于控制设备的开孔尺寸是多少？",
+        "answer": "有2个用于控制设备的开孔，每个开孔直径为16 mm（d=16 mm）。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "PPU和组件.pdf",
+                "chunk_id": 10813
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4065表示什么？",
+        "answer": "报警4065表示缓冲存储器是由备份文件恢复的，数据可能丢失。NC的用户数据和PLC的永久数据都保存在SRAM中，系统启动时检测出存储器内这两者的数据可能不一致。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11395
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4065可能导致哪些数据丢失？",
+        "answer": "存储器通过最后的备份文件初始化后，从录入备份文件之后所作的修改全部丢失。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11395
+            },
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11396
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4065可能是什么原因造成的？",
+        "answer": "系统启动时检测出SRAM中NC用户数据和PLC永久数据可能不一致。数据不一致也可能是由于超出了缓冲时间导致。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11395
+            },
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11396
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4065出现后应如何排除？程序如何继续？",
+        "answer": "排除方法是重启控制系统。程序继续的方法是关闭并重新打开系统。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11396
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "报警4065出现时，NC系统会受到什么影响？",
+        "answer": "NC没有准备就绪，本通道NC启动禁止，并且已设置接口信号，同时会显示报警。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11396
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4070与什么变化有关？MD10230$MN_SCALING_FACTORS_USER_DEFUSER_DEF[n]的作用是什么？",
+        "answer": "报警4070与影响单位换算的机床数据被改变有关。控制系统内部使用毫米、度、秒等物理单位工作，而编程或数据存储期间有时需要使用转/分、m/s²等不同单位。当机床数据MD10230$MN_SCALING_FACTORS_USER_DEFUSER_DEF[n]的对应位设为1时，可以激活可设定的系数进行单位换算，其中n为下标0-10。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11397
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4087表示什么？",
+        "answer": "报警4087表示选件“快速插补”生效时，通道中不允许使用主轴。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11412
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4087出现后应如何排除？",
+        "answer": "可以禁用“快速插补”选件，或者将MD35000$MA_SPIND_ASSIGN_TO_MACHAX设置为0。处理后关闭并重新打开系统以继续程序。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11412
+            },
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11413
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "报警4090表示什么？出现该报警后应如何处理？",
+        "answer": "报警4090表示系统启动期间发生了不止<n>个错误。排除方法是正确地设置机床数据，之后关闭并重新打开系统。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11413
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "报警4099表示什么？",
+        "answer": "报警4099表示机床数据初始化出错。参数%1表示错误数量，详细信息可以参见引导启动记录文件。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11414
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4099出现时，NC有什么反应，应如何排除？",
+        "answer": "报警4099出现时，NC没有准备就绪并显示报警。排除方法是通知授权人员或维修部门；程序继续可以使用复位键清除报警并重新启动子程序。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11414
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "报警4150中，MD10718$MN_M_NO_FCT_CYCLE_PAR允许的数组下标范围是多少？",
+        "answer": "MD10718$MN_M_NO_FCT_CYCLE_PAR允许的数组下标范围为0至9。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11417
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4150出现时，哪些机床数据需要进行检查和修改？",
+        "answer": "需要在MD10715$MN_M_NO_FCT_CYCLE[n]中定义一个未被系统占用的M功能，并在MD10718$MN_M_NO_FCT_CYCLE_PAR中定义一个有效的数组下标。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11417
+            },
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11418
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "报警4150出现后，系统会产生什么反应？",
+        "answer": "BAG没有准备就绪，通道没有准备就绪，本通道NC启动禁止，已设置接口信号，并显示报警；报警时NC停止。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11417
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4152与哪些机床数据的非法设定有关？",
+        "answer": "报警4152与机床数据MD28400$MC_MM_ABSBLOCK以及MD28402$MC_MM_ABSBLOCK_BUFFER_CONF[]的非法设定有关。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11418
+            },
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11419
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "报警4152中，MD28400$MC_MM_ABSBLOCK允许设置哪些程序段长度？",
+        "answer": "MD28400$MC_MM_ABSBLOCK允许的取值为0、1以及128至512。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11419
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "转换数据记录出错时，错误号-1表示什么？",
+        "answer": "错误号-1表示转换类型不明确，即$NT_TRAFO_TYPE[n]包含无效的名称。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11464
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "转换数据记录出错时，错误号-2表示什么？",
+        "answer": "错误号-2表示机床运动结构未定义，即$NT_T_CHAIN_LAST_ELEM[n]和$NT_P_CHAIN_LAST_ELEM[n]中均不包含机床运动学中运动链系单元的参考。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11464
+            },
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11465
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "转换数据记录出错时，错误号-3和-4分别表示什么？",
+        "answer": "错误号-3表示具有$NT_T_CHAIN_LAST_ELEM[n]中所包含名称的运动链系单元与主要单元无连接；错误号-4表示具有$NT_P_CHAIN_LAST_ELEM[n]中所包含名称的运动链系单元与主要单元无连接。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11465
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "转换数据记录出错时，错误号-6和-8分别表示什么？",
+        "answer": "错误号-6表示不存在运动链系单元，即MD18880$MN_MM_MAXNUM_KIN_CHAIN_ELEM为零；错误号-8表示具有$NT_P_CHAIN_LAST_ELEM[n]中所包含名称的运动链系单元未找到。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11466
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "转换数据记录出错时，错误号-10、-11和-12分别与哪些旋转轴有关？",
+        "answer": "错误号-10表示在$NT_ROT_AX_NAME[n,0]中定义的旋转轴未在运动链系中找到；错误号-11表示在$NT_ROT_AX_NAME[n,1]中定义的旋转轴未在运动链系中找到；错误号-12表示在$NT_ROT_AX_NAME[n,2]中定义的旋转轴未在运动链系中找到。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "报警诊断手册.pdf",
+                "chunk_id": 11467
+            }
+        ],
+        "category": "list"
+    },
+    {
+        "question": "示例NC程序中，N30程序段中的S2000、M3和M8分别表示什么？",
+        "answer": "S2000表示主轴转速为2000；M3表示主轴旋转方向；M8表示打开冷却。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "NC编程.pdf",
+                "chunk_id": 29780
+            }
+        ],
+        "category": "list"
+    },
+    {
+        "question": "示例NC程序中，N40程序段设置了哪些几何数据和加工条件？",
+        "answer": "N40程序段为G90 G64 G54 G17 G0 X-72 Y-72，进行了几何数据的基本设定并返回起始点。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "NC编程.pdf",
+                "chunk_id": 29780
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "示例NC程序中，N80和N130程序段中的G41和G40分别起什么作用？",
+        "answer": "N80中的G41用于打开铣刀半径补偿；N130中的G40用于取消铣刀半径补偿。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "NC编程.pdf",
+                "chunk_id": 29781
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "示例NC程序中，N90和N100程序段分别使用了哪些轮廓加工指令？",
+        "answer": "N90使用G1 X-40 Y30 RND=10进行轮廓运动，其中RND=10；N100使用G1 X40 Y30 CHR=10，其中CHR=10。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "NC编程.pdf",
+                "chunk_id": 29781
+            }
+        ],
+        "category": "fact"
+    },
+    {
+        "question": "示例NC程序中，N150和N160分别完成什么操作？",
+        "answer": "N150通过T=\"SF10\"预先选定名称为SF10的刀具；N160通过M6将刀具换入主轴。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "NC编程.pdf",
+                "chunk_id": 29781
+            }
+        ],
+        "category": "procedure"
+    },
+    {
+        "question": "示例NC程序中，N200调用了什么加工循环？",
+        "answer": "N200调用了POCKET4型腔铣削循环，程序段为POCKET4(2,0,1,-5,15,0,0,0,0,0,800,1300,0,21,5,,,2,0.5)。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "NC编程.pdf",
+                "chunk_id": 29782
+            }
+        ],
+        "category": "fact"
+    }
+
+]

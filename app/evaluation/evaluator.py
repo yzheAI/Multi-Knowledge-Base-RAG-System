@@ -13,6 +13,21 @@ class RetrieverEvaluator:
 
         self.query_func = query_func
 
+    def _is_relevant(self, result, expected_chunks):
+        result_chunk_id = result.get("chunk_id")
+        result_source = result.get(
+            "metadata", {}
+        ).get("source")
+
+        for expected in expected_chunks:
+            if (
+                    result_chunk_id == expected["chunk_id"]
+                    and result_source == expected["source"]
+            ):
+                return True
+
+        return False
+
     def evaluate(self, db, retriever):
         recall_1 = 0
         recall_3 = 0
@@ -39,26 +54,43 @@ class RetrieverEvaluator:
                 top_k=5
             )
 
+            expected_chunks = item["relevant_chunks"]
+
             if any(
-                item["chunk_id"] == r["chunk_id"]
-                for r in results[:1]
+                    self._is_relevant(
+                        r,
+                        expected_chunks
+                    )
+                    for r in results[:1]
             ):
                 recall_1 += 1
 
             if any(
-                item["chunk_id"] == r["chunk_id"]
-                for r in results[:3]
+                    self._is_relevant(
+                        r,
+                        expected_chunks
+                    )
+                    for r in results[:3]
             ):
                 recall_3 += 1
 
             if any(
-                item["chunk_id"] == r["chunk_id"]
-                for r in results[:5]
+                    self._is_relevant(
+                        r,
+                        expected_chunks
+                    )
+                    for r in results[:5]
             ):
                 recall_5 += 1
 
-            for rank, r in enumerate(results, start=1):
-                if item["chunk_id"] == r["chunk_id"]:
+            for rank, r in enumerate(
+                    results,
+                    start=1
+            ):
+                if self._is_relevant(
+                        r,
+                        expected_chunks
+                ):
                     mrr += 1 / rank
                     break
 

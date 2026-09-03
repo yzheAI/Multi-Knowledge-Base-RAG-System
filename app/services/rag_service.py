@@ -71,9 +71,7 @@ def build_rag_prompt(
         contexts,
         history=None,
 ):
-    content_text = "\n".join(
-        [ctx["text"] for ctx in contexts]
-    )
+    content_text = build_context(contexts)
 
     prompt = build_prompt(
         query,
@@ -82,3 +80,21 @@ def build_rag_prompt(
     )
 
     return prompt
+
+
+def build_context(contexts: list[dict]) -> str:
+    context_parts = []
+
+    for i, ctx in enumerate(contexts, start=1):
+        metadata = ctx.get("metadata", {})
+        context_parts.append(
+            f"""【资料{i}】
+            来源：{metadata.get("source", "未知")}
+            文档类型：{metadata.get("document_type", "未知")}
+            Chunk ID：{ctx.get("chunk_id", "未知")}
+            内容：
+            {ctx["text"]}
+            """
+        )
+
+    return "\n".join(context_parts)

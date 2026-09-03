@@ -3,23 +3,23 @@
     "history": [
       {
         "role":"user",
-        "content":"铜基复合材料有哪些增强相"
+        "content":"MD18893是什么"
       },
       {
         "role":"assistant",
-        "content":"常见增强相包括SiC..."
+        "content":"..."
       }
     ],
-    "question":"它是什么？",
-    "kb_name": "copper_based",
-    "chunk_id":7
+    "question":"它的设置值与自动刀具保护区的最大数量有什么关系？",
+    "kb_name": "SINUMERIK 828D 工业设备知识库",
+    "chunk_id":2470
   },
 
   {
     "history": [
       {
         "role":"user",
-        "content":"铜基复合材料有哪些增强相"
+        "content":"刀具半径补偿"
       },
       {
         "role":"assistant",

@@ -6,8 +6,8 @@ from app.evaluation.evaluator import RetrieverEvaluator
 from app.config import JSON_PATH, SAVE_JSON_PATH, REWRITE_JSON_PATH
 from app.retriever.retriever_adapter import RetrieverAdapter
 from app.core.container import container
-from app.evaluation.query_rewrite_adapter import rewrite_adapter
-from app.evaluation.query_base_adapter import base_adapter
+# from app.evaluation.query_rewrite_adapter import rewrite_adapter
+# from app.evaluation.query_base_adapter import base_adapter
 import app.models
 
 db = SessionLocal()
@@ -21,15 +21,15 @@ try:
         JSON_PATH
     )
 
-    rewrite_evaluator = RetrieverEvaluator(
-        REWRITE_JSON_PATH,
-        query_func=rewrite_adapter,
-    )
-
-    base_evaluator = RetrieverEvaluator(
-        REWRITE_JSON_PATH,
-        query_func=base_adapter
-    )
+    # rewrite_evaluator = RetrieverEvaluator(
+    #     REWRITE_JSON_PATH,
+    #     query_func=rewrite_adapter,
+    # )
+    #
+    # base_evaluator = RetrieverEvaluator(
+    #     REWRITE_JSON_PATH,
+    #     query_func=base_adapter
+    # )
 
     # ==========================
     # Retriever
@@ -81,31 +81,31 @@ try:
     # Base Evaluation
     # ==========================
 
-    base_result = base_evaluator.evaluate(
-        db,
-        h_b_retriever
-    )
-
-    evaluation_results["base_result"] = base_result
-    print(
-        f"base_result: {base_result}",
-        flush=True
-    )
+    # base_result = base_evaluator.evaluate(
+    #     db,
+    #     h_b_retriever
+    # )
+    #
+    # evaluation_results["base_result"] = base_result
+    # print(
+    #     f"base_result: {base_result}",
+    #     flush=True
+    # )
 
     # ==========================
     # Query Rewrite Evaluation
     # ==========================
 
-    rewrite_result = rewrite_evaluator.evaluate(
-        db,
-        h_b_retriever
-    )
-
-    evaluation_results["rewrite_result"] = rewrite_result
-    print(
-        f"rewrite_result: {rewrite_result}",
-        flush=True
-    )
+    # rewrite_result = rewrite_evaluator.evaluate(
+    #     db,
+    #     h_b_retriever
+    # )
+    #
+    # evaluation_results["rewrite_result"] = rewrite_result
+    # print(
+    #     f"rewrite_result: {rewrite_result}",
+    #     flush=True
+    # )
 
     # ==========================
     # Save

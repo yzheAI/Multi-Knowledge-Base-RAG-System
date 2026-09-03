@@ -25,7 +25,7 @@ SEARCH_TOP_K = 10
 RERANK_TOP_K = 3
 EMBEDDING_DIM = 768
 
-JSON_PATH = BASE_DIR / "app/data/dataset.json"
+JSON_PATH = BASE_DIR / "app/data/SINUMERIK_828D_dataset.json"
 REWRITE_JSON_PATH = BASE_DIR / "app/data/query_rewrite_dataset.json"
 KNOWLEDGE_BASE_PATH = DATA_DIR / "knowledge_bases"
 SAVE_JSON_PATH = BASE_DIR / "app/evaluation/results/retrieval_result.json"
