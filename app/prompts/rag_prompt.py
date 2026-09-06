@@ -1,7 +1,7 @@
 def build_prompt(
         query,
         content_text,
-        history
+        history=None
 ):
     prompt = f"""
     你是一个工业设备知识库问答助手。

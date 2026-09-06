@@ -29,6 +29,8 @@ JSON_PATH = BASE_DIR / "app/data/SINUMERIK_828D_dataset.json"
 REWRITE_JSON_PATH = BASE_DIR / "app/data/query_rewrite_dataset.json"
 KNOWLEDGE_BASE_PATH = DATA_DIR / "knowledge_bases"
 SAVE_JSON_PATH = BASE_DIR / "app/evaluation/results/retrieval_result.json"
+SAVE_ANSWER_EVALUATION_PATH = BASE_DIR / "app/evaluation/results/answer_result.json"
+
 CELERY_ALWAYS_EAGER = True
 
 # LLM
