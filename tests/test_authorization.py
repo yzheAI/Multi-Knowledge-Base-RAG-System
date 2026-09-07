@@ -82,7 +82,8 @@ def test_user_cannot_upload_to_other_users_knowledge_base(
     }
 
     data = {
-        "kb_name": kb_name
+        "kb_name": kb_name,
+        "document_type": "equipment"
     }
 
     response = client.post(

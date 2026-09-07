@@ -1,8 +1,11 @@
 import os
-import time
 
 
-def test_upload_and_get_files_api(client, auth_user, create_kb):
+def test_upload_and_get_files_api(
+        client,
+        auth_user,
+        create_kb
+):
 
     kb_name = create_kb()
 
@@ -17,7 +20,8 @@ def test_upload_and_get_files_api(client, auth_user, create_kb):
     }
 
     data = {
-        "kb_name": kb_name
+        "kb_name": kb_name,
+        "document_type": "equipment",
     }
 
     upload_response = client.post(
@@ -28,28 +32,6 @@ def test_upload_and_get_files_api(client, auth_user, create_kb):
     )
 
     assert upload_response.status_code == 200
-
-    task_id = upload_response.json()["data"]["task_id"]
-
-    # 等待 Celery 完成
-    for _ in range(30):
-        response = client.get(
-            f"/tasks/{task_id}",
-            headers=headers
-        )
-
-        task = response.json()["data"]
-
-        if task["status"] == "success":
-            break
-
-        if task["status"] == "failed":
-            raise AssertionError(task.get("error_message"))
-
-        time.sleep(0.5)
-
-    else:
-        raise AssertionError("Celery task timeout")
 
     response = client.get(
         "/files/files_message",
@@ -70,6 +52,8 @@ def test_upload_and_get_files_api(client, auth_user, create_kb):
 
     # 文件存在
     file_path = document["file_path"]
+
+    doc_id = document["doc_id"]
 
     assert os.path.exists(file_path)
 

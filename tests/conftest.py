@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-
+from app.tasks import document_task
 from app.cache.retrieval_cache import RetrievalCache
 from app.database.session import Base
 import uuid
@@ -57,6 +57,8 @@ def override_database():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
+
+    document_task.SessionLocal = TestSessionLocal
 
     yield
 
@@ -189,7 +191,8 @@ def retrieval_kb(client, auth_user, create_kb):
         headers=auth_user["headers"],
         files=file,
         data={
-            "kb_name": kb_name
+            "kb_name": kb_name,
+            "document_type": "equipment",
         }
     )
 
