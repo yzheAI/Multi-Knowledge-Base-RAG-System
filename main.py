@@ -7,6 +7,7 @@ from app.api.knowledge_base import kb_router
 from app.api.chat import chat_router
 from app.api.upload import upload_router as upload_router
 from app.exceptions.handlers import register_exception_handlers
+from app.api.agent import agent_router
 
 app = FastAPI(title="AI知识库助手")
 
@@ -35,6 +36,7 @@ app.include_router(upload_router)
 app.include_router(chat_router)
 app.include_router(kb_router)
 app.include_router(tasks_router)
+app.include_router(agent_router)
 
 if __name__ == '__main__':
     uvicorn.run(

@@ -37,6 +37,8 @@ def get_rerank_model():
 
 
 def rerank(query, docs, top_k=5):
+    if not docs:
+        return []
 
     tokenizer, model = get_rerank_model()
 

@@ -83,3 +83,22 @@ def get_all_documents(
     ).all()
 
     return docs
+
+
+def get_document_by_key(
+        db: Session,
+        key: str,
+        kb_name,
+        owner_id
+):
+    docs = db.query(
+        Document
+    ).join(
+        KnowledgeBase
+    ).filter(
+        Document.filename.like(f'%{key}%'),
+        KnowledgeBase.owner_id == owner_id,
+        KnowledgeBase.name == kb_name
+    ).all()
+
+    return docs
