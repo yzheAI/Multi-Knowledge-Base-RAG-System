@@ -10,7 +10,8 @@ def create_task(
         owner_id,
         kb_id,
         file_path,
-        kb_path
+        kb_path,
+        document_type
 ):
 
     task = Task(
@@ -20,7 +21,8 @@ def create_task(
         owner_id=owner_id,
         kb_id=kb_id,
         file_path=file_path,
-        kb_path=kb_path
+        kb_path=kb_path,
+        document_type=document_type
     )
 
     db.add(task)

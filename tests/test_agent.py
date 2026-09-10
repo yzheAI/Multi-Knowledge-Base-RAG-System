@@ -1,6 +1,3 @@
-from agent.agent import run_agent
-
-
 def test_agent_knowledge_search(
         client,
         auth_user,
@@ -10,7 +7,7 @@ def test_agent_knowledge_search(
 
     response = client.post(
         "/agent/",
-        params={
+        json={
             "query": "MD32450是什么？",
             "kb_name": kb_name,
         },
@@ -34,7 +31,7 @@ def test_agent_document_search(
 
     response = client.post(
         "/agent/",
-        params={
+        json={
             "query": "找一下刀具相关文档",
             "kb_name": kb_name,
         },

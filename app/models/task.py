@@ -22,6 +22,11 @@ class Task(Base):
         nullable=False,
     )
 
+    document_type = Column(
+        String(50),
+        nullable=False,
+    )
+
     owner_id = Column(
         Integer,
         ForeignKey('users.id'),

@@ -41,7 +41,8 @@ def retry_task_service(db, task_id, owner_id):
         task.kb_path,
         task.filename,
         kb.name,
-        owner_id
+        owner_id,
+        task.document_type
     )
 
     return task

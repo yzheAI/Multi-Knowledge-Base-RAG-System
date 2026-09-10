@@ -29,13 +29,13 @@ class VectorStoreManager:
                 owner_id
             )
 
+            if kb is None:
+                return None
+
             kb_path = self.kb_manager.get_path(
                 owner_id=owner_id,
                 kb_id=kb.id
             )
-
-            if kb is None:
-                return None
 
             store.load(
                 f"{kb_path}/faiss.index",

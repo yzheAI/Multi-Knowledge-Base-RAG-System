@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-
+from app.schemas.agent_schema import AgentRequest
 from agent.agent import run_agent
 from fastapi import APIRouter, Depends
 
@@ -14,14 +14,14 @@ agent_router = APIRouter(
 
 @agent_router.post("/")
 async def use_agent(
-        query: str,
-        kb_name: str,
+        request: AgentRequest,
         db: Session = Depends(get_db),
         user=Depends(get_current_user)
 ):
     return run_agent(
         db,
-        query,
+        request.query,
         user.id,
-        kb_name
+        request.kb_name,
+        request.filters
     )

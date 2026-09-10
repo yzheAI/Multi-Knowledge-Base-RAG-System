@@ -37,6 +37,7 @@ async def upload(
         kb_id=kb.id,
         file_path=upload_info["file_path"],
         kb_path=upload_info["kb_path"],
+        document_type=document_type
     )
 
     # 异步任务
@@ -141,13 +142,24 @@ async def file_delete(
         owner_id
     )
 
+    if store is None:
+        raise KnowledgeBaseEmptyError(
+            message="向量库不存在"
+        )
+
     kb = knowledge_base.get_kb_by_name(
         db,
         kb_name,
         owner_id
     )
 
-    kb_path = kdg.get_path(kb.id, owner_id)
+    if not kb:
+        raise KnowledgeBaseEmptyError()
+
+    kb_path = kdg.get_path(
+        kb.id,
+        owner_id
+    )
 
     # 取出要删除的chunks，得到ids进行向量删除
     chunks = chunk_crud.get_chunks_by_document_id(
@@ -160,38 +172,27 @@ async def file_delete(
         for chunk in chunks
     ]
 
-    if not chunk_ids:
+    if chunk_ids:
 
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        # 删除向量
+        success_flag = store.delete(
+            chunk_ids,
+            kb_path,
+        )
 
-        document_crud.delete_document(
+        if not success_flag:
+            raise DocumentNotFound(
+                message="删除文档向量失败"
+            )
+
+        # 删除 chunk
+        chunk_crud.delete_chunks_by_document_id(
             db,
-            doc_id,
-            owner_id
+            document_id=doc_id
         )
-
-        return True
-
-    # 删除向量
-    success_flag = store.delete(
-        chunk_ids,
-        kb_path,
-    )
-
-    if not success_flag:
-        raise DocumentNotFound(
-            message="文档不存在"
-        )
-
-    # 删除 chunk
-    chunk_crud.delete_chunks_by_document_id(
-        db,
-        document_id=doc_id
-    )
 
     # 删除物理文件
-    if os.path.exists(file_path):
+    if file_path and os.path.exists(file_path):
         os.remove(file_path)
 
     # 删除数据库中文档
@@ -203,11 +204,6 @@ async def file_delete(
 
     retrieval_cache = RetrievalCache()
 
-    kb = knowledge_base.get_kb_by_name(
-        db,
-        kb_name,
-        owner_id
-    )
     retrieval_cache.delete_by_kb(
         owner_id,
         kb.id
@@ -218,4 +214,4 @@ async def file_delete(
         owner_id
     )
 
-    return success_flag
+    return True
