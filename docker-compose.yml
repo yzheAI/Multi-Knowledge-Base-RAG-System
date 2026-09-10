@@ -18,4 +18,31 @@ services:
     env_file:
       - .env
 
+    depends_on:
+      - mysql
+      - redis
+
     restart: always
+
+  mysql:
+    image: mysql:8.0
+    container_name: ai-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    restart: always
+
+  redis:
+    image: redis:7
+    container_name: ai-redis
+    volumes:
+      - redis_data:/data
+    restart: always
+
+volumes:
+  mysql_data:
+  redis_data:
