@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-
+from app.schemas.document_types import ChunkStatus
 from app.models import Document
 from app.models.chunk import Chunk
 
@@ -38,7 +38,8 @@ def create_chunks(
             document_id=document_id,
             content=content,
             metadata_info=metadata,
-            chunk_index=index
+            chunk_index=index,
+            status=ChunkStatus.PENDING
         )
 
         chunk_object.append(chunk)
@@ -100,7 +101,20 @@ def get_chunks_by_ids(
     return (
         db.query(Chunk)
         .filter(
-            Chunk.id.in_(chunk_ids)  # 批量查询指定chunk_id的数据
+            Chunk.id.in_(chunk_ids),  # 批量查询指定chunk_id的数据
+            Chunk.status == ChunkStatus.INDEXED
         )
         .all()
     )
+
+
+def get_failed_chunks(
+        db: Session,
+):
+    chunks = db.query(
+        Chunk
+    ).filter(
+        Chunk.status == ChunkStatus.FAILED
+    ).all()
+
+    return chunks

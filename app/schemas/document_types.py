@@ -11,3 +11,9 @@ class DocumentType(str, Enum):
     FUNCTION = 'function'
     SAFETY = 'safety'
     INSTALLATION = 'installation'
+
+
+class ChunkStatus(str, Enum):
+    PENDING = 'pending'
+    INDEXED = 'indexed'
+    FAILED = 'failed'

@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, Text, ForeignKey, JSON
+from sqlalchemy import Column, Integer, Text, ForeignKey, JSON, String
 
 from app.database.session import Base
+from app.schemas.document_types import ChunkStatus
 
 
 class Chunk(Base):
@@ -30,4 +31,11 @@ class Chunk(Base):
     metadata_info = Column(
         JSON,
         nullable=False
+    )
+
+    status = Column(
+        String(50),
+        nullable=True,
+        default=ChunkStatus.PENDING,
+        index=True
     )

@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from app.tasks.state_machine import transition_task
 from app.tasks.status import TaskStatus
 from app.cache.retrieval_cache import RetrievalCache
@@ -7,6 +6,7 @@ from app.core.container import container
 from app.crud import task_crud, knowledge_base, document_crud, chunk_crud
 from app.document.pipeline import process_document
 from app.exceptions.exceptions import KnowledgeBaseEmptyError, NotFoundTask
+from app.services.index_service import index_chunks_with_retry
 
 
 def handle_document_upload(
@@ -97,21 +97,18 @@ def handle_document_upload(
         owner_id
     )
 
-    # 使用数据库生成的chunk_id建立向量索引
-    chunk_ids = [
-        chunk.id
-        for chunk in chunks
-    ]
-
     store = container.vector_manager.get_store(
         kb_name,
         db,
         owner_id
     )
-    store.add(
-        result["vectors"],
-        result["chunks"],
-        chunk_ids=chunk_ids,
+
+    index_chunks_with_retry(
+        db=db,
+        store=store,
+        chunks=chunks,
+        vectors=result["vectors"],
+        max_retries=3,
     )
 
     task_crud.update_task_progress(
