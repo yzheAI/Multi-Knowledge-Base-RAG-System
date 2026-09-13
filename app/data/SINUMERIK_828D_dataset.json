@@ -6,7 +6,8 @@
         "relevant_chunks": [
             {
                 "source": "监控和补偿.pdf",
-                "chunk_id": 2470
+                "chunk_id": 2470,
+                "text": "借助以下机床数据定义：自动刀具保护区的保护区单元的最大数量。针对每个自动刀具保护区，控制系统总是生成正好一个保护区单元，因此，通过在此参数设置的值同时也定义：可参数设置的自动刀具保护区（$NP_PROT_TYPE==\"TOOL\"）的可能的最大数量。"
             }
         ],
         "category": "fact"
@@ -18,7 +19,8 @@
         "relevant_chunks": [
             {
                 "source": "监控和补偿.pdf",
-                "chunk_id": 2474
+                "chunk_id": 2474,
+                "text": "在以下情形下，三角形需求愈发提升：刀具的几何复杂度越高。参数设置的碰撞公差越小。"
             }
         ],
         "category": "fact"
@@ -30,7 +32,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3704
+                "chunk_id": 3704,
+                "text": "轮廓和刀具轨迹并不一致。铣刀或者刀沿中心点必须依据刀具半径在一条与轮廓等距的轨迹（刀具中心点轨迹）上运行。为此，在编辑程序期间控制系统会借助生效刀具的刀具半径（刀具补偿存储器）移动刀具中心点轨迹，直到刀沿能够准确地在编程的轨迹上运行。"
             }
         ],
         "category": "fact"
@@ -42,7 +45,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3704
+                "chunk_id": 3704,
+                "text": "轮廓和刀具轨迹并不一致。铣刀或者刀沿中心点必须依据刀具半径在一条与轮廓等距的轨迹（刀具中心点轨迹）上运行。为此，在编辑程序期间控制系统会借助生效刀具的刀具半径（刀具补偿存储器）移动刀具中心点轨迹，直到刀沿能够准确地在编程的轨迹上运行。"
             }
         ],
         "category": "fact"
@@ -54,7 +58,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3727
+                "chunk_id": 3727,
+                "text": "在零件程序中D号也称为刀沿补偿。该补偿D号和CE号（刀具目录中的编号）分开管理并且为一个任意数字，用于零件程序中的标识和屏幕上的显示。在设备改造时CE号指出了具体的物理刀沿。"
             }
         ],
         "category": "fact"
@@ -66,7 +71,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3727
+                "chunk_id": 3727,
+                "text": "D号重命名时，会遗失通过刀具目录确定的刀沿号的相关信息。因此在重命名后无法再看出它到底是目录中的哪个刀沿。如果在设备改造时需要该信息，则要为每个刀沿引入一个CE号，在对D号重命名时它会被保留。在设备改造时CE号指出了具体的物理刀沿。"
             }
         ],
         "category": "fact"
@@ -78,7 +84,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3728
+                "chunk_id": 3728,
+                "text": "CE号通过系统变量$TC_DPCE[t,d]来定义：t代表内部T号；d代表D号。"
             }
         ],
         "category": "fact"
@@ -90,7 +97,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3728
+                "chunk_id": 3728,
+                "text": "定义时系统会进行冲突检查；也就是说一把刀具的刀沿编号必须各不相同。"
             }
         ],
         "category": "fact"
@@ -102,7 +110,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3728
+                "chunk_id": 3728,
+                "text": "只有当最大的刀沿号（MD18105）大于每把刀具最大的刀沿数量（MD18106）时，才建议设置$TC_DPCE。"
             }
         ],
         "category": "fact"
@@ -114,7 +123,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3731
+                "chunk_id": 3731,
+                "text": "GETDNO确定刀具某刀沿的D号。如果输入的参数不存在D号，则设定d=0。如果该D号无效，将返回一个大于32000的值。"
             }
         ],
         "category": "fact"
@@ -126,7 +136,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3731
+                "chunk_id": 3731,
+                "text": "SETDNO设置或修改刀具T的刀沿CE的D号。如果输入的参数不存在数据组，则会返回FALSE。句法错误会导致报警。"
             }
         ],
         "category": "fact"
@@ -138,7 +149,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3731
+                "chunk_id": 3731,
+                "text": "所有在一个TO单元内定义的刀具的D编号只能出现一次。备用刀具在此不考虑。"
             }
         ],
         "category": "fact"
@@ -150,11 +162,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3731
-            },
-            {
-                "source": "刀具.pdf",
-                "chunk_id": 3732
+                "chunk_id": 3731,
+                "text": "GETACTTD确定绝对D号的相应T号。不检查单一性。如果在一个TO单元内有多个相同的D号，将会返回第一个所找到刀具的T号。"
             }
         ],
         "category": "fact"
@@ -166,7 +175,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3732
+                "chunk_id": 3732,
+                "text": "DZERO将TO单元的所有D号标识为无效；该指令用于设备改造。"
             }
         ],
         "category": "fact"
@@ -178,7 +188,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3736
+                "chunk_id": 3736,
+                "text": "CHKDNO(2,3,30)刀具2和3中的D编号30返回值==FALSE，因为重复编写了D=30。"
             }
         ],
         "category": "fact"
@@ -190,7 +201,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3735
+                "chunk_id": 3735,
+                "text": "一个TO单元内定义的所有刀具的D编号须为唯一。检查通过指令CHKDNO进行。若未设定参数，那么系统会检查所有刀具的D编号并进行比较。"
             }
         ],
         "category": "fact"
@@ -202,7 +214,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3736
+                "chunk_id": 3736,
+                "text": "若启用有n个刀沿的刀具，请将机床数据的值设置为n。这样可避免为刀具定义不允许的刀沿。MD18106"
             }
         ],
         "category": "fact"
@@ -214,7 +227,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3747
+                "chunk_id": 3747,
+                "text": "当刀具管理未激活时可以发现下列问题：•缺少D补偿数据组 •零件程序错误"
             }
         ],
         "category": "list"
@@ -226,7 +240,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3747
+                "chunk_id": 3747,
+                "text": "“刀具不在刀库中”的问题不能被发现，因为在刀具补偿时NC不存在刀库信息。"
             }
         ],
         "category": "fact"
@@ -238,7 +253,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3747
+                "chunk_id": 3747,
+                "text": "程序加工停留在D值出错的程序段处（与机床数据MD22550的值无关）。操作员要么对程序进行修正，要么重新装载出错的程序段。为此需要D号和T号。"
             }
         ],
         "category": "procedure"
@@ -250,7 +266,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3749
+                "chunk_id": 3749,
+                "text": "操作员可以进行下列操作：可以修正出错的零件程序。缺少的刀沿补偿数据可以由HMI补充提供。缺少的刀沿补偿数据可以在“覆盖”状态下在NC中导入。在操作员干预之后按下启动键并重新执行被拒绝的程序段。如果错误被正确修正，则程序继续运行。否则会重新产生一个报警。"
             }
         ],
         "category": "procedure"
@@ -262,7 +279,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3750
+                "chunk_id": 3750,
+                "text": "这种情况下在刀具准备（T编程）程序段中发现一个错误，但一开始会将其忽略。继续进行加工，直到NC程序中提出换刀请求（通常是M06）。程序应该停在该位置。"
             }
         ],
         "category": "fact"
@@ -274,7 +292,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3750
+                "chunk_id": 3750,
+                "text": "编程的T地址可以位于M06指令之前的任意程序行，或者这两个语句可以处于不同的（子）程序中。因此通常情况下不能通过补偿程序段来修改一个已执行完毕的程序段。"
             }
         ],
         "category": "fact"
@@ -286,7 +305,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3758
+                "chunk_id": 3758,
+                "text": "每个刀沿都是唯一的，通过以下数据定义：刀具类型（带柄铣刀，钻头，等等）、几何尺寸说明、工艺说明。这些数据将映射到刀具参数。具体需要哪些刀具参数取决于刀具类型。"
             }
         ],
         "category": "fact"
@@ -298,7 +318,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3758
+                "chunk_id": 3758,
+                "text": "$TC_DP1 刀具类型；$TC_DP2 刀沿位置"
             }
         ],
         "category": "fact"
@@ -310,7 +331,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3759
+                "chunk_id": 3759,
+                "text": "$TC_DP6几何半径1 2D刀具半径补偿 车削：刀沿的圆弧半径 3D端铣：刀具半径 槽锯：直径"
             }
         ],
         "category": "fact"
@@ -322,7 +344,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3803
+                "chunk_id": 3803,
+                "text": "在刀具半径补偿启用或关闭时（G40/G41/G42）刀具如何逼近或离开轮廓（进退刀方式），可以在程序中通过G指令组17来调整，以适应不同的目标轮廓形状或毛坯形状。"
             }
         ],
         "category": "fact"
@@ -334,7 +357,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3806
+                "chunk_id": 3806,
+                "text": "对应地，使用KONT进退刀时可能会有两种情况：1.刀具位于轮廓之前。→进退刀方式与NORM相同。2.刀具位于轮廓之后。以KONT进刀（刀具位于轮廓后方）根据程序中写入的拐角特性（G450/G451），刀具以圆弧轨迹绕行起点，或经过等距线交点后移动到起点。"
             }
         ],
         "category": "comparison"
@@ -346,7 +370,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3806
+                "chunk_id": 3806,
+                "text": "根据程序中写入的拐角特性（G450/G451），刀具以圆弧轨迹绕行起点，或经过等距线交点后移动到起点。"
             }
         ],
         "category": "fact"
@@ -358,7 +383,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3809
+                "chunk_id": 3809,
+                "text": "KONTT/KONTC的原始进退刀程序段只允许为线性程序段。这些线性程序段会在内部转换成对应的多项式曲线。在三根轴上都会保持恒定曲率或切向。因此可以在程序中写入一段和进退刀同时进行的、垂直于轮廓平面的行程。"
             }
         ],
         "category": "fact"
@@ -370,7 +396,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3810
+                "chunk_id": 3810,
+                "text": "由于在KONTC中要求恒定曲率，退刀程序段首先执行Y轴负向分量的运行。通常不希望出现该情况。含KONTT的退刀程序段不会执行该动作。但是在这种情况下，在程序段过渡处会出现加速度跃变。"
             }
         ],
         "category": "comparison"
@@ -382,7 +409,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3811
+                "chunk_id": 3811,
+                "text": "从上图可以明显看出，使用KONTC从X0,Y0进刀以及退刀到该点时，在四分圆后紧跟着一条直线，一直延伸到X20Y-20，该直线会损伤轮廓。"
             }
         ],
         "category": "fact"
@@ -394,11 +422,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3812
-            },
-            {
-                "source": "刀具.pdf",
-                "chunk_id": 3813
+                "chunk_id": 3812,
+                "text": "G450刀具沿一段圆弧轨迹绕行工件拐角，圆弧半径为刀具半径。G451和程序中轮廓相隔刀具半径的两条等距线相交，形成交点，刀具以经过该交点的方式绕行工件拐角。"
             }
         ],
         "category": "comparison"
@@ -410,7 +435,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3814
+                "chunk_id": 3814,
+                "text": "默认生效的是功能“多项式交点法”，确保G451也可以用于一些多项式（样条）参与运算的外角。另外，使用该功能也可以避免在连续轨迹模式G64发生速度跌落，因为使用G450必然会产生该影响。"
             }
         ],
         "category": "fact"
@@ -422,7 +448,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3815
+                "chunk_id": 3815,
+                "text": "使用G450加工不出锋利的外轮廓角，因为系统会使刀具中心点轨迹沿着过渡圆弧移动，刀沿因此会停留在外角（编程位置）上。如果在使用G450时仍然需要加工出锋利的外角，则可以使用地址DISC在程序中进行提刀编程。过渡圆弧因此变为一个锥形截面，刀具刀沿从外角提刀。"
             }
         ],
         "category": "procedure"
@@ -434,7 +461,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3827
+                "chunk_id": 3827,
+                "text": "如果在圆内侧进行加工时补偿半径大于所编程的圆半径，则会使用下列报警拒绝进行加工：报警10758“使用可变补偿值的曲率半径过小”"
             }
         ],
         "category": "fact"
@@ -446,7 +474,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3828
+                "chunk_id": 3828,
+                "text": "不选择第二个可能的交点而选择第一个交点，便可以形成一个稳定的封闭轮廓：SD42496$SC_CUTCOM_CLSD_CONT≠0（封闭轮廓上刀具半径补偿的特性）因此在跳过第一个程序段的情况下总是会到达第二个可能的交点。此时就无需第三程序段。"
             }
         ],
         "category": "fact"
@@ -458,7 +487,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3829
+                "chunk_id": 3829,
+                "text": "如果在预处理时刀具半径补偿出现报警，则主处理中的加工会在下一个能到达的程序段结尾处暂停，通常该位置是当前插补程序段的结尾处（在Look-Ahead预读功能有效时，需要等轴都变为停止状态）。"
             }
         ],
         "category": "fact"
@@ -470,11 +500,13 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3841
+                "chunk_id": 3841,
+                "text": "FALSE（缺省）当刀具半径补偿已激活时，若在选择程序段(G40)前有预停（已编程或者由控制系统内部生成），则刀具会从预停前的终点位置出发并运行至选择程序段的起始点。接着，选择程序段会进行自我处理，即：通常情况下，从选择程序段中产生两个运行程序段。在这两个程序段中，不会再激活刀具半径补偿。"
             },
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3842
+                "chunk_id": 3842,
+                "text": "TRUE在上文说明的同样情形中，系统选择第一个轮廓单元上靠近段首的交点。"
             }
         ],
         "category": "comparison"
@@ -486,7 +518,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3873
+                "chunk_id": 3873,
+                "text": "G451表示，刀具运行到两个等距线的交点，等距线与编程的轮廓相隔的距离等于刀具半径。刀具在工件拐角处空运行。G451仅适用于直线和圆弧。"
             }
         ],
         "category": "fact"
@@ -498,11 +531,13 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3889
+                "chunk_id": 3889,
+                "text": "刀具半径补偿有效时再次写入G41或G42相当于封锁补偿。"
             },
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3890
+                "chunk_id": 3890,
+                "text": "重新逼近轮廓与第17组的G代码无关（刀具补偿时的进退刀方式：NORM/KONT），而总是使用NORM。"
             }
         ],
         "category": "fact"
@@ -514,7 +549,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3904
+                "chunk_id": 3904,
+                "text": "系统会对通过DISCL所定义的位于P1和P3之间的点进行监控，也就是说，在所有包含垂直于加工平面分量的运动（进刀运动、从P3向P4逼近）中，这些分量的符号必须相同。不允许出现反向，否则会输出报警。在识别换向时允许公差，可以通过机床数据来定义：MD20204$MC_WAB_CLEARANCE_TOLERANCE（SAR时换向）"
             }
         ],
         "category": "fact"
@@ -526,7 +562,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3927
+                "chunk_id": 3927,
+                "text": "必须始终观察至少两个程序段：–SAR程序段自身 –定义了逼近或回退方向的程序段\n在这两个程序段之间可以编程其他程序段。可能出现的中间程序段的数量通过以下机床数据限制：MD20202$MC_WAB_MAXNUM_DUMMY_BLOCKS（SAR时无运行动作的程序段最大数量）"
             }
         ],
         "category": "fact"
@@ -538,7 +575,9 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3928
+                "chunk_id": 3928,
+                "text": "由SAR功能生成的整个轮廓在使用刀具半径补偿进行处理时，被当作显编程的方式来进行（防撞监控、交点计算、逼近特性NORM/KONT）。"
+
             }
         ],
         "category": "fact"
@@ -550,7 +589,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具.pdf",
-                "chunk_id": 3929
+                "chunk_id": 3929,
+                "text": "在逼近时SAR程序段和定义了切线方向的后续程序段之间不允许插入预处理程序停止。这种情况下的预处理程序停止-无论是显编程还是由控制器自动插入-会导致报警。"
             }
         ],
         "category": "fact"
@@ -562,11 +602,13 @@
         "relevant_chunks": [
             {
                 "source": "刀具管理.pdf",
-                "chunk_id": 4924
+                "chunk_id": 4924,
+                "text": "多刀是一个迷你转塔，在车削工艺中带有一定数量的刀具，如同普通刀具一样可以将其装载进刀库以及从刀库卸载。零件程序中的T选择在搜索刀具时也会识别并检查多刀刀具。"
             },
             {
                 "source": "刀具管理.pdf",
-                "chunk_id": 4925
+                "chunk_id": 4925,
+                "text": "使用多刀可在一个刀库位置上插入多个刀具。多刀包含了定义数量的刀位，用于安装刀具。"
             }
         ],
         "category": "fact"
@@ -578,7 +620,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具管理.pdf",
-                "chunk_id": 4925
+                "chunk_id": 4925,
+                "text": "在装载至刀库和从刀库卸载时，多刀被视为一个刀具。多刀是作为一个整体进行手动安装的，并且作为整体装载、卸载或者移动。在多刀上安装刀具或者将刀具从多刀上移除都不会在PLC接口上产生刀具管理任务。"
             }
         ],
         "category": "fact"
@@ -590,7 +633,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具管理.pdf",
-                "chunk_id": 4926
+                "chunk_id": 4926,
+                "text": "多刀名称同刀具名称和刀库名称一样来源于相同的名称范围。不同的多刀必须具有不同的名称，且不定义Duplo号。"
             }
         ],
         "category": "fact"
@@ -602,7 +646,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具管理.pdf",
-                "chunk_id": 4952
+                "chunk_id": 4952,
+                "text": "刀具管理从零件程序或SINUMERIK Operate接收准备换刀和执行换刀任务（T指令，M06），刀具移动任务（MVTOOL）或者刀库定位任务（POSM）。"
             }
         ],
         "category": "list"
@@ -614,7 +659,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具管理.pdf",
-                "chunk_id": 4952
+                "chunk_id": 4952,
+                "text": "刀具管理从这些任务中获取刀具需要进行的刀位变化，并将任务交给PLC。"
             }
         ],
         "category": "fact"
@@ -626,7 +672,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具管理.pdf",
-                "chunk_id": 4965
+                "chunk_id": 4965,
+                "text": "需要将参数“源刀位”的刀库刀位中的刀具卸载至参数“目标刀位”的卸载位。"
             }
         ],
         "category": "comparison"
@@ -638,7 +685,8 @@
         "relevant_chunks": [
             {
                 "source": "刀具管理.pdf",
-                "chunk_id": 4966
+                "chunk_id": 4966,
+                "text": "需要将参数“源刀位”的刀库刀位中的刀具换位至参数“目标刀位”的刀库刀位。"
             }
         ],
         "category": "comparison"
@@ -650,35 +698,38 @@
         "relevant_chunks": [
             {
                 "source": "刀具管理.pdf",
-                "chunk_id": 4966
+                "chunk_id": 4966,
+                "text": "多刀：定位多刀上的刀具会移动到加工位置。多刀保留在刀套/主轴上。"
             }
         ],
         "category": "fact"
     },
     {
-    "question": "刀具管理中的中间应答和结束应答分别有什么作用？",
-    "answer": "中间应答用于向刀具管理提供任务中间步骤的信息，刀具管理据此记录当前的刀具位置更改，零件程序须等待；结束应答用于完成任务，并允许零件程序继续执行。",
-    "kb_name": "SINUMERIK 828D 工业设备知识库",
-    "relevant_chunks": [
-      {
-        "source": "刀具管理.pdf",
-        "chunk_id": 5034
-      }
-    ],
-    "category": "comparison"
-  },
-  {
-    "question": "刀具管理中的中间应答有什么限制？",
-    "answer": "中间应答只能提供任务中间步骤的目标位置，源位置在任务或最后的中间应答中提供；中间应答只能在结束应答之前进行。",
-    "kb_name": "SINUMERIK 828D 工业设备知识库",
-    "relevant_chunks": [
-      {
-        "source": "刀具管理.pdf",
-        "chunk_id": 5034
-      }
-    ],
-    "category": "fact"
-  },
+        "question": "刀具管理中的中间应答和结束应答分别有什么作用？",
+        "answer": "中间应答用于向刀具管理提供任务中间步骤的信息，刀具管理据此记录当前的刀具位置更改，零件程序须等待；结束应答用于完成任务，并允许零件程序继续执行。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 5034,
+                "text": "中间应答可以向刀具管理提供任务的中间步骤的信息。中间应答只提供中间步骤的目标位置。源位置在任务或最后的中间应答中提供。在换刀时也可同时对两把刀具（新和旧）进行应答。中间应答只能在结束应答之前进行。每个任务都需要一个结束应答。结束应答允许零件程序继续执行"
+            }
+        ],
+        "category": "comparison"
+    },
+    {
+        "question": "刀具管理中的中间应答有什么限制？",
+        "answer": "中间应答只能提供任务中间步骤的目标位置，源位置在任务或最后的中间应答中提供；中间应答只能在结束应答之前进行。",
+        "kb_name": "SINUMERIK 828D 工业设备知识库",
+        "relevant_chunks": [
+            {
+                "source": "刀具管理.pdf",
+                "chunk_id": 5034,
+                "text": "中间应答只提供中间步骤的目标位置。源位置在任务或最后的中间应答中提供。中间应答只能在结束应答之前进行。"
+            }
+        ],
+        "category": "fact"
+    },
     {
         "question": "PPU电缆固定的操作步骤有哪些？",
         "answer": "PPU电缆固定包括以下操作步骤：1.在X150P1和X150P2接口处插入PROFINET电缆；2.在LAN接口X130、X120和X127插入以太网电缆；3.在X100–X102处插入DRIVE-CLiQ电缆；4.在X143.1和X143.2处插入手轮端子；5.在X122、X132处插入数字量输入/输出端子；6.在X242、X252处插入输入/输出端子；7.将电源端子插入X1；8.将模拟主轴电缆的电缆屏蔽连接到电缆拉力释放装置的X252处；9.将电缆固定在X150P1、X150P2、X120、X130、X127、X100-X102、X143.1/X143.2、X122、X132、X242、X252和X1处。",
@@ -686,11 +737,13 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10543
+                "chunk_id": 10543,
+                "text": "1.在X150P1和X150P2接口处插入PROFINET电缆。2.在LAN接口X130、X120和X127插入以太网电缆。3.在X100–X102处插入DRIVE-CLiQ电缆。4.在X143.1和143.2处插入手轮端子。5.在X122、X132处插入数字量输入/输出端子。6.在X242、X252处插入输入/输出端子。7.将电源端子插入X1。"
             },
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10544
+                "chunk_id": 10544,
+                "text": "将模拟主轴电缆的电缆屏蔽连接到电缆拉力释放装置的X252处。9.将电缆固定在电缆拉力释放装置的X150P1、X150P2、X120、X130、X127、X100-X102、X143.1/X143.2、X122、X132、X242、X252和X1处。说明 使用非导电电缆扎带（塑料）进行固定。"
             }
         ],
         "category": "procedure"
@@ -702,7 +755,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10543
+                "chunk_id": 10543,
+                "text": "1.在X150P1和X150P2接口处插入PROFINET电缆。2.在LAN接口X130、X120和X127插入以太网电缆。3.在X100–X102处插入DRIVE-CLiQ电缆。4.在X143.1和143.2处插入手轮端子。5.在X122、X132处插入数字量输入/输出端子。6.在X242、X252处插入输入/输出端子。7.将电源端子插入X1。"
             }
         ],
         "category": "list"
@@ -714,7 +768,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10544
+                "chunk_id": 10544,
+                "text": "将模拟主轴电缆的电缆屏蔽连接到电缆拉力释放装置的X252处。"
             }
         ],
         "category": "fact"
@@ -726,7 +781,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10544
+                "chunk_id": 10544,
+                "text": "将电缆固定在电缆拉力释放装置的X150P1、X150P2、X120、X130、X127、X100-X102、X143.1/X143.2、X122、X132、X242、X252和X1处。"
             }
         ],
         "category": "list"
@@ -738,11 +794,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10544
-            },
-            {
-                "source": "PPU和组件.pdf",
-                "chunk_id": 10545
+                "chunk_id": 10544,
+                "text": "说明 使用非导电电缆扎带（塑料）进行固定。"
             }
         ],
         "category": "fact"
@@ -754,11 +807,13 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10544
+                "chunk_id": 10544,
+                "text": "使用非导电电缆扎带（塑料）进行固定。"
             },
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10545
+                "chunk_id": 10545,
+                "text": "如果电缆扎带需要接触，请使用金属电缆扎带。"
             }
         ],
         "category": "comparison"
@@ -770,7 +825,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10548
+                "chunk_id": 10548,
+                "text": "PPU模块和组件仅可被安装在外壳、控制柜或隔离的电气操作区域中。"
             }
         ],
         "category": "fact"
@@ -782,7 +838,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10548
+                "chunk_id": 10548,
+                "text": "只有经培训人员或授权人员才可接触外壳、控制柜或进入隔离的电气操作区域。"
             }
         ],
         "category": "fact"
@@ -794,7 +851,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10549
+                "chunk_id": 10549,
+                "text": "安装SINUMERIK828D或进行接线时，整个系统都必须断电。"
             }
         ],
         "category": "procedure"
@@ -806,7 +864,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10549
+                "chunk_id": 10549,
+                "text": "如果未按照制造商指定的方式使用设备，则设备提供的保护可能受损。"
             }
         ],
         "category": "fact"
@@ -818,7 +877,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10549
+                "chunk_id": 10549,
+                "text": "安装SINUMERIK828D或进行接线时，整个系统都必须断电。"
             }
         ],
         "category": "fact"
@@ -830,7 +890,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10557
+                "chunk_id": 10557,
+                "text": "1.稍稍向后倾斜组件，将钩子卡入DIN导轨中。2.在DIN导轨上轻晃组件，直到背面的安装滑片完全嵌入导轨。"
             }
         ],
         "category": "procedure"
@@ -842,7 +903,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10557
+                "chunk_id": 10557,
+                "text": "1.首先在挂耳处向下拉动安装滑片，使滑片从安装导轨中松脱。2.向前轻晃组件，然后向上从DIN导轨中移除组件。"
             }
         ],
         "category": "procedure"
@@ -854,7 +916,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10557
+                "chunk_id": 10557,
+                "text": "在DIN导轨上轻晃组件，直到背面的安装滑片完全嵌入导轨。"
             }
         ],
         "category": "fact"
@@ -866,7 +929,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10558
+                "chunk_id": 10558,
+                "text": "说明 安装PU必须仔细遵守以下几点事项，以便正确安装PU：•采用不允许的安装位置会导致功能异常。"
             }
         ],
         "category": "fact"
@@ -878,7 +942,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10557
+                "chunk_id": 10557,
+                "text": "安装\n1.稍稍向后倾斜组件，将钩子卡入DIN导轨中。2.在DIN导轨上轻晃组件，直到背面的安装滑片完全嵌入导轨。"
             }
         ],
         "category": "comparison"
@@ -890,7 +955,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10567
+                "chunk_id": 10567,
+                "text": "拧紧张力夹的最大紧固扭矩为0.5Nm且不得超出该紧固扭矩。"
             }
         ],
         "category": "fact"
@@ -902,7 +968,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10567
+                "chunk_id": 10567,
+                "text": "不允许的安装位置会导致功能异常：请注意允许的安装位置最多只允许偏离垂直位置60º。"
             }
         ],
         "category": "fact"
@@ -914,7 +981,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10567
+                "chunk_id": 10567,
+                "text": "安装设备时绝对不能损坏密封条，否则无法实现可达到的最高防护等级。因此，请将PPU居中放入安装开口中。"
             }
         ],
         "category": "fact"
@@ -926,7 +994,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10567
+                "chunk_id": 10567,
+                "text": "请勿使用吸爪提起正面的玻璃，避免造成损坏。"
             }
         ],
         "category": "fact"
@@ -938,7 +1007,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10568
+                "chunk_id": 10568,
+                "text": "使用的工具为Torx10，紧固扭矩为0.8Nm。"
             }
         ],
         "category": "fact"
@@ -950,7 +1020,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10568
+                "chunk_id": 10568,
+                "text": "需要将它们组装起来（最好在插入所有电缆之后）。"
             }
         ],
         "category": "procedure"
@@ -962,7 +1033,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10584
+                "chunk_id": 10584,
+                "text": "接线要求分为：在任何情况下都必须遵守的DRIVE-CLiQ接线规则和可避免扩展后二次更改拓扑的接线推荐。"
             }
         ],
         "category": "comparison"
@@ -974,11 +1046,13 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10584
+                "chunk_id": 10584,
+                "text": "DRIVE-CLiQ组件的最大数量以及允许的接线方式取决于以下几点：•必须遵守的DRIVE-CLiQ接线规则•已激活驱动的数量、类型；"
             },
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10585
+                "chunk_id": 10585,
+                "text": "接线规则\n•已激活驱动的数量、类型；配套控制单元上的功能\n•配套控制单元的计算能力\n•设置的处理周期和通讯周期"
             }
         ],
         "category": "list"
@@ -990,7 +1064,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10585
+                "chunk_id": 10585,
+                "text": "除了必须遵守的DRIVE-CLiQ接线规则外，PPU手册中还提供了一些接线推荐和拓扑示例。"
             }
         ],
         "category": "fact"
@@ -1002,7 +1077,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10585
+                "chunk_id": 10585,
+                "text": "这些示例中的组件可以移除、补充或用其他组件替换。"
             }
         ],
         "category": "fact"
@@ -1014,7 +1090,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10585
+                "chunk_id": 10585,
+                "text": "在用另一个型号的组件替换或补充了更多组件时，可使用SIZER工具来检查拓扑。"
             }
         ],
         "category": "procedure"
@@ -1026,7 +1103,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10763
+                "chunk_id": 10763,
+                "text": "LED呈绿色点亮一切正常。"
             }
         ],
         "category": "fact"
@@ -1038,7 +1116,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10763
+                "chunk_id": 10763,
+                "text": "LED呈黄色亮起软件相关故障待处理。联系热线。"
             }
         ],
         "category": "fact"
@@ -1050,7 +1129,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10763
+                "chunk_id": 10763,
+                "text": "LED呈黄色闪烁(0.5 Hz)使用Ctrl+Alt+D快捷方式启动的数据备份操作正在运行。"
             }
         ],
         "category": "fact"
@@ -1062,7 +1142,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10763
+                "chunk_id": 10763,
+                "text": "LED呈红色点亮硬件相关测试失败，例如启动期间的内存测试。如果多次关闭/启动后没有变化，请更换设备。"
             }
         ],
         "category": "procedure"
@@ -1074,7 +1155,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10763
+                "chunk_id": 10763,
+                "text": "PPU启动时，所有LED指示灯都会短暂亮橙色。"
             }
         ],
         "category": "fact"
@@ -1086,7 +1168,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10813
+                "chunk_id": 10813,
+                "text": "当同时按下多个按键时，最多只能可靠识别出两个按键。"
             }
         ],
         "category": "fact"
@@ -1098,7 +1181,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10813
+                "chunk_id": 10813,
+                "text": "如果没有安全相关按键的识别，所有按键信号都将为零且没有按键会生效。"
             }
         ],
         "category": "fact"
@@ -1110,7 +1194,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10813
+                "chunk_id": 10813,
+                "text": "请勿在不使用时打开开孔。安装控制设备时密封开孔。建议使用西门子选件。"
             }
         ],
         "category": "procedure"
@@ -1122,7 +1207,8 @@
         "relevant_chunks": [
             {
                 "source": "PPU和组件.pdf",
-                "chunk_id": 10813
+                "chunk_id": 10813,
+                "text": "⑩2个用于控制设备的开孔（d=16mm）"
             }
         ],
         "category": "fact"
@@ -1134,7 +1220,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11395
+                "chunk_id": 11395,
+                "text": "4065缓冲存储器是由备份文件恢复的，数据可能丢失！说明：NC的用户数据和PLC的永久数据都保存在存储器SRAM中。在系统启动时检测出该存储器内的这两者的数据可能不一致。"
             }
         ],
         "category": "fact"
@@ -1146,11 +1233,13 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11395
+                "chunk_id": 11395,
+                "text": "在系统启动时检测出该存储器内的这两者的数据可能不一致。"
             },
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11396
+                "chunk_id": 11396,
+                "text": "数据不一致也可能是由于超出了缓冲时间导致，为此请参考系统的调试手册，了解系统所需的开机启动时间。"
             }
         ],
         "category": "fact"
@@ -1162,11 +1251,13 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11395
+                "chunk_id": 11395,
+                "text": "在系统启动时检测出该存储器内的这两者的数据可能不一致。"
             },
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11396
+                "chunk_id": 11396,
+                "text": "数据不一致也可能是由于超出了缓冲时间导致，为此请参考系统的调试手册，了解系统所需的开机启动时间。"
             }
         ],
         "category": "fact"
@@ -1178,7 +1269,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11396
+                "chunk_id": 11396,
+                "text": "排除方法：重启控制系统。程序继续：关闭/打开系统。"
             }
         ],
         "category": "procedure"
@@ -1190,7 +1282,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11396
+                "chunk_id": 11396,
+                "text": "反应：NC没有准备就绪。本通道NC启动禁止。已设置接口信号。报警显示。"
             }
         ],
         "category": "fact"
@@ -1202,7 +1295,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11397
+                "chunk_id": 11397,
+                "text": "影响单位换算的机床数据被改变\n说明：控制系统内部使用物理单位工作，比如：使用毫米、度、秒等单位表示距离、速度和加速度。但在编程或数据存储期间，输入和输出这些参数有时需要使用不同单位：转/分、m/s2。当将系统专用的机床数据数组MD10230$MN_SCALING_FACTORS_USER_DEFUSER_DEF[n]的对应位设为1时(n...为下标0-10)，便可激活可设定的系数进行单位换算。"
             }
         ],
         "category": "fact"
@@ -1214,7 +1308,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11412
+                "chunk_id": 11412,
+                "text": "4087[通道%1:]选件'%2<OPTNX>'生效，主轴不允许使用\n参数：%1=通道号\n%2=选件缩写\n说明：系统中激活了选件“快速插补”，因此通道中不允许包含主轴。反应：本通道NC启动禁止。已设置接口信号。报警显示。"
             }
         ],
         "category": "fact"
@@ -1226,11 +1321,13 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11412
+                "chunk_id": 11412,
+                "text": "/机床数据/功能的取值范围或限值。反应：本通道NC启动禁止。已设置接口信号。报警显示。报警时NC停止。排除方法：输入正确的值，\n程序继续：用复位键清除报警，重新启动子程序。4087[通道%1:]选件'%2'生效，主轴不允许使用\n参数：%1=通道号\n%2=选件缩写\n说明：系统中激活了选件“快速插补”，因此通道中不允许包含主轴。反应：本通道NC启动禁止。已设置接口信号。报警显示。"
             },
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11413
+                "chunk_id": 11413,
+                "text": "报警显示。排除方法：请通知授权人员/服务人员。-禁用选件-设置MD35000$MA_SPIND_ASSIGN_TO_MACHAX=0\n程序继续：关闭/打开系统。4090启动时错误太多\n说明：系统启动期间发生了不止<n>个错误。反应：本通道NC启动禁止。报警显示。排除方法：正确地设置机床数据。程序继续：关闭/打开系统。NC报警\n报警\n46诊断手册,07/2024,A5E40876606FAG4099"
             }
         ],
         "category": "procedure"
@@ -1242,7 +1339,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11413
+                "chunk_id": 11413,
+                "text": "4090启动时错误太多\n说明：系统启动期间发生了不止<n>个错误。反应：本通道NC启动禁止。报警显示。排除方法：正确地设置机床数据。程序继续：关闭/打开系统。NC报警\n报警\n46诊断手册,07/2024,A5E40876606FAG4099"
             }
         ],
         "category": "procedure"
@@ -1254,7 +1352,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11414
+                "chunk_id": 11414,
+                "text": "AG4099%1机床数据初始化出错\n参数：%1=错误数量\n说明：机床数据初始化时出错。详细信息请参见引导启动记录文件。反应：NC没有准备就绪。报警显示。排除方法：请通知授权人员/维修部门。程序继续：用复位键清除报警，重新启动子程序。4150[通道%1:]M功能调用分配非法\n参数：%1=通道号\n说明：机床数据MD10715$MN\\_M\\_NO\\_FCT\\_CYCLE[n]或者MD10718"
             }
         ],
         "category": "fact"
@@ -1266,7 +1365,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11414
+                "chunk_id": 11414,
+                "text": "AG4099%1机床数据初始化出错\n参数：%1=错误数量\n说明：机床数据初始化时出错。详细信息请参见引导启动记录文件。反应：NC没有准备就绪。报警显示。排除方法：请通知授权人员/维修部门。程序继续：用复位键清除报警，重新启动子程序。4150[通道%1:]M功能调用分配非法\n参数：%1=通道号\n说明：机床数据MD10715$MN\\_M\\_NO\\_FCT\\_CYCLE[n]或者MD10718"
             }
         ],
         "category": "procedure"
@@ -1278,7 +1378,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11417
+                "chunk_id": 11417,
+                "text": "MD10718$MN\\_M\\_NO\\_FCT\\_CYCLE\\_PAR包含无效的MD10715$MN\\_M\\_NO\\_FCT\\_CYCLE[n]字段索引。当前允许值\n为0至9。相关机床数据被复位到默认值：1。该功能因此被取消。反应：BAG没有准备就绪。通道没有准备就绪。本通道NC启动禁止。已设置接口信号。报警显示。报警时NC停止。排除方法：采取以下措施，排除该错误：\n在MD10715"
             }
         ],
         "category": "fact"
@@ -1290,11 +1391,13 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11417
+                "chunk_id": 11417,
+                "text": "MD10718$MN\\_M\\_NO\\_FCT\\_CYCLE\\_PAR包含无效的MD10715$MN\\_M\\_NO\\_FCT\\_CYCLE[n]字段索引。当前允许值\n为0至9。相关机床数据被复位到默认值：1。该功能因此被取消。反应：BAG没有准备就绪。通道没有准备就绪。本通道NC启动禁止。已设置接口信号。报警显示。报警时NC停止。排除方法：采取以下措施，排除该错误：\n在MD10715"
             },
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11418
+                "chunk_id": 11418,
+                "text": "采取以下措施，排除该错误：\n在MD10715$MN\\_M\\_NO\\_FCT\\_CYCLE[n]中定义一个没被系统占用的M功能。在MD10718$MN\\_M\\_NO\\_FCT\\_CYCLE\\_PAR中定义一个有效的数组下标。程序继续：关闭/打开系统。4152“具有绝对值的程序显示”功能设定非法\n说明：功能“绝对值的程序段显示”的参数设定错误：\n-通过机床数据MD28400$MC\\_MM\\_ABSBLOCK"
             }
         ],
         "category": "procedure"
@@ -1306,7 +1409,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11417
+                "chunk_id": 11417,
+                "text": "MD10718$MN\\_M\\_NO\\_FCT\\_CYCLE\\_PAR包含无效的MD10715$MN\\_M\\_NO\\_FCT\\_CYCLE[n]字段索引。当前允许值\n为0至9。相关机床数据被复位到默认值：1。该功能因此被取消。反应：BAG没有准备就绪。通道没有准备就绪。本通道NC启动禁止。已设置接口信号。报警显示。报警时NC停止。排除方法：采取以下措施，排除该错误：\n在MD10715"
             }
         ],
         "category": "fact"
@@ -1318,11 +1422,13 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11418
+                "chunk_id": 11418,
+                "text": "采取以下措施，排除该错误：\n在MD10715$MN\\_M\\_NO\\_FCT\\_CYCLE[n]中定义一个没被系统占用的M功能。在MD10718$MN\\_M\\_NO\\_FCT\\_CYCLE\\_PAR中定义一个有效的数组下标。程序继续：关闭/打开系统。4152“具有绝对值的程序显示”功能设定非法\n说明：功能“绝对值的程序段显示”的参数设定错误：\n-通过机床数据MD28400$MC\\_MM\\_ABSBLOCK"
             },
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11419
+                "chunk_id": 11419,
+                "text": "$MC\\_MM\\_ABSBLOCK设定了一个非法程序段长度：\n在启动时应检查该机床数据的以下取值范围：\n0、1、128~512\n-通过机床数据MD28402$MC\\_MM\\_ABSBLOCK\\_BUFFER\\_CONF[]设定了一个非法显示范围。在启动时应检查该机床数据的\n上限/下限值：0<=MD28402$MC\\_MM\\_ABSBLOCK\\_BUFFER\\_CONF[0]<=80<=MD28402"
             }
         ],
         "category": "fact"
@@ -1334,7 +1440,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11419
+                "chunk_id": 11419,
+                "text": "$MC_MM_ABSBLOCK设定了一个非法程序段长度：\n在启动时应检查该机床数据的以下取值范围：\n0、1、128\\~512\n-通过机床数据MD28402$MC_MM_ABSBLOCK_BUFFER_CONF[]设定了一个非法显示范围。在启动时应检查该机床数据的\n上限/下限值：0<=MD28402$MC_MM_ABSBLOCK_BUFFER_CONF[0]<=80<=MD28402"
             }
         ],
         "category": "fact"
@@ -1346,7 +1453,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11464
+                "chunk_id": 11464,
+                "text": "$MC\\_MM\\_ABSBLOCK设定了一个非法程序段长度：\n在启动时应检查该机床数据的以下取值范围：\n0、1、128~512\n-通过机床数据MD28402$MC\\_MM\\_ABSBLOCK\\_BUFFER\\_CONF[]设定了一个非法显示范围。在启动时应检查该机床数据的\n上限/下限值：0<=MD28402$MC\\_MM\\_ABSBLOCK\\_BUFFER\\_CONF[0]<=80<=MD28402"
             }
         ],
         "category": "fact"
@@ -1358,11 +1466,13 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11464
+                "chunk_id": 11464,
+                "text": "程序段号、标记\n%3=转换数据组的名称\n%4=坐标转换数据组的索引|错误号NC报警\n报警\n56诊断手册,07/2024,A5E40876606FAG说明：转换数据记录出错。以下错误号详细说明了错误原因：\n-1.转换类型不明确，即：$NT\\_TRAFO\\_TYPE[n]包含无效的名称。-2.机床运动结构未定义，即：$NT\\_T\\_CHAIN\\_LAST\\_ELEM[n]"
             },
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11465
+                "chunk_id": 11465,
+                "text": "$NT\\_T\\_CHAIN\\_LAST\\_ELEM[n]和$NT\\_P\\_CHAIN\\_LAST\\_ELEM[n]中均不包含机床运动学中运动\n链系单元的参考。-3.具有$NT\\_T\\_CHAIN\\_LAST\\_ELEM[n]中所包含名称的运动链系单元与主要单元无连接。-4.具有$NT\\_P\\_CHAIN\\_LAST\\_ELEM[n]中所包含名称的运动链系单元与主要单元无连接。-5.具有"
             }
         ],
         "category": "fact"
@@ -1374,7 +1484,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11465
+                "chunk_id": 11465,
+                "text": "$NT\\_T\\_CHAIN\\_LAST\\_ELEM[n]和$NT\\_P\\_CHAIN\\_LAST\\_ELEM[n]中均不包含机床运动学中运动\n链系单元的参考。-3.具有$NT\\_T\\_CHAIN\\_LAST\\_ELEM[n]中所包含名称的运动链系单元与主要单元无连接。-4.具有$NT\\_P\\_CHAIN\\_LAST\\_ELEM[n]中所包含名称的运动链系单元与主要单元无连接。-5.具有"
             }
         ],
         "category": "comparison"
@@ -1386,7 +1497,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11466
+                "chunk_id": 11466,
+                "text": "具有$NT\\_T\\_CHAIN\\_LAST\\_ELEM[n]中所包含名称的运动链系单元未找到。-6.不存在运动链系单元（MD18880$MN\\_MM\\_MAXNUM\\_KIN\\_CHAIN\\_ELEM为零）。-8.具有$NT\\_P\\_CHAIN\\_LAST\\_ELEM[n]中所包含名称的运动链系单元未找到。-9.具有$NT\\_T\\_REF\\_ELEM[n]中所包含名称的运动链系单元未找到。-10."
             }
         ],
         "category": "comparison"
@@ -1398,7 +1510,8 @@
         "relevant_chunks": [
             {
                 "source": "报警诊断手册.pdf",
-                "chunk_id": 11467
+                "chunk_id": 11467,
+                "text": "10.在$NT\\_ROT\\_AX\\_NAME[n,0]中定义的旋转轴未在运动链系中找到。-11.在$NT\\_ROT\\_AX\\_NAME[n,1]中定义的旋转轴未在运动链系中找到。-12.在$NT\\_ROT\\_AX\\_NAME[n,2]中定义的旋转轴未在运动链系中找到。-16.在$NT\\_ROT\\_AX\\_NAME[n,1]中定义的旋转轴被多次定义。-17.在$NT\\_ROT\\_AX\\_NAME[n,2]"
             }
         ],
         "category": "list"
@@ -1410,7 +1523,8 @@
         "relevant_chunks": [
             {
                 "source": "NC编程.pdf",
-                "chunk_id": 29780
+                "chunk_id": 29780,
+                "text": "NC程序的创建\nNC编程\n编程手册,07/2023,A5E48764001FAF63程序代码注释\nN30S2000M3M8；转速，旋转方向，冷却打开。N40G90G64G54G17G0X-72Y-72；几何数据的基本设定并返回起始点。N50G0Z2；Z轴运行至安全距离。N60G450CFTCP；G41/G42被激活时的特性。N70G1Z-10F3000；铣刀运行于啮合深度，进给率=3000"
             }
         ],
         "category": "list"
@@ -1422,7 +1536,8 @@
         "relevant_chunks": [
             {
                 "source": "NC编程.pdf",
-                "chunk_id": 29780
+                "chunk_id": 29780,
+                "text": "NC程序的创建\nNC编程\n编程手册,07/2023,A5E48764001FAF63程序代码注释\nN30S2000M3M8；转速，旋转方向，冷却打开。N40G90G64G54G17G0X-72Y-72；几何数据的基本设定并返回起始点。N50G0Z2；Z轴运行至安全距离。N60G450CFTCP；G41/G42被激活时的特性。N70G1Z-10F3000；铣刀运行于啮合深度，进给率=3000"
             }
         ],
         "category": "fact"
@@ -1434,7 +1549,8 @@
         "relevant_chunks": [
             {
                 "source": "NC编程.pdf",
-                "chunk_id": 29781
+                "chunk_id": 29781,
+                "text": "3000毫米/分钟。N80G1G41X-40；打开铣刀半径补偿。N90G1X-40Y30RND=10F1200；运行至轮廓，进给率=1200毫米/分钟。N100G1X40Y30CHR=10N110G1X40Y-30N120G1X-41Y-30N130G1G40Y-72F3000；取消铣刀半径补偿。N140G0Z200M5M9；拉出铣刀，主轴+冷却关闭。N150T=\\\"SF10\\\"；预先选定名称为"
             }
         ],
         "category": "comparison"
@@ -1446,7 +1562,8 @@
         "relevant_chunks": [
             {
                 "source": "NC编程.pdf",
-                "chunk_id": 29781
+                "chunk_id": 29781,
+                "text": "3000毫米/分钟。N80G1G41X-40；打开铣刀半径补偿。N90G1X-40Y30RND=10F1200；运行至轮廓，进给率=1200毫米/分钟。N100G1X40Y30CHR=10N110G1X40Y-30N120G1X-41Y-30N130G1G40Y-72F3000；取消铣刀半径补偿。N140G0Z200M5M9；拉出铣刀，主轴+冷却关闭。N150T=\\\"SF10\\\"；预先选定名称为"
             }
         ],
         "category": "fact"
@@ -1458,7 +1575,8 @@
         "relevant_chunks": [
             {
                 "source": "NC编程.pdf",
-                "chunk_id": 29781
+                "chunk_id": 29781,
+                "text": "N150T=\"SF10\"；预先选定名称为SF10的刀具；N160M6；将刀具换入主轴。"
             }
         ],
         "category": "procedure"
@@ -1470,7 +1588,8 @@
         "relevant_chunks": [
             {
                 "source": "NC编程.pdf",
-                "chunk_id": 29782
+                "chunk_id": 29782,
+                "text": "预先选定名称为SF10的刀具。N160M6；将刀具换入主轴。N170S2800M3M8；转速，旋转方向，冷却打开。N180G90G64G54G17G0X0Y0；几何数据的基本设定并返回起始点。N190G0Z2N200POCKET4(2,0,1,-5,15,0,0,0,0,0,800,1300,0,21,5,,,2,0.5)；调用型腔铣削循环。N210G0Z200M5M9；拉出铣刀，主轴+冷却关闭。"
             }
         ],
         "category": "fact"
