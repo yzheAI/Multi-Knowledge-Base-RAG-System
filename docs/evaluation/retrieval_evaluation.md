@@ -36,7 +36,8 @@ Recall@K / MRR      Correction
       "relevant_chunks": [
         {
             "source": "...", 
-            "chunk_id": 123
+            "chunk_id": 123,
+            "text": "xxx"
         }
       ],
       "category": "..."
@@ -49,6 +50,7 @@ Recall@K / MRR      Correction
 - kb_name：所属知识库名字
 - relevant_chunks：与问题相关的知识库Chunk
 - chunk_id：答案对应的chunk
+- text：与问题相关的知识库Chunk及其原始文本证据
 - category：问题类型，包括fact、list、unanswerable、comparison、procedure
 
 ## 3. Retrieval Strategies
@@ -126,10 +128,10 @@ Recall@K / MRR      Correction
 
 | Metric   | Value |
 |----------|-------|
-| Recall@1 | 0.254 |
-| Recall@3 | 0.373 |
-| Recall@5 | 0.424 |
-| MRR      | 0.318 |
+| Recall@1 | 0.245 |
+| Recall@3 | 0.364 |
+| Recall@5 | 0.415 |
+| MRR      | 0.309 |
 
 
 ### 4.2 BM25:
@@ -145,10 +147,10 @@ Recall@K / MRR      Correction
 
 | Metric   | Value |
 |----------|-------|
-| Recall@1 | 0.627 |
+| Recall@1 | 0.619 |
 | Recall@3 | 0.737 |
 | Recall@5 | 0.754 |
-| MRR      | 0.683 |
+| MRR      | 0.678 |
 
 从结果来看：
 - Hybrid Retrieval 的整体效果最好
@@ -163,11 +165,29 @@ Recall@K / MRR      Correction
 | A  | Merge               | 25.42%   | 37.29%   | 42.37%   | 31.75% |
 | B  | RRF_FUSION          | 38.14%   | 65.25%   | 68.64%   | 51.43% |
 | C  | Merge+Reranker      | 43.22%   | 49.15%   | 50.85%   | 46.43% |
-| D  | RRF Fusion+Reranker | 62.71%   | 73.73%   | 75.42%   | 68.32% |
+| D  | RRF Fusion+Reranker | 61.96%   | 73.73%   | 75.42%   | 67.75% |
 
 实验结果表明，RRF Fusion 与 Reranker 结合能够取得更好的检索效果。
 
-## 6. Analysis
+## 6. Evaluation Robustness Check
+
+由于原始Ground Truth中包含chunk_id，为避免评测结果完全依赖当前Chunk划分和ID,
+本项目进一步进行了基于文本证据的相关性判断实验。
+在相同的Hybrid Retrieval结果下，对比基于chunk_id和基于文本证据的两种 relevance judgment 方法。
+
+| Metric   | ID-based | Text-based |
+|----------|----------|------------|
+| Recall@1 | 0.619    | 0.636      |
+| Recall@3 | 0.737    | 0.720      |
+| Recall@5 | 0.754    | 0.737      |
+| MRR      | 0.678    | 0.679      |
+
+两种评测方法的MRR基本一致，且Recall@1、Recall@3和Recall@5
+的差异较小，说明当前检索结果对relevance judgment的变化具有一定稳定性。
+因此，当前实验继续采用 ID-based evaluation 作为主要 baseline，
+文本证据匹配作为辅助诊断方法。
+
+## 7. Analysis
 Reranker只能对输入候选集进行排序，如果没有正确的Chunk进入候选集，
 即使Reranker很强也无法恢复。
 因此可以扩大candidate_k提高召回效果
@@ -191,7 +211,7 @@ RRF通过rank进行融合
 | Final TopK       | 5                 |
 
 
-## 7. Answer Evaluation
+## 8. Answer Evaluation
 
 在 Retrieval Evaluation 的基础上，进一步对RAG系统最终生成的答案进行质量评估。
 采用 LLM 测评方法，使用 Qwen 对模型生成的答案进行评价。
@@ -203,7 +223,7 @@ RRF通过rank进行融合
 
 每项指标采用 1~5分评价
 
-### 7.1 Answer Evaluation Results
+### 8.1 Answer Evaluation Results
 
 共测评118条问题。
 
@@ -213,7 +233,7 @@ RRF通过rank进行融合
 | Faithfulness | 4.66/5  |
 | Relevance    | 4.43/5  |
 
-### 7.2 Analysis
+### 8.2 Analysis
 
 结果显示：
 - Faithfulness达到了4.66，说明模型生成答案整体能够较好地依据知识库内容
@@ -222,7 +242,7 @@ RRF通过rank进行融合
 
 Correctness较低的部分问题主要可能与检索未召回相关Chunk、答案信息遗漏、召回Chunk不完整等因素有关。
 
-## 8. Final Configuration
+## 9. Final Configuration
 
 | Component          | Configuration     |
 |--------------------|-------------------|

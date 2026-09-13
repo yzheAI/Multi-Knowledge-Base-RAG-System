@@ -93,13 +93,14 @@ KnowledgeBase
 
 表名：document
 
-| 字段         | 类型       | 说明    |
-|------------|----------|-------|
-| id         | int      | 主键    |
-| kb_id      | int      | 所属知识库 |
-| filename   | string   | 文件名   |
-| file_path  | string   | 文件路径  |
-| created_at | datetime | 上传时间  |
+| 字段            | 类型       | 说明    |
+|---------------|----------|-------|
+| id            | int      | 主键    |
+| kb_id         | int      | 所属知识库 |
+| filename      | string   | 文件名   |
+| document_type | string   | 文件类型  |
+| file_path     | string   | 文件路径  |
+| created_at    | datetime | 上传时间  |
 
 关系：
 ```text
@@ -119,13 +120,14 @@ Knowledge
 
 表名：chunk
 
-| 字段            | 类型   | 说明      |
-|---------------|------|---------|
-| id            | int  | 主键      |
-| document_id   | int  | 所属文档    |
-| content       | text | chunk文本 |
-| chunk_index   | int  | chunk序号 |
-| metadata_info | json | 元数据     |
+| 字段            | 类型     | 说明      |
+|---------------|--------|---------|
+| id            | int    | 主键      |
+| document_id   | int    | 所属文档    |
+| content       | text   | chunk文本 |
+| chunk_index   | int    | chunk序号 |
+| metadata_info | json   | 元数据     |
+| status        | string | chunk状态 |
 
 关系：
 ```text
@@ -143,15 +145,22 @@ Document
 
 ### task
 
-| 字段            | 类型       | 说明         |
-|---------------|----------|------------|
-| id            | int      | 主键         |
-| task_id       | string   | Celery任务ID |
-| owner_id      | int      | 用户ID       |
-| filename      | string   | 文件名        |
-| status        | string   | 任务状态       |
-| error_message | string   | 错误信息       |
-| created_at    | datetime | 创建时间       |
+| 字段             | 类型       | 说明          |
+|----------------|----------|-------------|
+| id             | int      | 主键          |
+| task_id        | string   | Celery任务ID  |
+| owner_id       | int      | 用户ID        |
+| filename       | string   | 文件名         |
+| document_type  | string   | 文件类型        |
+| kb_id          | int      | 知识库id       |
+| file_path      | string   | 文件路径        |
+| kb_path        | string   | 知识库路径       |
+| status         | string   | 任务状态        |
+| progress       | string   | task进度      |
+| retry_count    | int      | 重试次数        |
+| error_message  | string   | 错误信息        |
+| created_at     | datetime | 创建时间        |
+| updated_at     | datetime | 更新时间        |
 
 任务生命周期：
 ```text

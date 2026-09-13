@@ -82,14 +82,46 @@ CrossEncoder:
 
 ### Database
 
-MySQL:
-保存知识库 + 文档 + Chunk 结构化数据
+#### MySQL:
+负责保存系统的结构化业务数据，包括：
+- User
+- KnowledgeBase
+- Document
+- Chunk
+- Conversation
+- Message
+- Task
 
-FAISS向量存储
+#### Index Storage
 
-BM25关键词存储
+FAISS向量存储：
+负责保存 Chunk 的向量索引，用于语义相似度检索。
 
-采用MySQL + Vector Index混合存储架构。
+BM25关键词存储：
+负责保存Chunk的关键词检索索引，用于基于词项匹配的召回。
+
+系统采用 MySQL + FAISS + BM25 的分层存储架构：
+
+```text
+MySQL
+├── User
+├── KnowledgeBase
+├── Document
+├── Chunk
+├── Conversation
+├── Message
+└── Task
+
+File System
+├── FAISS Index
+└── BM25 Index
+
+Memory
+└── VectorStore Cache
+```
+
+其中MySQL保存业务数据与Chunk元数据，
+FAISS和BM25保存检索索引，VectorStoreManager在运行时缓存已加载的索引对象。
 
 ## 4. 文档处理流程
 
@@ -114,30 +146,26 @@ I --> J[Document Service]
 
 J --> K[Document Pipeline]
 
-K --> L[Chunk]
-K --> M[Metadata]
-K --> N[Embedding]
+K --> L[Document Parsing]
+L --> M[Chunk Splitter]
 
-L --> O[MySQL Document/Chunk]
+M --> N[Create Chunk]
+N --> O[Chunk Indexing Status: PENDING]
 
-O --> P[chunk_id]
+N --> P[Embedding Generation]
 
-N --> Q[FAISS]
+P --> Q[FAISS Indexing]
 
-P --> Q
+Q --> R[Update Chunk Indexing Status]
 
-L --> R[BM25]
+M --> S[BM25 Indexing]
 
-Q --> S[Save Index]
-R --> S
-
-S --> T[Remove VectorStore Cache]
+R --> T[Remove VectorStore Cache]
 
 T --> U[Delete Retrieval Cache]
 
 U --> V[Task Success]
 ```
-
 
 ## 5. 知识库管理
 
@@ -531,7 +559,8 @@ status
 error_message
 created_at
 ```
-用户可通过：Get/tasks/{task_id} 查询处理状态
+Task 状态用于描述整个文档处理任务的生命周期，
+而 Chunk Indexing Status 用于描述单个 Chunk 的索引处理状态。
 
 ### 工程收益
 引入异步任务架构后：
@@ -559,6 +588,35 @@ FAISS/BM25
  |
 MySQL
 ```
+
+### 8.4 Task Retry
+
+对于异步任务执行过程中出现的异常，系统支持任务重试机制。
+```text
+Task Running
+     ↓
+ Exception
+     ↓
+   Retry
+     ↓
+Task Running
+```
+
+Task Retry 与 Chunk Index Retry 属于不同层级：
+```text
+Task Retry
+    ↓
+恢复整个异步任务
+
+Chunk Index Retry
+    ↓
+恢复单个 Chunk 的索引操作
+```
+
+通过两级恢复机制，可以分别处理：
+
+- 文档处理任务级异常
+- Chunk 索引局部异常
 
 ## 9. LLM问答流程
 
@@ -603,9 +661,9 @@ Source Tracking
 
 | Retriever | Recall@1 | Recall@3 | Recall@5 | MRR    |
 |-----------|----------|----------|----------|--------|
-| FAISS     | 25.86%   | 43.10%   | 50.00%   | 35.26% |
-| BM25      | 48.28%   | 74.14%   | 82.76%   | 60.92% |
-| Hybrid    | 63.79%   | 86.21%   | 87.93%   | 74.28% |
+| FAISS     | 24.58%   | 36.44%   | 41.53%   | 30.90% |
+| BM25      | 47.46%   | 69.49%   | 72.03%   | 57.33% |
+| Hybrid    | 61.86%   | 73.73%   | 75.42%   | 67.75% |
 
 ### 10.2 Query Rewrite Evaluation
 
@@ -969,11 +1027,17 @@ if model is None:
 
 ### 12.4 LLM Agent Workflow
 
-探索：
+当前系统已经实现基础 Agent Tool Routing：
 
-- Tool Calling
-- Agent任务规划
-- 自动知识检索流程
+- Knowledge Search
+- Document Search
+
+后续可以进一步探索：
+
+- 更复杂的 Tool Calling
+- 多工具任务规划
+- 多步骤 Agent Workflow
+- Tool 执行结果融合
 
 ## 13. 项目总结
 

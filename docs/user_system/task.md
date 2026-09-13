@@ -23,6 +23,14 @@ Document Processing
  更新Task状态进度
 ```
 
+Task主要负责整个文档处理任务的生命周期管理，包括：
+- Task创建
+- Celery异步执行
+- Task状态管理
+- Task进度管理
+- 异常处理
+- 失败后手动Retry
+
 ## 2. Task状态
 
 Task共有四种状态：
@@ -75,6 +83,7 @@ owner_id
 kb_id
 file_path
 kb_path
+document_type
 ```
 其中file_path和kb_path用于后续Celery任务执行以及失败后的手动Retry。
 

@@ -13,15 +13,18 @@ Upload Pipeline 主要处理用户上传文档后的完整异步操作。
 - 将Document / Chunk 持久化到MySQL
 - 持久化 Chunk 数据并生成 chunk_id
 - 将向量写入FAISS
+- 构建并持久化BM25索引
 - 将分词结果写入pkl
+- 维护Chunk的索引状态
+- 对失败的Chunk索引操作进行重试
 - 建立FAISS和Chunk进行ID映射
 - 持久化知识库向量索引
-- 更新任务状态
+- 更新任务状态与处理进度
 
 核心目标：
 
 - 将用户上传的文件转换为可以被RAG检索系统使用的结构化数据和向量索引 
-- 建立 Chunk、Metadata 与向量索引之间的关联关系
+- 建立Chunk、Metadata与向量索引之间的关联关系
 - 为后续 Retrieval Pipeline 提供数据基础
 
 ## 2. 业务目标
@@ -62,15 +65,15 @@ Upload Pipeline 主要处理用户上传文档后的完整异步操作。
 
 如果文件使用同步处理：
 ```text
-    上传文档
+   上传文档
       ↓
   PDF/TXT解析
       ↓
   Embedding向量化
       ↓
-    FAISS
+  FAISS/BM25
       ↓
-   HTTP请求长时间等待
+HTTP请求长时间等待
 ```
 
 如果文件使用异步处理：
@@ -80,11 +83,13 @@ Upload Pipeline 主要处理用户上传文档后的完整异步操作。
    创建task
       ↓
   返回task_id
-      
+         |
+         ↓
    Celery Worker
         ↓
      后台处理
-      
+        ↓
+  更新Task状态与进度
 ```
 通过使用Celery，系统把耗时任务异步交给后台进程执行， 避免阻塞Web接口。
 
@@ -92,14 +97,15 @@ FastAPI只负责：
 - 文件接收
 - 文件保存
 - 创建任务
+- 调度Celery
 - 返回task_id
-
 
 Worker负责：
 - 文档解析
 - 数据入库
 - 索引构建
 - Cache失效
+- Task状态与进度更新
 
 ## 3. 整体架构
 ```mermaid
@@ -160,6 +166,7 @@ sequenceDiagram
     participant W as Celery Worker
     participant DS as Document Service
     participant F as FAISS
+    participant B as BM25
     
     U->>API: 上传文件
 
@@ -190,11 +197,18 @@ DB-->>DS: 返回chunk_id
 
 DS->>F: 写入vector + chunk_id
 
-DS->>F: 保存索引
+DS->>B: 更新BM25 Index
 
-DS->>DB: Task success
+DS->>F: 保存FAISS Index
+DS->>B: 保存BM25 Index
+
+DS->>DB: 更新 Chunk indexing status
+
+DS->>DS: Remove VectorStore Cache
 
 DS->>R: 删除Retrieval Cache
+
+DB->>DB: Task success
     
 ```
 用户上传文档后，首先进行文档上传逻辑，保存文件到本地，
@@ -203,7 +217,7 @@ DS->>R: 删除Retrieval Cache
 文档进行parse,split,embedding处理，获取Chunk信息。
 系统创建Document、Chunk存入MySQL进行数据持久化并返回chunk_id，
 将vector和chunk_id写入FAISS，并保存FAISS和BM25，
-Task状态转换为success标记已成功，删除知识库索引缓存。
+删除知识库索引缓存，Task状态转换为success标记已成功。
 
 
 ## 5.核心流程详解
@@ -262,7 +276,8 @@ Celery Task主要职责：
 - 创建数据库Session
 - 调用Document Service
 - 捕获异常
-- 更新失败状态
+- 更新Task状态
+- 更新失败状态，记录失败信息
 - 关闭Session
 
 业务逻辑集中在document_service中。
@@ -291,7 +306,7 @@ Text Cleaning
 ```
 系统主要支持pdf文档和txt文档的解析，
 并通过chunk_size、overlap_sentence进行chunk拆分，
-最后使用SentenceTransformer进行Embedding处理
+最后使用SentenceTransformer进行Embedding处理。
 
 其中：
 Chunk切分是RAG系统的重要步骤。
@@ -307,11 +322,20 @@ Chunk切分是RAG系统的重要步骤。
 系统将文档重要信息，如kb_id、filename、file_path存入MySQL的Document表中。
 
 ### 5.5 Chunk持久化
-基于文档解析阶段返回的数据，将数据存入MySQL进行数据持久化格式化
+基于文档解析阶段返回的数据，将数据存入MySQL进行数据持久化格式化。
+Chunk保存：
+- 文本内容
+- Document关联关系
+- Metadata
+- 索引状态等信息
+
+chunk_id用于建立MySQL Chunk与FAISS向量之间的关联关系。
 
 ### 5.6 FAISS向量索引
+
 根据MySQL自动生成的chunk_id，组成列表ids，同时与chunks一一对应，
 共同存入FAISS中，chunk_id对应chunk作为唯一标识，用于建立FAISS向量与MySQL中Chunk记录之间的映射关系。
+若中途faiss构建失败，将对应失败Chunk的status改为FAILED。
 在后续的faiss retrieval中，进行faiss search后将chunk_id返回给用户，
 通过chunk_id从数据库中获得对应chunk，提取其text以及Metadata等信息。
 
@@ -360,7 +384,33 @@ stateDiagram-v2
 - success: 处理成功
 - failed: 处理失败
 
-### 5.10 Service职责划分
+### 5.10 Task Retry
+对于可以重新执行的文档处理任务，系统提供Task Retry机制。
+```text
+Task
+ ↓ 
+processing 
+ ↓ 
+failed 
+ ↓ 
+retry 
+ ↓ 
+processing
+```
+
+Task Retry与Chunk Indexing Retry是两个不同层次的机制：
+```text
+Task Retry 
+    ↓ 
+重新执行任务级处理流程
+    ↓ 
+Chunk Indexing Retry
+    ↓
+重新尝试失败Chunk的索引操作
+```
+Chunk Indexing Retry可以减少因单个Chunk索引失败而重新处理整个文档的必要性。
+
+### 5.11 Service职责划分
 
 系统将上传流程按照职责进行拆分。
 #### upload_service
@@ -389,6 +439,7 @@ stateDiagram-v2
 - 异步任务入口
 - 生命周期管理
 - 异常捕获
+- Task状态更新
 
 ## 6. 数据流与数据关系
 
@@ -430,6 +481,11 @@ MySQL相关数据：
 Faiss相关数据：
 - Vector
 - chunk_id
+
+BM25相关数据：
+- Chunk分词结果
+- Chunk ID映射关系
+- BM25统计信息
 
 ```text
 FAISS
@@ -504,6 +560,13 @@ Document创建失败
 Chunk创建失败
 ```
 
+处理后：
+```text
+Database Error
+   ↓
+Task → failed
+```
+
 ### 8.5 FAISS保存失败
 ```text
 磁盘空间不足
@@ -511,17 +574,18 @@ Chunk创建失败
 文件损坏
 ```
 
-### 统一处理机制
+如果单个Chunk索引失败：
+```text
+Chunk
+ ↓
+FAISS失败
+ ↓
+Chunk → FAILED
+ ↓
+Retry
 ```
-try:
-    ...
-except Exception:
-    task.status = "failed"
-    task.error_message = str(e)
-    raise
-finally:
-    db.close()
-```
+
+如果任务整体无法继续完成，则Task最终进入failed状态。
 
 ## 9. 一致性问题
 
@@ -545,9 +609,14 @@ Task更新失败
 可能出现：数据已经构建完成，Task显示失败
 
 
-### 9.3 解决方案
-- 记录失败原因
-- 重新构建索引
+### 9.3 当前处理机制
+系统通过Chunk的索引状态记录Chunk是否已经成功写入向量索引。
+当Chunk创建后，其indexing status初始为 pending。
+成功写入FAISS后更新为 indexed。
+索引操作失败时保留失败状态，并通过retry机制重新尝试索引。
+
+因此，即使部分Chunk在首次索引过程中失败，
+也可以通过重试机制进行补偿，而不需要重新处理整个文档。
 
 ### 9.4 后续优化
 
@@ -558,28 +627,16 @@ Task更新失败
 
 ## 10. 后续优化方向
 
-### 10.1 Task进度管理
-
-利用self.update_state()
-实现：
-0%
-20%
-50%
-80%
-100%
-
-可视化的百分比进度，可以极大地增强用户体验。
-
-### 10.2 MySQL事务
+### 10.1 MySQL事务
 对 Document、Chunk、Task 等数据库操作使用事务管理，
 保证数据库内部的一致性。
 
-### 10.3 补偿机制
+### 10.2 补偿机制
 当 FAISS 保存失败时，
 自动删除本次创建的 Document 与 Chunk 数据，
 避免产生脏数据。
 
-### 10.4 索引校验机制
+### 10.3 索引校验机制
 定期校验Chunk数量与FAISS向量数量，
 发现异常则自动重建索引。
 
@@ -622,5 +679,7 @@ BM25中关键词索引
 - Retrieval Cache 缓存失效机制
 - Task 生命周期管理
 - 异常处理与失败状态记录
+- Chunk Indexing Status
+- hunk Indexing Retry
 
 整个 Upload Pipeline 为后续 Retrieval Pipeline 提供了完整的数据基础，是知识库构建流程中的核心模块。

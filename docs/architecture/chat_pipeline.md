@@ -290,32 +290,32 @@ role = assistant
 
 ## 12. 关键设计总结
 
-### 13.1 Original/New Query 分离
+### 12.1 Original/New Query 分离
 ```text
 Original Query → Message / Prompt
 New Query → Retrieval
 ```
 
-### 13.2 Context/Source 分离
+### 12.2 Context/Source 分离
 ```text
 Contexts → 后端 RAG
 Sources → 前端展示
 ```
 
-### 13.3 Source/Message 两阶段SSE
+### 12.3 Source/Message 两阶段SSE
 ```text
 Source → 一次性返回参考资料
 Message → Chunk 流式返回LLM答案 
 ```
 
-### 13.4 Chunk同时承担两个任务
+### 12.4 Chunk同时承担两个任务
 ```text
 Chunk
  ├──→ SSE → 前端
  └──→ answer → 数据库存储
 ```
 
-### 13.5 Chat Service的核心职责
+### 12.5 Chat Service的核心职责
 ```text
 Chat Service本身不是 Retrieval、Rewrite或LLM，
 而是负责将 Conversation、Rewrite、Retrieval、Prompt、LLM、SSE和Message Persistence 
