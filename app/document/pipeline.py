@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from app.document.loader import load_document
-from app.document.splitter import split_text, clean_chunks
+from app.document.loaders.document_loader import load_document
+from app.document.chunking.chunking_v1 import split_text, clean_chunks
 from app.embedding.embedding import get_embeddings
 from app.exceptions.exceptions import DocumentEmptyError
 

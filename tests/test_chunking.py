@@ -1,4 +1,4 @@
-from app.document.splitter import split_text, split_sentence, sentences_merge, split_paragraph, clean_chunks
+from app.document.chunking.chunking_v1 import split_text, split_sentence, split_paragraph, clean_chunks
 
 
 def test_split_paragraph():
