@@ -43,7 +43,8 @@ class BM25Store:
     def search(
             self,
             query: str,
-            top_k: int = 5
+            top_k: int = 5,
+            allowed_chunk_ids=None
     ):
         if not self.bm25:
             return []
@@ -64,14 +65,27 @@ class BM25Store:
             reverse=True
         )
 
-        return [
-            {
-                "chunk_id": self.ids[idx],
+        results = []
+
+        for idx, score in ranked:
+            chunk_id = self.ids[idx]
+
+            if (
+                    allowed_chunk_ids is not None
+                    and chunk_id not in allowed_chunk_ids
+            ):
+                continue
+
+            results.append({
+                "chunk_id": chunk_id,
                 "score": float(score),
-                "source": "bm25",
-            }
-            for idx, score in ranked[:top_k]
-        ]
+                "source": "bm25"
+            })
+
+            if len(results) >= top_k:
+                break
+
+        return results
 
     def save(
             self,

@@ -66,14 +66,20 @@ class VectorStore:
             self,
             query_embedding,
             top_k,
+            allowed_chunk_ids=None
     ):
         query_embedding = np.array(
             [query_embedding]
         ).astype("float32")
 
+        if allowed_chunk_ids is not None:
+            search_k = self.index.ntotal
+        else:
+            search_k = top_k
+
         distances, indices = self.index.search(
             query_embedding,
-            top_k
+            search_k
         )
 
         results = []
@@ -85,11 +91,20 @@ class VectorStore:
             if idx == -1:
                 continue
 
+            if (
+                    allowed_chunk_ids is not None
+                    and int(idx) not in allowed_chunk_ids
+            ):
+                continue
+
             results.append({
                 "chunk_id": int(idx),
                 "score": float(distance),
                 "source": "faiss"
             })
+
+            if len(results) >= top_k:
+                break
 
         return results
 

@@ -9,7 +9,8 @@ class RetrieverAdapter:
             kb_name,
             owner_id,
             top_k=5,
-            filters=None
+            filters=None,
+            document_id=None,
     ):
 
         return self.retriever.retrieve(
@@ -18,5 +19,6 @@ class RetrieverAdapter:
             kb_name=kb_name,
             owner_id=owner_id,
             top_k=top_k,
-            filters=filters
+            filters=filters,
+            document_id=document_id
         )

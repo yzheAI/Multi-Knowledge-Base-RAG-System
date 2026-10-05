@@ -1,5 +1,7 @@
 import json
 import re
+from app.crud import knowledge_base
+from app.crud import document_crud
 
 
 class RetrieverEvaluator:
@@ -133,33 +135,14 @@ class RetrieverEvaluator:
             expected_coverage
         )
 
-    def _is_relevant_by_id(
+    def _is_relevant_by_text(
             self,
             result,
             expected_chunks
     ):
-        result_chunk_id = result.get(
-            "chunk_id"
-        )
-
         result_source = result.get(
             "metadata",
             {}
-        ).get("source")
-
-        for expected in expected_chunks:
-
-            if (
-                    result_chunk_id == expected.get("chunk_id")
-                    and result_source == expected.get("source")
-            ):
-                return True
-
-        return False
-
-    def _is_relevant_by_text(self, result, expected_chunks):
-        result_source = result.get(
-            "metadata", {}
         ).get("source")
 
         result_text = self._normalize_text(
@@ -174,7 +157,18 @@ class RetrieverEvaluator:
                 "source"
             )
 
-            if result_source != expected_source:
+            if expected_source.endswith(".pdf"):
+                expected_source_v2 = expected_source.replace(
+                    ".pdf",
+                    "plus.pdf"
+                )
+            else:
+                expected_source_v2 = expected_source
+
+            if result_source not in {
+                expected_source,
+                expected_source_v2
+            }:
                 continue
 
             expected_text = self._normalize_text(
@@ -199,11 +193,65 @@ class RetrieverEvaluator:
                 return True
         return False
 
-    def evaluate(self, db, retriever):
-        id_recall_1 = 0
-        id_recall_3 = 0
-        id_recall_5 = 0
-        id_mrr = 0
+    def _get_document_id(
+            self,
+            db,
+            kb_id,
+            source,
+            version
+    ):
+        """
+         根据 KB + source 找到对应 document。
+         document_id <= 56: V1
+         document_id > 56: V2
+         """
+
+        documents = document_crud.get_documents_by_kb(
+            db,
+            kb_id
+        )
+
+        if version == "v1":
+            target_source = source
+        elif version == "v2":
+            target_source = source.replace(".pdf", "plus.pdf")
+        else:
+            raise ValueError(
+                f"Unknown evaluation version: {version}"
+            )
+
+        candidates = [
+            doc for doc in documents
+            if doc.filename == target_source
+        ]
+
+        if not candidates:
+            raise ValueError(
+                f"找不到对应 document: " 
+                f"kb={kb_id}, " 
+                f"source={source}, " 
+                f"version={version}"
+            )
+        if len(candidates) > 1:
+            raise ValueError(
+                f"找到多个匹配 document: " 
+                f"kb={kb_id}, " 
+                f"source={source}, "
+                f"" f"version={version}, "
+                f"" f"documents={[doc.id for doc in candidates]}"
+            )
+        return candidates[0].id
+
+    def evaluate(
+            self,
+            db,
+            retriever,
+            version=None
+    ):
+        # id_recall_1 = 0
+        # id_recall_3 = 0
+        # id_recall_5 = 0
+        # id_mrr = 0
 
         text_recall_1 = 0
         text_recall_3 = 0
@@ -219,57 +267,50 @@ class RetrieverEvaluator:
             if self.query_func:
                 query = self.query_func(item)
 
+            expected_chunks = item.get(
+                "relevant_chunks",
+                []
+            )
+            # ==========================
+            # 找到当前问题对应的 document
+            # ==========================
+            document_id = None
+            if version is not None:
+                if not expected_chunks:
+                    continue
+
+                source = expected_chunks[0].get(
+                    "source"
+                )
+                kb = knowledge_base.get_kb_by_name(
+                    db,
+                    item["kb_name"],
+                    17
+                )
+
+                if not kb:
+                    raise ValueError(
+                        f"找不到知识库: {item['kb_name']}"
+                    )
+
+                document_id = self._get_document_id(
+                    db=db,
+                    kb_id=kb.id,
+                    source=source,
+                    version=version
+                )
+            # ==========================
+            # Retrieval
+            # ==========================
+
             results = retriever.search(
                 db,
                 query,
                 kb_name=item["kb_name"],
                 owner_id=17,
-                top_k=5
+                top_k=5,
+                document_id=document_id
             )
-
-            expected_chunks = item.get(
-                "relevant_chunks",
-                []
-            )
-
-            # ID
-            if any(
-                    self._is_relevant_by_id(
-                        r,
-                        expected_chunks
-                    )
-                    for r in results[:1]
-            ):
-                id_recall_1 += 1
-
-            if any(
-                    self._is_relevant_by_id(
-                        r,
-                        expected_chunks
-                    )
-                    for r in results[:3]
-            ):
-                id_recall_3 += 1
-
-            if any(
-                    self._is_relevant_by_id(
-                        r,
-                        expected_chunks
-                    )
-                    for r in results[:5]
-            ):
-                id_recall_5 += 1
-
-            for rank, r in enumerate(
-                    results,
-                    start=1
-            ):
-                if self._is_relevant_by_id(
-                        r,
-                        expected_chunks
-                ):
-                    id_mrr += 1 / rank
-                    break
 
             # TEXT
             if any(
@@ -312,13 +353,6 @@ class RetrieverEvaluator:
 
         return {
             "total": total,
-
-            "id": {
-                "recall_1": id_recall_1 / total,
-                "recall_3": id_recall_3 / total,
-                "recall_5": id_recall_5 / total,
-                "MRR": id_mrr / total
-            },
 
             "text": {
                 "recall_1": text_recall_1 / total,

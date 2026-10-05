@@ -19,7 +19,8 @@ class HybridRetriever(BaseRetriever):
             kb_name,
             owner_id,
             top_k=5,
-            filters=None
+            filters=None,
+            document_id=None,
     ):
 
         candidate_k = 10
@@ -30,7 +31,8 @@ class HybridRetriever(BaseRetriever):
             kb_name,
             owner_id,
             candidate_k,
-            filters
+            filters,
+            document_id
         )
 
         bm25_docs = self.bm25_retriever.retrieve(
@@ -39,7 +41,8 @@ class HybridRetriever(BaseRetriever):
             kb_name,
             owner_id,
             candidate_k,
-            filters
+            filters,
+            document_id
         )
 
         # docs = self.merge(
