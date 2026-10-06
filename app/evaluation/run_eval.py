@@ -77,6 +77,10 @@ try:
         )
 
         # evaluation_results[name] = result
+        evaluation_results[name] = {
+            "v1": v1_result,
+            "v2": v2_result
+        }
 
         print(f"{name} V1: {v1_result}")
         print(f"{name} V2: {v2_result}")
@@ -132,13 +136,13 @@ try:
         SAVE_JSON_PATH
     )
 
-    # with open(save_path, "w", encoding="utf-8") as f:
-    #     json.dump(
-    #         results,
-    #         f,
-    #         ensure_ascii=False,
-    #         indent=4,
-    #     )
+    with open(save_path, "w", encoding="utf-8") as f:
+        json.dump(
+            results,
+            f,
+            ensure_ascii=False,
+            indent=4,
+        )
 
     print(
         f"Evaluation result saved to {save_path}"

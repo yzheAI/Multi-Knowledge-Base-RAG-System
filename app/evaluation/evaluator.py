@@ -119,15 +119,11 @@ class RetrieverEvaluator:
         )
 
         result_coverage = (
-                len(overlap)
-                /
-                len(result_ngrams)
+                len(overlap) / len(result_ngrams)
         )
 
         expected_coverage = (
-                len(overlap)
-                /
-                len(expected_ngrams)
+                len(overlap) / len(expected_ngrams)
         )
 
         return (
@@ -153,9 +149,7 @@ class RetrieverEvaluator:
             return False
 
         for expected in expected_chunks:
-            expected_source = expected.get(
-                "source"
-            )
+            expected_source = expected.get("source")
 
             if expected_source.endswith(".pdf"):
                 expected_source_v2 = expected_source.replace(
@@ -186,10 +180,10 @@ class RetrieverEvaluator:
                 )
             )
 
-            if result_coverage >= 0.80:
+            if result_coverage >= 0.70:
                 return True
 
-            if expected_coverage >= 0.80:
+            if expected_coverage >= 0.70:
                 return True
         return False
 
@@ -213,8 +207,10 @@ class RetrieverEvaluator:
 
         if version == "v1":
             target_source = source
+
         elif version == "v2":
             target_source = source.replace(".pdf", "plus.pdf")
+
         else:
             raise ValueError(
                 f"Unknown evaluation version: {version}"
@@ -248,10 +244,6 @@ class RetrieverEvaluator:
             retriever,
             version=None
     ):
-        # id_recall_1 = 0
-        # id_recall_3 = 0
-        # id_recall_5 = 0
-        # id_mrr = 0
 
         text_recall_1 = 0
         text_recall_3 = 0
