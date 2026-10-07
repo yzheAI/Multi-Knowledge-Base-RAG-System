@@ -120,16 +120,32 @@ Upload
 
 ## 实验效果
 
+### Chunking Strategy Experiment
+
+针对工业技术文档中章节结构明显、标题与正文存在层级关系的问题，
+设计了 Structure-aware Chunking（V2），利用 PDF 字体、章节编号和标题层级识别文档结构，
+并将章节信息保存为 Chunk Metadata。
+
+在 132 条 QA 数据集上的实验结果表明，V2 相比 V1 在 FAISS、BM25 和 Hybrid Retrieval
+三个检索器上均取得明显提升。
+
+其中 Hybrid Retrieval：
+
+- Recall@1：70.45% → 83.33%
+- Recall@3：79.55% → 90.91%
+- Recall@5：83.33% → 91.67%
+- MRR：0.758 → 0.869
+
 ### Retriever Evaluation
 
-| Retriever | Recall@1 | Recall@3 | Recall@5 | MRR    |
-|-----------|----------|----------|----------|--------|
-| FAISS     | 24.58%   | 36.44%   | 41.53%   | 30.90% |
-| BM25      | 47.46%   | 69.49%   | 72.03%   | 57.33% |
-| Hybrid    | 61.86%   | 73.73%   | 75.42%   | 67.75% |
+| Retriever | V1 R@1 | V2 R@1 | V1 R@3 | V2 R@3 | V1 R@5 | V2 R@5 | V1 MRR | V2 MRR |
+|-----------|--------|--------|--------|--------|--------|--------|--------|--------|
+| FAISS     | 30.30% | 40.91% | 40.91% | 59.09% | 52.27% | 63.64% | 0.377  | 0.498  |
+| BM25      | 63.64% | 73.48% | 76.52% | 87.88% | 81.06% | 90.15% | 0.704  | 0.804  |
+| Hybrid    | 70.45% | 83.33% | 79.55% | 90.91% | 83.33% | 91.67% | 0.758  | 0.869  |
 
 详细实验：
-`docs/retrieval_evaluation.md`
+`docs/evaluation/retrieval_evaluation.md`
 
 ### Query Rewrite Evaluation
 
@@ -139,7 +155,7 @@ Upload
 | Query Rewrite | 58.62%   | 84.48%   | 86.20%   | 70.54% |
 
 详细实验：
-`docs/retrieval_evaluation.md`
+`docs/evaluation/retrieval_evaluation.md`
 
 
 ## 系统架构
@@ -310,7 +326,7 @@ celery -A app.tasks.celery_app.celery_app worker -l info
 - [x] Hybrid Score Fusion
 - [x] Redis缓存与任务队列
 - [ ] Elasticsearch 检索
-- [ ] 工业场景数据处理
+- [x] 工业场景数据处理
 - [ ] Linux部署
 
 

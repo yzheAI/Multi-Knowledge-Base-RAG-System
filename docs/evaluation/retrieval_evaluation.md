@@ -35,8 +35,7 @@ Recall@K / MRR      Correction
       "kb_name": "...",
       "relevant_chunks": [
         {
-            "source": "...", 
-            "chunk_id": 123,
+            "source": "...",
             "text": "xxx"
         }
       ],
@@ -49,7 +48,6 @@ Recall@K / MRR      Correction
 - answer：参考答案
 - kb_name：所属知识库名字
 - relevant_chunks：与问题相关的知识库Chunk
-- chunk_id：答案对应的chunk
 - text：与问题相关的知识库Chunk及其原始文本证据
 - category：问题类型，包括fact、list、unanswerable、comparison、procedure
 
@@ -120,12 +118,43 @@ Recall@K / MRR      Correction
 将 RRF 融合后的候选结果输入 bge-reranker-base 进行重新排序，
 根据 Query 与候选 Chunk 的相关性重新排序，最终返回 Top-5 结果。
 
-## 4. Experiment Results
+## 4. Retrieval Evaluation Method
 
-在118条测试问题上，对Faiss、BM25和Hybrid Retrieval进行了对比。
+在132条测试问题上，对Faiss、BM25和Hybrid Retrieval进行了对比。
 
-### 4.1 Faiss
+### 4.1 Evaluation Metrics
 
+采用以下指标评价检索结果：
+
+- Recall@1：相关 Chunk 是否出现在 Top-1
+- Recall@3：相关 Chunk 是否出现在 Top-3
+- Recall@5：相关 Chunk 是否出现在 Top-5
+- MRR：相关 Chunk 首次出现位置的倒数平均值
+
+### 4.2 Text-based Relevance Judgment
+
+由于 Chunk ID 会随着 Chunking 策略变化而发生变化，
+因此不能简单依赖固定 chunk_id 判断检索是否成功。
+
+当前评估采用基于文本证据的 relevance judgment。
+对于检索结果与 Ground Truth 文本，首先进行文本标准化，然后计算字符级 n-gram 重叠程度。
+
+当满足以下任一条件时，将检索结果视为相关：
+result_coverage >= 0.70
+OR
+expected_coverage >= 0.70
+
+其中：
+
+result_coverage：检索结果文本中能够被 Ground Truth 覆盖的比例
+expected_coverage：Ground Truth 中能够被检索结果覆盖的比例
+
+## 5. Baseline Retrieval Results
+
+在早期版本的 118 条测试问题上，
+对 Faiss、BM25 和 Hybrid Retrieval 进行了初始实验。
+
+### 5.1 Faiss
 | Metric   | Value |
 |----------|-------|
 | Recall@1 | 0.245 |
@@ -133,9 +162,7 @@ Recall@K / MRR      Correction
 | Recall@5 | 0.415 |
 | MRR      | 0.309 |
 
-
-### 4.2 BM25:
-
+### 5.2 BM25
 | Metric   | Value |
 |----------|-------|
 | Recall@1 | 0.475 |
@@ -143,8 +170,7 @@ Recall@K / MRR      Correction
 | Recall@5 | 0.720 |
 | MRR      | 0.575 |
 
-### 4.3 Hybrid Retrieval
-
+### 5.3 Hybrid Retrieval
 | Metric   | Value |
 |----------|-------|
 | Recall@1 | 0.619 |
@@ -152,13 +178,18 @@ Recall@K / MRR      Correction
 | Recall@5 | 0.754 |
 | MRR      | 0.678 |
 
-从结果来看：
+早期实验表明：
 - Hybrid Retrieval 的整体效果最好
 - BM25 明显优于 Faiss
 - Hybrid 在 Recall@1 和 MRR 上相比于 BM25 有进一步提升
 - 说明语义检索与关键词检索有一定互补性
 
-## 5. Hybrid Retrieval Experiments
+上述结果作为项目早期 Retrieval Baseline，
+后续实验进一步扩大了测试集，并对 Chunking 策略进行了改进。
+
+## 6. Hybrid Retrieval Experiments
+
+早期实验在 Hybrid Retrieval 内部，对不同融合与排序策略进行了实验。
 
 | 方案 | 方法                  | Recall@1 | Recall@3 | Recall@5 | MRR    |
 |----|---------------------|----------|----------|----------|--------|
@@ -169,49 +200,82 @@ Recall@K / MRR      Correction
 
 实验结果表明，RRF Fusion 与 Reranker 结合能够取得更好的检索效果。
 
-## 6. Evaluation Robustness Check
+## 7. Chunking Strategy Experiment
 
-由于原始Ground Truth中包含chunk_id，为避免评测结果完全依赖当前Chunk划分和ID,
-本项目进一步进行了基于文本证据的相关性判断实验。
-在相同的Hybrid Retrieval结果下，对比基于chunk_id和基于文本证据的两种 relevance judgment 方法。
+在确定 Hybrid Retrieval 基础方案后，
+进一步研究 Chunking 策略对工业技术文档检索效果的影响。
 
-| Metric   | ID-based | Text-based |
-|----------|----------|------------|
-| Recall@1 | 0.619    | 0.636      |
-| Recall@3 | 0.737    | 0.720      |
-| Recall@5 | 0.754    | 0.737      |
-| MRR      | 0.678    | 0.679      |
+### 7.1 V1: Baseline Chunking
 
-两种评测方法的MRR基本一致，且Recall@1、Recall@3和Recall@5
-的差异较小，说明当前检索结果对relevance judgment的变化具有一定稳定性。
-因此，当前实验继续采用 ID-based evaluation 作为主要 baseline，
-文本证据匹配作为辅助诊断方法。
+V1 使用基础的文本切分策略：
+- 基于文本/句子进行切分
+- Chunk Size ≈ 200
+- 保留一定的句子重叠
 
-## 7. Analysis
-Reranker只能对输入候选集进行排序，如果没有正确的Chunk进入候选集，
-即使Reranker很强也无法恢复。
-因此可以扩大candidate_k提高召回效果
+该版本作为后续 Chunking 实验的 Baseline。
 
-由于简单Merge存在以下问题：
-- 不同Retriever排序空间不同
-- 导致某一种召回结果完全占据前排
-RRF通过rank进行融合
-- 保留多个检索器优势
-- 降低单一Retriever偏差
+### 7.2 V2: Structure-aware Chunking
 
-## 最终配置
+V2 在基础 Chunking 的基础上引入文档结构信息：
+- 自动识别章节标题
+- 自动识别小节标题
+- 在章节和小节边界处进行 Chunk 切分
+- 避免在重要结构边界处直接切断文本
+- 保留章节/小节信息作为 Chunk Metadata
+- Chunk Size 仍保持约 200，避免仅通过扩大 Chunk Size 获得提升
 
-| 组件               | 配置                |
-|------------------|-------------------|
-| Dense Retrieval  | Faiss             |
-| Sparse Retrieval | BM25              |
-| Fusion           | RRF               |
-| Candidate Size   | 10                |
-| Reranker         | bge-reranker-base |
-| Final TopK       | 5                 |
+因此，V2 的核心变化并不是简单扩大 Chunk，而是：
+利用工业技术文档自身的章节结构改善 Chunk 边界。
 
+## 8. V1 vs V2 Retrieval Results
+在相同的 132 条测试问题上，对 V1 和 V2 两种 Chunking 策略分别进行评估。
 
-## 8. Answer Evaluation
+### 8.1 Faiss
+| Version     | Recall@1  | Recall@3  | Recall@5  | MRR    |
+|-------------|-----------|-----------|-----------|--------|
+| V1          | 30.30%    | 40.91%    | 52.27%    | 0.377  |
+| V2          | 40.91%    | 59.09%    | 63.64%    | 0.498  |
+| Improvement | +10.61 pp | +18.18 pp | +11.37 pp | +0.121 |
+
+### 8.2 BM25
+| Version     | Recall@1 | Recall@3  | Recall@5 | MRR    |
+|-------------|----------|-----------|----------|--------|
+| V1          | 63.64%   | 76.52%    | 81.06%   | 0.704  |
+| V2          | 73.48%   | 87.88%    | 90.15%   | 0.804  |
+| Improvement | +9.85 pp | +11.36 pp | +9.09 pp | +0.101 |
+
+### 8.3 Hybrid Retrieval
+| Version     | Recall@1  | Recall@3  | Recall@5 | MRR    |
+|-------------|-----------|-----------|----------|--------|
+| V1          | 70.45%    | 79.55%    | 83.33%   | 0.758  |
+| V2          | 83.33%    | 90.91%    | 91.67%   | 0.869  |
+| Improvement | +12.88 pp | +11.36 pp | +8.34 pp | +0.111 |
+
+### 8.4 Analysis
+
+实验结果表明，V2 在三种 Retriever 上均取得稳定提升。
+
+其中 Hybrid Retrieval + V2 的效果最佳：
+- Recall@1：83.33%
+- Recall@3：90.91%
+- Recall@5：91.67%
+- MRR：0.869
+
+相比于V1：
+- Recall@1 提升 12.88 个百分点
+- Recall@3 提升 11.36 个百分点
+- Recall@5 提升 8.34 个百分点
+- MRR 提升 0.111
+
+这表明在当前工业技术文档数据集上，结合章节和小节结构进行 Chunk 划分，
+相比基础文本切分能够获得更好的检索效果。
+
+同时，Recall@3 已达到 90.91%，而 Recall@5 为 91.67%，二者差距仅为 0.76 个百分点，
+说明大多数成功召回的相关信息已经能够进入 Top-3。
+
+因此，当前实验将 V2 Chunking + Hybrid Retrieval 作为主要检索方案。
+
+## 9. V2 Answer Evaluation
 
 在 Retrieval Evaluation 的基础上，进一步对RAG系统最终生成的答案进行质量评估。
 采用 LLM 测评方法，使用 Qwen 对模型生成的答案进行评价。
@@ -223,36 +287,60 @@ RRF通过rank进行融合
 
 每项指标采用 1~5分评价
 
-### 8.1 Answer Evaluation Results
+### 9.1 Answer Evaluation Results
 
-共测评118条问题。
+在与 Retrieval Evaluation 相同的 132 条测试问题上进行 V2 Answer Evaluation。
 
 | Metric       | Average |
 |--------------|---------|
-| Correctness  | 4.01/5  |
-| Faithfulness | 4.66/5  |
-| Relevance    | 4.43/5  |
+| Correctness  | 4.60/5  |
+| Faithfulness | 4.82/5  |
+| Relevance    | 4.79/5  |
 
-### 8.2 Analysis
+### 9.2 Analysis
+
+结果表明，V2 Chunking + Hybrid Retrieval 所产生的检索上下文能够较好地支持最终答案生成。
 
 结果显示：
-- Faithfulness达到了4.66，说明模型生成答案整体能够较好地依据知识库内容
-- Relevance达到了4.43，说明大多数答案能够围绕用户问题进行回答。
-- Correctness为4.01，是三个指标中相对较弱的一项
+- Correctness = 4.60：模型答案整体与参考答案保持较高一致性。
+- Faithfulness = 4.82：模型生成内容大部分能够从检索到的知识库上下文中获得支持。
+- Relevance = 4.79：模型答案整体能够较好地围绕用户问题进行回答。
 
-Correctness较低的部分问题主要可能与检索未召回相关Chunk、答案信息遗漏、召回Chunk不完整等因素有关。
+其中 Faithfulness 和 Relevance 均接近 5 分，说明当前 RAG 系统在知识库约束下的答案生成质量较高。
 
-## 9. Final Configuration
+## 10. Current Retrieval Configuration
 
-| Component          | Configuration     |
-|--------------------|-------------------|
-| Dense Retrieval    | Faiss             |
-| Sparse Retrieval   | BM25              |
-| Fusion             | RRF               |
-| Faiss Top-K        | 10                |
-| BM25 Top-K         | 10                |
-| RRF Candidate Size | 10                |
-| Rerank             | bge-reranker-base |
-| Final Top-K        | 5                 |
-| Answer Model       | Qwen              |
-| Answer Evaluation  | LLM-as-a-Judge    |
+当前最终 Retrieval 配置如下：
+
+| Component          | Configuration               |
+|--------------------|-----------------------------|
+| Dense Retrieval    | Faiss                       |
+| Sparse Retrieval   | BM25                        |
+| Fusion             | RRF                         |
+| Faiss Top-K        | 10                          |
+| BM25 Top-K         | 10                          |
+| RRF Candidate Size | 10                          |
+| Reranker           | bge-reranker-base           |
+| Final Top-K        | 5                           |
+| Chunking           | V2 Structure-aware Chunking |
+| Evaluation Dataset | 132 QA                      |
+| Answer Evaluation  | LLM-as-a-Judge              |
+
+当前最佳 Retrieval 结果：
+
+Hybrid + V2
+
+- Recall@1 = 83.33%
+- Recall@3 = 90.91%
+- Recall@5 = 91.67%
+- MRR      = 0.869
+
+## 11. Conclusion
+
+本实验围绕工业技术文档 RAG 系统，从检索和答案生成两个层面对系统进行了评估。
+
+实验结果表明：
+- Hybrid Retrieval 优于单独使用 Faiss 或 BM25，说明语义检索和关键词检索具有一定互补性。
+- V2 Structure-aware Chunking 在 Faiss、BM25 和 Hybrid Retrieval 上均取得提升，说明利用技术文档章节结构优化 Chunk 边界能够改善检索效果。
+- 当前最佳检索方案为 V2 Chunking + Hybrid Retrieval，其 Recall@1、Recall@3、Recall@5 分别达到 83.33%、90.91%、91.67%，MRR 达到 0.869。
+- 在 132 条测试问题上的 Answer Evaluation 中，Correctness、Faithfulness 和 Relevance 分别达到 4.60、4.82 和 4.79 / 5。
